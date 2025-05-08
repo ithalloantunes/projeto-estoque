@@ -314,42 +314,7 @@
         setMsg('msg', error.message, true);
       }
     }
-
-    async function editarProduto(id) {
-      try {
-        const novoProduto = prompt('Novo nome do produto:');
-        const novoTipo = prompt('Novo tipo:');
-        const novoLote = prompt('Novo lote:');
-        const novaQuantidade = prompt('Nova quantidade:');
-
-        if (!novoProduto || !novaQuantidade) {
-          setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
-          return;
-        }
-
-        const res = await fetch(`${api}/estoque/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            produto: novoProduto,
-            tipo: novoTipo,
-            lote: novoLote,
-            quantidade: Number(novaQuantidade)
-          })
-        });
-
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error);
-        }
-
-        setMsg('msg', 'Produto atualizado com sucesso!');
-        await listar();
-      } catch (error) {
-        setMsg('msg', error.message, true);
-      }
-    }
-
+    
     async function remover(id) {
       if (!confirm('Tem certeza que deseja remover este produto?')) return;
       
@@ -370,29 +335,66 @@
       }
     }
 
-    async function listar() {
-      try {
-        const res = await fetch(`${api}/estoque`);
-        const data = await res.json();
-        const tbody = document.getElementById('tabela-body');
-        
-        tbody.innerHTML = Object.entries(data).map(([id, item]) => `
-          <tr>
-            <td>${id}</td>
-            <td>${item.produto}</td>
-            <td>${item.tipo}</td>
-            <td>${item.lote}</td>
-            <td>${item.quantidade}</td>
-            <td class="actions-cell">
-              <button class="btn-primary" onclick="editarProduto('${id}')">Editar</button>
-              <button class="btn-danger" onclick="remover('${id}')">Remover</button>
-            </td>
-          </tr>
-        `).join('');
-      } catch (error) {
-        setMsg('msg', 'Erro ao carregar estoque', true);
-      }
+    async function salvarEdicao(id) {
+  try {
+    const produto = document.getElementById(`prod-${id}`).value.trim();
+    const tipo = document.getElementById(`tipo-${id}`).value.trim();
+    const lote = document.getElementById(`lote-${id}`).value.trim();
+    const quantidade = document.getElementById(`quant-${id}`).value;
+
+    if (!produto || quantidade === '') {
+      setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
+      return;
     }
+
+    const res = await fetch(`${api}/estoque/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        produto,
+        tipo,
+        lote,
+        quantidade: Number(quantidade)
+      })
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error);
+    }
+
+    setMsg('msg', 'Produto atualizado com sucesso!');
+    await listar();
+  } catch (error) {
+    setMsg('msg', error.message, true);
+  }
+}
+
+
+    async function listar() {
+  try {
+    const res = await fetch(`${api}/estoque`);
+    const data = await res.json();
+    const tbody = document.getElementById('tabela-body');
+
+    tbody.innerHTML = Object.entries(data).map(([id, item]) => `
+      <tr id="linha-${id}">
+        <td>${id}</td>
+        <td><input type="text" id="prod-${id}" value="${item.produto}" class="form-input"></td>
+        <td><input type="text" id="tipo-${id}" value="${item.tipo}" class="form-input"></td>
+        <td><input type="text" id="lote-${id}" value="${item.lote}" class="form-input"></td>
+        <td><input type="number" id="quant-${id}" value="${item.quantidade}" class="form-input"></td>
+        <td class="actions-cell">
+          <button class="btn-success" onclick="salvarEdicao('${id}')">Salvar</button>
+          <button class="btn-danger" onclick="remover('${id}')">Remover</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    setMsg('msg', 'Erro ao carregar estoque', true);
+  }
+}
+
 
     // Inicialização
     hide('main');
