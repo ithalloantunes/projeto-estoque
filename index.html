@@ -155,6 +155,34 @@
 </head>
 <body>
   <div class="container">
+    <!-- Seção de Autenticação -->
+    <div id="auth" class="auth-section">
+      <div class="auth-form">
+        <div>
+          <h2>Login</h2>
+          <div class="form-group">
+            <input id="loginUser" placeholder="Usuário" class="form-input">
+          </div>
+          <div class="form-group">
+            <input id="loginPass" type="password" placeholder="Senha" class="form-input">
+          </div>
+          <button onclick="login()" class="btn-primary">Entrar</button>
+        </div>
+
+        <div>
+          <h2>Cadastro</h2>
+          <div class="form-group">
+            <input id="regUser" placeholder="Novo usuário" class="form-input">
+          </div>
+          <div class="form-group">
+            <input id="regPass" type="password" placeholder="Nova senha" class="form-input">
+          </div>
+          <button onclick="register()" class="btn-success">Cadastrar</button>
+        </div>
+      </div>
+      <div id="authMsg" class="alert"></div>
+    </div>
+  <div class="container">
     <header>
       <h1>Açaí da Bara - Controle de Estoque</h1>
     </header>
