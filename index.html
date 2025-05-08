@@ -300,7 +300,7 @@
             produto,
             tipo,
             lote,
-            quantidade: Number(quantidade)
+            quantidade: Number(quantidade),
             validade: validadeISO
           })
         });
@@ -389,7 +389,7 @@
         <td><input type="text" id="prod-${id}" value="${item.produto}" class="form-input"></td>
         <td><input type="text" id="tipo-${id}" value="${item.tipo}" class="form-input"></td>
         <td><input type="text" id="lote-${id}" value="${item.lote}" class="form-input"></td>
-        <td><input type="text" id="valid-${id}" value="${item.validade || ''}" class="form-input"><td>${validadeBR}</td></td>
+        <td><input type="text" id="valid-${id}" value="${item.validade || ''}" class="form-input">${validadeBR}</td>
         <td><input type="number" id="quant-${id}" value="${item.quantidade}" class="form-input"></td>
         <td class="actions-cell">
           <button class="btn-success" onclick="salvarEdicao('${id}')">Salvar</button>
