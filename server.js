@@ -29,29 +29,67 @@ const writeJSON = (file, data) => fs.writeFileSync(file, JSON.stringify(data, nu
 
 // Rotas de Autenticação
 app.post('/api/register', (req, res) => {
-  const { username, password } = req.body;
-  const users = readJSON(usersFile);
-  
-  if (users.find(u => u.username === username)) {
-    return res.status(400).json({ error: 'Usuário já existe' });
+  try {
+    const { username, password } = req.body;
+    const users = readJSON(usersFile);
+    
+    if (users.some(u => u.username === username)) {
+      return res.status(400).json({ error: 'Usuário já existe' });
+    }
+
+    users.push({ id: uuidv4(), username, password });
+    writeJSON(usersFile, users);
+    res.json({ message: 'Cadastro realizado com sucesso' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro no servidor' });
   }
-  
-  users.push({ id: uuidv4(), username, password });
-  writeJSON(usersFile, users);
-  res.json({ message: 'Cadastro realizado' });
 });
 
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  const users = readJSON(usersFile);
-  const user = users.find(u => u.username === username && u.password === password);
-  
-  if (!user) return res.status(401).json({ error: 'Credenciais inválidas' });
-  res.json({ message: 'Login bem-sucedido', userId: user.id });
+  try {
+    const { username, password } = req.body;
+    const users = readJSON(usersFile);
+    const user = users.find(u => u.username === username && u.password === password);
+    
+    if (!user) return res.status(401).json({ error: 'Credenciais inválidas' });
+    res.json({ message: 'Login bem-sucedido', userId: user.id });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
 });
 
-// Rotas de Estoque (Mantidas as melhorias anteriores)
-// ... [Manter todas as rotas de estoque do código anterior] ...
+// Rotas de Estoque
+app.get('/api/estoque', (req, res) => {
+  try {
+    res.json(readJSON(estoqueFile));
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao carregar estoque' });
+  }
+});
+
+app.post('/api/estoque', (req, res) => {
+  try {
+    const estoque = readJSON(estoqueFile);
+    const id = uuidv4();
+    
+    if (!req.body.produto || req.body.quantidade === undefined) {
+      return res.status(400).json({ error: 'Campos obrigatórios faltando' });
+    }
+
+    estoque[id] = {
+      ...req.body,
+      quantidade: Number(req.body.quantidade),
+      dataCadastro: new Date().toISOString()
+    };
+
+    writeJSON(estoqueFile, estoque);
+    res.json({ message: 'Produto adicionado com sucesso', id });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao adicionar produto' });
+  }
+});
+
+// ... (Manter outras rotas PUT/DELETE)
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
