@@ -293,14 +293,16 @@
       return;
     }
 
-    // Processamento da data (opcional)
+    // Conversão da data para formato ISO (yyyy-mm-dd)
     let validadeISO = null;
     if (validadeTexto) {
-      const partesData = validadeTexto.split('/');
-      if (partesData.length === 3) {
-        const [dia, mes, ano] = partesData;
-        validadeISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-      } else {
+      const [dia, mes, ano] = validadeTexto.split('/');
+      if (dia.length !== 2 || mes.length !== 2 || ano.length !== 4) {
+        setMsg('msg', 'Data inválida. Use dd/mm/aaaa', true);
+        return;
+}
+      } 
+    else {
         setMsg('msg', 'Formato de data inválido. Use dd/mm/aaaa', true);
         return;
       }
@@ -314,7 +316,7 @@
         tipo,
         lote,
         quantidade: Number(quantidade),
-        validade: validadeISO  // pode ser null se não foi informado
+        validade: validadeISO
       })
     });
 
@@ -391,33 +393,39 @@
     setMsg('msg', error.message, true);
   }
 }
-
-
+    
     async function listar() {
   try {
     const res = await fetch(`${api}/estoque`);
     const data = await res.json();
     const tbody = document.getElementById('tabela-body');
 
-    tbody.innerHTML = Object.entries(data).map(([id, item]) => `
-      <tr id="linha-${id}">
-        <td>${id}</td>
-        <td><input type="text" id="prod-${id}" value="${item.produto}" class="form-input"></td>
-        <td><input type="text" id="tipo-${id}" value="${item.tipo}" class="form-input"></td>
-        <td><input type="text" id="lote-${id}" value="${item.lote}" class="form-input"></td>
-        <td><input type="text" id="valid-${id}" value="${item.validade || ''}" class="form-input">${validadeBR}</td>
-        <td><input type="number" id="quant-${id}" value="${item.quantidade}" class="form-input"></td>
-        <td class="actions-cell">
-          <button class="btn-success" onclick="salvarEdicao('${id}')">Salvar</button>
-          <button class="btn-danger" onclick="remover('${id}')">Remover</button>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = Object.entries(data).map(([id, item]) => {
+      // Formata a data ISO (yyyy-mm-dd) para exibição (dd/mm/aaaa)
+      const validadeBR = item.validade 
+        ? item.validade.split('-').reverse().join('/')
+        : '';
+
+      return `
+        <tr id="linha-${id}">
+          <td>${id}</td>
+          <td><input type="text" id="prod-${id}" value="${item.produto || ''}" class="form-input"></td>
+          <td><input type="text" id="tipo-${id}" value="${item.tipo || ''}" class="form-input"></td>
+          <td><input type="text" id="lote-${id}" value="${item.lote || ''}" class="form-input"></td>
+          <td>${validadeBR}</td>
+          <td><input type="number" id="quant-${id}" value="${item.quantidade || 0}" class="form-input"></td>
+          <td class="actions-cell">
+            <button class="btn-success" onclick="salvarEdicao('${id}')">Salvar</button>
+            <button class="btn-danger" onclick="remover('${id}')">Remover</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
   } catch (error) {
+    console.error('Erro ao carregar estoque:', error);
     setMsg('msg', 'Erro ao carregar estoque', true);
   }
 }
-
 
     // Inicialização
     hide('main');
