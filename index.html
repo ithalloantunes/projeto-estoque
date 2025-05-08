@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Açaí da Barra - Estoque</title>
+  <title>Açaí da Bara - Estoque</title>
   <style>
     :root {
       --primary: #2c3e50;
@@ -11,14 +11,13 @@
       --success: #27ae60;
       --danger: #e74c3c;
       --light: #ecf0f1;
-      --dark: #2c3e50;
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 20px;
-      background-color: #f5f6fa;
+      background-color: #f8f9fa;
     }
 
     .container {
@@ -172,7 +171,7 @@
           <input id="tipo" placeholder="Tipo" class="form-input">
           <input id="lote" placeholder="Lote" class="form-input">
           <input id="quantidade" type="number" placeholder="Quantidade" class="form-input">
-          <button onclick="adicionar()" class="btn-primary" style="grid-column: 1 / -1;">Adicionar Produto</button>
+          <button onclick="adicionar()" class="btn-primary">Adicionar Produto</button>
         </div>
       </div>
 
@@ -214,7 +213,7 @@
       setTimeout(() => elem.textContent = '', 5000);
     }
 
-    // Funções de Autenticação
+    // Autenticação
     async function register() {
       try {
         const username = document.getElementById('regUser').value.trim();
@@ -316,7 +315,60 @@
       }
     }
 
-    // ... (Manter funções de listar, editar e remover)
+    async function editarProduto(id) {
+      try {
+        const novoProduto = prompt('Novo nome do produto:');
+        const novoTipo = prompt('Novo tipo:');
+        const novoLote = prompt('Novo lote:');
+        const novaQuantidade = prompt('Nova quantidade:');
+
+        if (!novoProduto || !novaQuantidade) {
+          setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
+          return;
+        }
+
+        const res = await fetch(`${api}/estoque/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            produto: novoProduto,
+            tipo: novoTipo,
+            lote: novoLote,
+            quantidade: Number(novaQuantidade)
+          })
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error);
+        }
+
+        setMsg('msg', 'Produto atualizado com sucesso!');
+        await listar();
+      } catch (error) {
+        setMsg('msg', error.message, true);
+      }
+    }
+
+    async function remover(id) {
+      if (!confirm('Tem certeza que deseja remover este produto?')) return;
+      
+      try {
+        const res = await fetch(`${api}/estoque/${id}`, { 
+          method: 'DELETE' 
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error);
+        }
+
+        setMsg('msg', 'Produto removido com sucesso!');
+        await listar();
+      } catch (error) {
+        setMsg('msg', error.message, true);
+      }
+    }
 
     async function listar() {
       try {
@@ -332,7 +384,7 @@
             <td>${item.lote}</td>
             <td>${item.quantidade}</td>
             <td class="actions-cell">
-              <button class="btn-primary" onclick="iniciarEdicao('${id}')">Editar</button>
+              <button class="btn-primary" onclick="editarProduto('${id}')">Editar</button>
               <button class="btn-danger" onclick="remover('${id}')">Remover</button>
             </td>
           </tr>
