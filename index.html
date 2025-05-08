@@ -278,48 +278,62 @@
     }
 
     // Funções de Estoque
-    async function adicionar() {
-      try {
-        const produto = document.getElementById('produto').value.trim();
-        const tipo = document.getElementById('tipo').value.trim();
-        const lote = document.getElementById('lote').value.trim();
-        const validadeTexto = document.getElementById('validade').value.trim();
-        const [dia, mes, ano] = validadeTexto.split('/');
-        const validadeISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-        const quantidade = document.getElementById('quantidade').value;
+   async function adicionar() {
+  try {
+    const produto = document.getElementById('produto').value.trim();
+    const tipo = document.getElementById('tipo').value.trim();
+    const lote = document.getElementById('lote').value.trim();
+    const validadeTexto = document.getElementById('validade').value.trim();
+    const quantidade = document.getElementById('quantidade').value;
 
-        if (!produto || !quantidade) {
-          setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
-          return;
-        }
+    if (!produto || !quantidade) {
+      setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
+      return;
+    }
 
-        const res = await fetch(`${api}/estoque`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            produto,
-            tipo,
-            lote,
-            quantidade: Number(quantidade),
-            validade: validadeISO
-          })
-        });
-
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error);
-        }
-
-        setMsg('msg', 'Produto adicionado com sucesso!');
-        document.getElementById('produto').value = '';
-        document.getElementById('tipo').value = '';
-        document.getElementById('lote').value = '';
-        document.getElementById('quantidade').value = '';
-        await listar();
-      } catch (error) {
-        setMsg('msg', error.message, true);
+    // Processamento da data (opcional)
+    let validadeISO = null;
+    if (validadeTexto) {
+      const partesData = validadeTexto.split('/');
+      if (partesData.length === 3) {
+        const [dia, mes, ano] = partesData;
+        validadeISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+      } else {
+        setMsg('msg', 'Formato de data inválido. Use dd/mm/aaaa', true);
+        return;
       }
     }
+
+    const res = await fetch(`${api}/estoque`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        produto,
+        tipo,
+        lote,
+        quantidade: Number(quantidade),
+        validade: validadeISO  // pode ser null se não foi informado
+      })
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error);
+    }
+
+    setMsg('msg', 'Produto adicionado com sucesso!');
+    // Limpa os campos
+    document.getElementById('produto').value = '';
+    document.getElementById('tipo').value = '';
+    document.getElementById('lote').value = '';
+    document.getElementById('validade').value = '';
+    document.getElementById('quantidade').value = '';
+    
+    await listar();
+  } catch (error) {
+    setMsg('msg', error.message, true);
+  }
+}
     
     async function remover(id) {
       if (!confirm('Tem certeza que deseja remover este produto?')) return;
