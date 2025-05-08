@@ -77,8 +77,10 @@ app.post('/api/estoque', (req, res) => {
     }
 
     estoque[id] = {
-      ...req.body,
-      quantidade: Number(req.body.quantidade),
+      produto: req.body.produto.trim(),
+      tipo: req.body.tipo?.trim() || '',
+      lote: req.body.lote?.trim() || '',
+      quantidade: parseInt(req.body.quantidade) || 0,
       dataCadastro: new Date().toISOString()
     };
 
@@ -89,7 +91,47 @@ app.post('/api/estoque', (req, res) => {
   }
 });
 
-// ... (Manter outras rotas PUT/DELETE)
+app.put('/api/estoque/:id', (req, res) => {
+  try {
+    const estoque = readJSON(estoqueFile);
+    const id = req.params.id;
+    
+    if (!estoque[id]) {
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    estoque[id] = {
+      ...estoque[id],
+      produto: req.body.produto?.trim() || estoque[id].produto,
+      tipo: req.body.tipo?.trim() || estoque[id].tipo,
+      lote: req.body.lote?.trim() || estoque[id].lote,
+      quantidade: parseInt(req.body.quantidade) || estoque[id].quantidade,
+      dataAtualizacao: new Date().toISOString()
+    };
+
+    writeJSON(estoqueFile, estoque);
+    res.json({ message: 'Produto atualizado com sucesso' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar produto' });
+  }
+});
+
+app.delete('/api/estoque/:id', (req, res) => {
+  try {
+    const estoque = readJSON(estoqueFile);
+    const id = req.params.id;
+    
+    if (!estoque[id]) {
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    delete estoque[id];
+    writeJSON(estoqueFile, estoque);
+    res.json({ message: 'Produto removido com sucesso' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao remover produto' });
+  }
+});
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
