@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import http from 'http';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -136,4 +138,13 @@ app.delete('/api/estoque/:id', (req, res) => {
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+
+const server = http.createServer(app);
+
+// Define o tempo de keep-alive para 5 segundos
+server.keepAliveTimeout = 5000;
+server.headersTimeout = 6000; // levemente maior que o keepAliveTimeout
+
+server.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT} com keep-alive`);
+});
