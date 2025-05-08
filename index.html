@@ -9,113 +9,50 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
     }
 
     body {
-      background-color: #f5f5f5;
-      color: #333;
-      line-height: 1.6;
+      background: #f0f2f5;
+      padding: 2rem;
     }
 
     .container {
       max-width: 1200px;
       margin: 0 auto;
+      background: white;
       padding: 2rem;
-    }
-
-    header {
-      background-color: #6a1b9a;
-      color: white;
-      padding: 1rem 0;
-      text-align: center;
-      margin-bottom: 2rem;
       border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     h1 {
-      font-size: 2rem;
-    }
-
-    .msg {
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border-radius: 4px;
+      color: #2d3436;
+      margin-bottom: 2rem;
       text-align: center;
     }
 
+    .msg {
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      display: none;
+    }
+
     .msg-error {
-      background-color: #ffebee;
-      color: #c62828;
-      border: 1px solid #ef9a9a;
+      background: #ffe3e3;
+      color: #c92a2a;
     }
 
     .msg-success {
-      background-color: #e8f5e9;
-      color: #2e7d32;
-      border: 1px solid #a5d6a7;
-    }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 4px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    .btn-primary {
-      background-color: #6a1b9a;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background-color: #7b1fa2;
-    }
-
-    .btn-danger {
-      background-color: #c62828;
-      color: white;
-    }
-
-    .btn-danger:hover {
-      background-color: #d32f2f;
-    }
-
-    .btn-success {
-      background-color: #2e7d32;
-      color: white;
-    }
-
-    .btn-success:hover {
-      background-color: #388e3c;
+      background: #d3f9d8;
+      color: #2b8a3e;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 2rem;
-      background-color: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin: 1rem 0;
     }
 
     th, td {
@@ -125,17 +62,31 @@
     }
 
     th {
-      background-color: #6a1b9a;
+      background: #2d3436;
       color: white;
     }
 
-    tr:hover {
-      background-color: #f5f5f5;
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: opacity 0.2s;
     }
 
-    .actions-cell {
-      display: flex;
-      gap: 0.5rem;
+    .btn-primary {
+      background: #1971c2;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #c92a2a;
+      color: white;
+    }
+
+    .btn-success {
+      background: #2b8a3e;
+      color: white;
     }
 
     .edit-input {
@@ -151,66 +102,35 @@
       gap: 0.5rem;
       margin-top: 0.5rem;
     }
+
+    /* Estilo para modo de edição */
+    tr.edit-mode td {
+      padding: 0.3rem;
+      vertical-align: middle;
+    }
+
+    tr.edit-mode input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Seção de Autenticação -->
-    <div id="auth" class="auth-section">
-      <div class="auth-form">
-        <div>
-          <h2>Login</h2>
-          <div class="form-group">
-            <input id="loginUser" placeholder="Usuário" class="form-input">
-          </div>
-          <div class="form-group">
-            <input id="loginPass" type="password" placeholder="Senha" class="form-input">
-          </div>
-          <button onclick="login()" class="btn-primary">Entrar</button>
-        </div>
-
-        <div>
-          <h2>Cadastro</h2>
-          <div class="form-group">
-            <input id="regUser" placeholder="Novo usuário" class="form-input">
-          </div>
-          <div class="form-group">
-            <input id="regPass" type="password" placeholder="Nova senha" class="form-input">
-          </div>
-          <button onclick="register()" class="btn-success">Cadastrar</button>
-        </div>
-      </div>
-      <div id="authMsg" class="alert"></div>
-    </div>
-  <div class="container">
-    <header>
-      <h1>Açaí da Bara - Controle de Estoque</h1>
-    </header>
-
+    <h1>Controle de Estoque - Açaí da Bara</h1>
+    
     <div id="msg" class="msg"></div>
-
-    <form id="form-produto">
+    
+    <form id="form-produto" onsubmit="adicionar(event)">
       <div class="form-group">
-        <label for="produto">Produto</label>
-        <input type="text" id="produto" required>
+        <input type="text" id="produto" placeholder="Produto" required>
+        <input type="text" id="tipo" placeholder="Tipo">
+        <input type="text" id="lote" placeholder="Lote">
+        <input type="number" id="quantidade" placeholder="Quantidade" required>
+        <button type="submit" class="btn btn-primary">Adicionar</button>
       </div>
-
-      <div class="form-group">
-        <label for="tipo">Tipo</label>
-        <input type="text" id="tipo">
-      </div>
-
-      <div class="form-group">
-        <label for="lote">Lote</label>
-        <input type="text" id="lote">
-      </div>
-
-      <div class="form-group">
-        <label for="quantidade">Quantidade</label>
-        <input type="number" id="quantidade" required>
-      </div>
-
-      <button type="submit" class="btn btn-primary">Adicionar</button>
     </form>
 
     <table>
@@ -226,55 +146,26 @@
       </thead>
       <tbody id="tabela-body"></tbody>
     </table>
+
+    <div class="auth-buttons">
+      <button class="btn btn-primary" onclick="logout()">Logout</button>
+    </div>
   </div>
 
   <script>
     const api = '/api';
-    let userId = null;
+    let currentUser = null;
 
-    // Funções auxiliares
-    function setMsg(id, msg, isError = false) {
-      const element = document.getElementById(id);
-      element.textContent = msg;
-      element.className = isError ? 'msg msg-error' : 'msg msg-success';
-      setTimeout(() => element.textContent = '', 5000);
+    // Funções de mensagem
+    function setMsg(id, texto, isError = false) {
+      const msg = document.getElementById(id);
+      msg.textContent = texto;
+      msg.className = `msg ${isError ? 'msg-error' : 'msg-success'}`;
+      msg.style.display = 'block';
+      setTimeout(() => msg.style.display = 'none', 3000);
     }
 
-    // Event Listeners
-    document.getElementById('form-produto').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      try {
-        const produto = document.getElementById('produto').value.trim();
-        const tipo = document.getElementById('tipo').value.trim();
-        const lote = document.getElementById('lote').value.trim();
-        const quantidade = document.getElementById('quantidade').value;
-
-        if (!produto || !quantidade) {
-          setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
-          return;
-        }
-
-        const res = await fetch(`${api}/estoque`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ produto, tipo, lote, quantidade })
-        });
-
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error);
-        }
-
-        setMsg('msg', 'Produto adicionado com sucesso!');
-        document.getElementById('form-produto').reset();
-        await listar();
-      } catch (error) {
-        setMsg('msg', error.message, true);
-      }
-    });
-
-    // Funções de Edição Atualizada
+    // Função de Edição Atualizada
     function iniciarEdicao(id) {
       const linha = document.querySelector(`tr[data-id="${id}"]`);
       const dados = {
@@ -284,16 +175,17 @@
         quantidade: linha.cells[4].textContent
       };
 
+      linha.classList.add('edit-mode');
       linha.innerHTML = `
         <td>${id}</td>
-        <td><input class="edit-input" value="${dados.produto}" id="edit-produto"></td>
-        <td><input class="edit-input" value="${dados.tipo}" id="edit-tipo"></td>
-        <td><input class="edit-input" value="${dados.lote}" id="edit-lote"></td>
-        <td><input class="edit-input" type="number" value="${dados.quantidade}" id="edit-quantidade"></td>
+        <td><input class="edit-input" value="${dados.produto}"></td>
+        <td><input class="edit-input" value="${dados.tipo}"></td>
+        <td><input class="edit-input" value="${dados.lote}"></td>
+        <td><input class="edit-input" type="number" value="${dados.quantidade}"></td>
         <td>
           <div class="edit-buttons">
-            <button class="btn btn-success" onclick="salvarEdicao('${id}')">Salvar</button>
-            <button class="btn btn-danger" onclick="cancelarEdicao('${id}')">Cancelar</button>
+            <button class="btn-success" onclick="salvarEdicao('${id}')">Salvar</button>
+            <button class="btn-danger" onclick="cancelarEdicao('${id}')">Cancelar</button>
           </div>
         </td>
       `;
@@ -301,10 +193,13 @@
 
     async function salvarEdicao(id) {
       try {
-        const novoProduto = document.getElementById('edit-produto').value.trim();
-        const novoTipo = document.getElementById('edit-tipo').value.trim();
-        const novoLote = document.getElementById('edit-lote').value.trim();
-        const novaQuantidade = document.getElementById('edit-quantidade').value;
+        const linha = document.querySelector(`tr[data-id="${id}"]`);
+        const inputs = linha.getElementsByTagName('input');
+        
+        const novoProduto = inputs[0].value.trim();
+        const novoTipo = inputs[1].value.trim();
+        const novoLote = inputs[2].value.trim();
+        const novaQuantidade = inputs[3].value;
 
         if (!novoProduto || !novaQuantidade) {
           setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
@@ -322,11 +217,8 @@
           })
         });
 
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error);
-        }
-
+        if (!res.ok) throw new Error('Erro ao atualizar');
+        
         setMsg('msg', 'Produto atualizado com sucesso!');
         await listar();
       } catch (error) {
@@ -336,6 +228,43 @@
 
     function cancelarEdicao(id) {
       listar();
+    }
+
+    // Funções CRUD
+    async function adicionar(e) {
+      e.preventDefault();
+      try {
+        const res = await fetch(`${api}/estoque`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            produto: document.getElementById('produto').value,
+            tipo: document.getElementById('tipo').value,
+            lote: document.getElementById('lote').value,
+            quantidade: document.getElementById('quantidade').value
+          })
+        });
+        
+        if (!res.ok) throw new Error('Erro ao adicionar');
+        
+        setMsg('msg', 'Produto adicionado!');
+        document.getElementById('form-produto').reset();
+        await listar();
+      } catch (error) {
+        setMsg('msg', error.message, true);
+      }
+    }
+
+    async function remover(id) {
+      if (!confirm('Confirmar exclusão?')) return;
+      try {
+        const res = await fetch(`${api}/estoque/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Erro ao remover');
+        setMsg('msg', 'Produto removido!');
+        await listar();
+      } catch (error) {
+        setMsg('msg', error.message, true);
+      }
     }
 
     // Função Listar Atualizada
@@ -352,9 +281,9 @@
             <td>${item.tipo}</td>
             <td>${item.lote}</td>
             <td>${item.quantidade}</td>
-            <td class="actions-cell">
-              <button class="btn btn-primary" onclick="iniciarEdicao('${id}')">Editar</button>
-              <button class="btn btn-danger" onclick="remover('${id}')">Remover</button>
+            <td>
+              <button class="btn-primary" onclick="iniciarEdicao('${id}')">Editar</button>
+              <button class="btn-danger" onclick="remover('${id}')">Remover</button>
             </td>
           </tr>
         `).join('');
@@ -363,31 +292,23 @@
       }
     }
 
-    // Função Remover
-    async function remover(id) {
-      try {
-        if (!confirm('Tem certeza que deseja remover este produto?')) return;
+    // Autenticação
+    async function login() {
+      const username = prompt('Usuário:');
+      const password = prompt('Senha:');
+      // Implementar lógica de login conforme users.json
+    }
 
-        const res = await fetch(`${api}/estoque/${id}`, {
-          method: 'DELETE'
-        });
-
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error);
-        }
-
-        setMsg('msg', 'Produto removido com sucesso!');
-        await listar();
-      } catch (error) {
-        setMsg('msg', error.message, true);
-      }
+    function logout() {
+      currentUser = null;
+      window.location.reload();
     }
 
     // Inicialização
-    document.addEventListener('DOMContentLoaded', () => {
-      listar();
-    });
+    (async () => {
+      await listar();
+      // Implementar verificação de login inicial
+    })();
   </script>
 </body>
 </html>
