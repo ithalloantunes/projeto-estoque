@@ -297,12 +297,9 @@
     let validadeISO = null;
     if (validadeTexto) {
       const [dia, mes, ano] = validadeTexto.split('/');
-      if (dia.length !== 2 || mes.length !== 2 || ano.length !== 4) {
-        setMsg('msg', 'Data inválida. Use dd/mm/aaaa', true);
-        return;
-}
-      } 
-    else {
+      if (dia && mes && ano && dia.length === 2 && mes.length === 2 && ano.length === 4) {
+        validadeISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+      } else {
         setMsg('msg', 'Formato de data inválido. Use dd/mm/aaaa', true);
         return;
       }
