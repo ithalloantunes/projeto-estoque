@@ -170,7 +170,9 @@
           <input id="produto" placeholder="Nome do Produto" class="form-input">
           <input id="tipo" placeholder="Tipo" class="form-input">
           <input id="lote" placeholder="Lote" class="form-input">
-         <input id="validade" type="text" placeholder="Validade (dd/mm/aaaa)" class="form-input">
+         <input id="validade" type="text" placeholder="Validade (dd/mm/aaaa)" 
+       class="form-input" pattern="\d{2}/\d{2}/\d{4}"
+       oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3')">
           <input id="quantidade" type="number" placeholder="Quantidade" class="form-input">
           <button onclick="adicionar()" class="btn-primary">Adicionar Produto</button>
         </div>
