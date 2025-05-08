@@ -5,71 +5,191 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Açaí da Bara - Estoque</title>
   <style>
-    /* ... (mantenha todos os estilos anteriores) ... */
-
-    /* Novos estilos para autenticação */
-    .auth-container {
-      max-width: 400px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    :root {
+      --primary: #2c3e50;
+      --secondary: #3498db;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --light: #ecf0f1;
     }
 
-    .auth-toggle {
-      text-align: center;
-      margin-top: 1rem;
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .auth-section {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
-      color: #6a1b9a;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--secondary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .estoque-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+
+    .estoque-table th,
+    .estoque-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    .estoque-table th {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 0.5rem;
     }
 
     .hidden {
       display: none;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 5px;
+      margin: 1rem 0;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .alert-error {
+      background-color: #f8d7da;
+      color: #721c24;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Seção de Autenticação -->
-    <div id="authSection" class="auth-container">
-      <div id="loginForm">
-        <h2>Login</h2>
-        <div class="form-group">
-          <label for="loginUsername">Usuário</label>
-          <input type="text" id="loginUsername" required>
+    <div id="auth" class="auth-section">
+      <div class="auth-form">
+        <div>
+          <h2>Login</h2>
+          <div class="form-group">
+            <input id="loginUser" placeholder="Usuário" class="form-input">
+          </div>
+          <div class="form-group">
+            <input id="loginPass" type="password" placeholder="Senha" class="form-input">
+          </div>
+          <button onclick="login()" class="btn-primary">Entrar</button>
         </div>
-        <div class="form-group">
-          <label for="loginPassword">Senha</label>
-          <input type="password" id="loginPassword" required>
-        </div>
-        <button class="btn btn-primary" onclick="loginUser()">Entrar</button>
-        <div class="auth-toggle" onclick="showRegister()">Criar nova conta</div>
-      </div>
 
-      <div id="registerForm" class="hidden">
-        <h2>Cadastro</h2>
-        <div class="form-group">
-          <label for="regUsername">Usuário</label>
-          <input type="text" id="regUsername" required>
+        <div>
+          <h2>Cadastro</h2>
+          <div class="form-group">
+            <input id="regUser" placeholder="Novo usuário" class="form-input">
+          </div>
+          <div class="form-group">
+            <input id="regPass" type="password" placeholder="Nova senha" class="form-input">
+          </div>
+          <button onclick="register()" class="btn-success">Cadastrar</button>
         </div>
-        <div class="form-group">
-          <label for="regPassword">Senha</label>
-          <input type="password" id="regPassword" required>
-        </div>
-        <button class="btn btn-primary" onclick="registerUser()">Cadastrar</button>
-        <div class="auth-toggle" onclick="showLogin()">Já tenho uma conta</div>
       </div>
+      <div id="authMsg" class="alert"></div>
     </div>
 
-    <!-- Conteúdo principal (visível apenas após login) -->
-    <div id="mainContent" class="hidden">
-      <header>
-        <h1>Açaí da Bara - Controle de Estoque</h1>
-        <button class="btn btn-danger" onclick="logout()" style="margin-top: 1rem;">Sair</button>
-      </header>
+    <!-- Seção Principal -->
+    <div id="main" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="color: var(--primary);">Controle de Estoque</h1>
+        <button onclick="logout()" class="btn-danger">Sair</button>
+      </div>
 
-      <!-- ... (mantenha o restante do conteúdo anterior) ... -->
+      <!-- Formulário de Adição -->
+      <div style="background: white; padding: 2rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
+        <h2>Adicionar Novo Produto</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <input id="produto" placeholder="Nome do Produto" class="form-input">
+          <input id="tipo" placeholder="Tipo" class="form-input">
+          <input id="lote" placeholder="Lote" class="form-input">
+          <input id="quantidade" type="number" placeholder="Quantidade" class="form-input">
+          <button onclick="adicionar()" class="btn-primary">Adicionar Produto</button>
+        </div>
+      </div>
+
+      <!-- Tabela de Estoque -->
+      <div id="msg" class="alert"></div>
+      <table class="estoque-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Produto</th>
+            <th>Tipo</th>
+            <th>Lote</th>
+            <th>Quantidade</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-body"></tbody>
+      </table>
     </div>
   </div>
 
@@ -77,11 +197,59 @@
     const api = '/api';
     let userId = null;
 
-    // Funções de Autenticação
-    async function loginUser() {
+    // Funções de UI
+    function show(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function hide(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function setMsg(id, message, isError = false) {
+      const elem = document.getElementById(id);
+      elem.textContent = message;
+      elem.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+      setTimeout(() => elem.textContent = '', 5000);
+    }
+
+    // Autenticação
+    async function register() {
       try {
-        const username = document.getElementById('loginUsername').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
+        const username = document.getElementById('regUser').value.trim();
+        const password = document.getElementById('regPass').value.trim();
+
+        if (!username || !password) {
+          setMsg('authMsg', 'Preencha todos os campos!', true);
+          return;
+        }
+
+        const res = await fetch(`${api}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        setMsg('authMsg', 'Cadastro realizado com sucesso!');
+        document.getElementById('regUser').value = '';
+        document.getElementById('regPass').value = '';
+      } catch (error) {
+        setMsg('authMsg', error.message, true);
+      }
+    }
+
+    async function login() {
+      try {
+        const username = document.getElementById('loginUser').value.trim();
+        const password = document.getElementById('loginPass').value.trim();
+
+        if (!username || !password) {
+          setMsg('authMsg', 'Preencha todos os campos!', true);
+          return;
+        }
 
         const res = await fetch(`${api}/login`, {
           method: 'POST',
@@ -93,22 +261,42 @@
         if (!res.ok) throw new Error(data.error);
 
         userId = data.userId;
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
+        hide('auth');
+        show('main');
+        await listar();
       } catch (error) {
-        setMsg('msg', error.message, true);
+        setMsg('authMsg', error.message, true);
       }
     }
 
-    async function registerUser() {
-      try {
-        const username = document.getElementById('regUsername').value.trim();
-        const password = document.getElementById('regPassword').value.trim();
+    function logout() {
+      userId = null;
+      hide('main');
+      show('auth');
+    }
 
-        const res = await fetch(`${api}/register`, {
+    // Funções de Estoque
+    async function adicionar() {
+      try {
+        const produto = document.getElementById('produto').value.trim();
+        const tipo = document.getElementById('tipo').value.trim();
+        const lote = document.getElementById('lote').value.trim();
+        const quantidade = document.getElementById('quantidade').value;
+
+        if (!produto || !quantidade) {
+          setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
+          return;
+        }
+
+        const res = await fetch(`${api}/estoque`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({
+            produto,
+            tipo,
+            lote,
+            quantidade: Number(quantidade)
+          })
         });
 
         if (!res.ok) {
@@ -116,31 +304,98 @@
           throw new Error(error.error);
         }
 
-        setMsg('msg', 'Cadastro realizado com sucesso!');
-        showLogin();
+        setMsg('msg', 'Produto adicionado com sucesso!');
+        document.getElementById('produto').value = '';
+        document.getElementById('tipo').value = '';
+        document.getElementById('lote').value = '';
+        document.getElementById('quantidade').value = '';
+        await listar();
       } catch (error) {
         setMsg('msg', error.message, true);
       }
     }
 
-    function logout() {
-      userId = null;
-      document.getElementById('mainContent').classList.add('hidden');
-      document.getElementById('authSection').classList.remove('hidden');
-      document.getElementById('loginForm').reset();
+    async function editarProduto(id) {
+      try {
+        const novoProduto = prompt('Novo nome do produto:');
+        const novoTipo = prompt('Novo tipo:');
+        const novoLote = prompt('Novo lote:');
+        const novaQuantidade = prompt('Nova quantidade:');
+
+        if (!novoProduto || !novaQuantidade) {
+          setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
+          return;
+        }
+
+        const res = await fetch(`${api}/estoque/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            produto: novoProduto,
+            tipo: novoTipo,
+            lote: novoLote,
+            quantidade: Number(novaQuantidade)
+          })
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error);
+        }
+
+        setMsg('msg', 'Produto atualizado com sucesso!');
+        await listar();
+      } catch (error) {
+        setMsg('msg', error.message, true);
+      }
     }
 
-    function showRegister() {
-      document.getElementById('loginForm').classList.add('hidden');
-      document.getElementById('registerForm').classList.remove('hidden');
+    async function remover(id) {
+      if (!confirm('Tem certeza que deseja remover este produto?')) return;
+      
+      try {
+        const res = await fetch(`${api}/estoque/${id}`, { 
+          method: 'DELETE' 
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error);
+        }
+
+        setMsg('msg', 'Produto removido com sucesso!');
+        await listar();
+      } catch (error) {
+        setMsg('msg', error.message, true);
+      }
     }
 
-    function showLogin() {
-      document.getElementById('registerForm').classList.add('hidden');
-      document.getElementById('loginForm').classList.remove('hidden');
+    async function listar() {
+      try {
+        const res = await fetch(`${api}/estoque`);
+        const data = await res.json();
+        const tbody = document.getElementById('tabela-body');
+        
+        tbody.innerHTML = Object.entries(data).map(([id, item]) => `
+          <tr>
+            <td>${id}</td>
+            <td>${item.produto}</td>
+            <td>${item.tipo}</td>
+            <td>${item.lote}</td>
+            <td>${item.quantidade}</td>
+            <td class="actions-cell">
+              <button class="btn-primary" onclick="editarProduto('${id}')">Editar</button>
+              <button class="btn-danger" onclick="remover('${id}')">Remover</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        setMsg('msg', 'Erro ao carregar estoque', true);
+      }
     }
 
-    // ... (mantenha as funções anteriores de estoque, setMsg, listar, edição, etc) ...
+    // Inicialização
+    hide('main');
   </script>
 </body>
 </html>
