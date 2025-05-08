@@ -185,6 +185,7 @@
             <th>Produto</th>
             <th>Tipo</th>
             <th>Lote</th>
+            <th>Validade</th>
             <th>Quantidade</th>
             <th>Ações</th>
           </tr>
@@ -282,6 +283,9 @@
         const produto = document.getElementById('produto').value.trim();
         const tipo = document.getElementById('tipo').value.trim();
         const lote = document.getElementById('lote').value.trim();
+        const validadeTexto = document.getElementById('validade').value.trim();
+        const [dia, mes, ano] = validadeTexto.split('/');
+        const validadeISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
         const quantidade = document.getElementById('quantidade').value;
 
         if (!produto || !quantidade) {
@@ -297,6 +301,7 @@
             tipo,
             lote,
             quantidade: Number(quantidade)
+            validade: validadeISO
           })
         });
 
@@ -384,6 +389,7 @@
         <td><input type="text" id="prod-${id}" value="${item.produto}" class="form-input"></td>
         <td><input type="text" id="tipo-${id}" value="${item.tipo}" class="form-input"></td>
         <td><input type="text" id="lote-${id}" value="${item.lote}" class="form-input"></td>
+        <td><input type="text" id="valid-${id}" value="${item.validade || ''}" class="form-input"><td>${validadeBR}</td></td>
         <td><input type="number" id="quant-${id}" value="${item.quantidade}" class="form-input"></td>
         <td class="actions-cell">
           <button class="btn-success" onclick="salvarEdicao('${id}')">Salvar</button>
