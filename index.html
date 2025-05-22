@@ -7,25 +7,31 @@
     <link rel="stylesheet" href="/estilos.css">
 </head>
 <body>
+    <script src="/javascript.js"></script>
+
     <!-- Tela de login/cadastro, visível inicialmente -->
     <div id="login-container" class="login">
         <img id="monster" src="img/idle/1.png" alt="Monster">
         <div class="formulario" id="login-form">
             <h2>Login</h2>
-            <label>Usuário</label>
-            <input type="text" id="input-usuario" required>
-            <label>Senha</label>
-            <input type="password" id="input-clave" required>
-            <button type="submit">Entrar</button>
+            <form id="login-form" action="#">
+                <label>Usuário</label>
+                <input type="text" id="input-usuario" required>
+                <label>Senha</label>
+                <input type="password" id="input-clave" required>
+                <button type="submit">Entrar</button>
+            </form>
             <button type="button" id="show-register">Cadastrar</button>
         </div>
         <div class="formulario hidden" id="register-form">
             <h2>Cadastro</h2>
-            <label>Usuário</label>
-            <input type="text" id="register-username" required>
-            <label>Senha</label>
-            <input type="password" id="register-password" required>
-            <button type="submit">Cadastrar</button>
+            <form id="register-form" action="#">
+                <label>Usuário</label>
+                <input type="text" id="register-username" required>
+                <label>Senha</label>
+                <input type="password" id="register-password" required>
+                <button type="submit">Cadastrar</button>
+            </form>
             <button type="button" id="show-login">Voltar ao Login</button>
         </div>
     </div>
@@ -64,7 +70,5 @@
             <tbody id="stock-table-body"></tbody>
         </table>
     </div>
-
-    <script src="/javascript.js"></script>
 </body>
 </html>
