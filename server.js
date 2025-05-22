@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors({
-  origin: ['https://projeto-estoque-a22j.onrender.com'], // Atualize com seu domínio do Render
+  origin: ['https://projeto-estoque-gcl4.onrender.com'], // Atualize com seu domínio do Render
   credentials: true
 }));
 app.use(express.json());
