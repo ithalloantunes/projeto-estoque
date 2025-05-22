@@ -16,7 +16,7 @@ const altoMitad = window.innerHeight / 2;
 let seguirPunteroMouse = true;
 
 // Base URL
-const BASE_URL = 'https://projeto-estoque-gcl4.onrender.com';
+const BASE_URL = 'https://projeto-estoque-a22j.onrender.com';
 
 // Inicializar estado da interface
 document.addEventListener('DOMContentLoaded', () => {
@@ -104,20 +104,31 @@ function showLoginForm() {
 
 async function handleLogin(event) {
     event.preventDefault();
+    console.log('Formulário de login submetido');
     const username = document.getElementById('input-usuario').value;
     const password = document.getElementById('input-clave').value;
+
+    if (!username || !password) {
+        console.log('Usuário ou senha vazios');
+        alert('Por favor, preencha usuário e senha');
+        return;
+    }
 
     console.log('Enviando login:', { username, password });
 
     try {
+        console.log('Iniciando requisição para:', `${BASE_URL}/api/login`);
         const response = await fetch(`${BASE_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password }),
+            credentials: 'include' // Adicionado para suportar cookies/sessões, se necessário
         });
-        const data = await response.json();
 
-        console.log('Resposta do login:', { status: response.status, data });
+        console.log('Resposta recebida:', { status: response.status, ok: response.ok });
+
+        const data = await response.json();
+        console.log('Dados da resposta:', data);
 
         if (response.ok) {
             console.log('Login bem-sucedido, exibindo estoque');
@@ -125,39 +136,51 @@ async function handleLogin(event) {
             stockContainer.style.display = 'block';
             loadStock();
         } else {
-            alert(data.error);
+            console.log('Erro no login:', data.error);
+            alert(data.error || 'Erro ao fazer login');
         }
     } catch (error) {
-        console.error('Erro no login:', error.message);
+        console.error('Erro na requisição de login:', error.message);
         alert('Erro no servidor: ' + error.message);
     }
 }
 
 async function handleRegister(event) {
     event.preventDefault();
+    console.log('Formulário de cadastro submetido');
     const username = document.getElementById('register-username').value;
     const password = document.getElementById('register-password').value;
+
+    if (!username || !password) {
+        console.log('Usuário ou senha vazios');
+        alert('Por favor, preencha usuário e senha');
+        return;
+    }
 
     console.log('Enviando registro:', { username, password });
 
     try {
+        console.log('Iniciando requisição para:', `${BASE_URL}/api/register`);
         const response = await fetch(`${BASE_URL}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-        const data = await response.json();
 
-        console.log('Resposta do registro:', { status: response.status, data });
+        console.log('Resposta recebida:', { status: response.status, ok: response.ok });
+
+        const data = await response.json();
+        console.log('Dados da resposta:', data);
 
         if (response.ok) {
             alert(data.message);
             showLoginForm();
         } else {
-            alert(data.error);
+            console.log('Erro no registro:', data.error);
+            alert(data.error || 'Erro ao cadastrar');
         }
     } catch (error) {
-        console.error('Erro no registro:', error.message);
+        console.error('Erro na requisição de registro:', error.message);
         alert('Erro no servidor: ' + error.message);
     }
 }
@@ -208,6 +231,7 @@ async function loadStock() {
 
 async function addProduct(event) {
     event.preventDefault();
+    console.log('Formulário de adição de produto submetido');
     const produto = document.getElementById('produto').value;
     const tipo = document.getElementById('tipo').value;
     const lote = document.getElementById('lote').value;
@@ -230,7 +254,8 @@ async function addProduct(event) {
             stockForm.reset();
             loadStock();
         } else {
-            alert(data.error);
+            console.log('Erro ao adicionar produto:', data.error);
+            alert(data.error || 'Erro ao adicionar produto');
         }
     } catch (error) {
         console.error('Erro ao adicionar produto:', error.message);
@@ -260,7 +285,8 @@ async function editProduct(id) {
         if (response.ok) {
             loadStock();
         } else {
-            alert(data.error);
+            console.log('Erro ao atualizar produto:', data.error);
+            alert(data.error || 'Erro ao atualizar produto');
         }
     } catch (error) {
         console.error('Erro ao atualizar produto:', error.message);
@@ -284,7 +310,8 @@ async function deleteProduct(id) {
             if (response.ok) {
                 loadStock();
             } else {
-                alert(data.error);
+                console.log('Erro ao excluir produto:', data.error);
+                alert(data.error || 'Erro ao excluir produto');
             }
         } catch (error) {
             console.error('Erro ao remover produto:', error.message);
@@ -294,6 +321,7 @@ async function deleteProduct(id) {
 }
 
 // Event Listeners
+console.log('Adicionando listener para formulário de login');
 loginForm.addEventListener('submit', handleLogin);
 registerForm.addEventListener('submit', handleRegister);
 showRegisterBtn.addEventListener('click', showRegisterForm);
