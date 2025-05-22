@@ -1,0 +1,176 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Bowlby One SC', cursive;
+}
+
+body {
+    height: 100vh;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login {
+    height: 550px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#monster {
+    position: absolute;
+    top: 0;
+    width: 200px;
+    height: auto;
+}
+
+.formulario {
+    width: 400px;
+    background-color: #fff;
+    border: 5px solid #8f4790;
+    border-radius: 10px;
+    padding: 30px 60px;
+    position: absolute;
+    top: 290px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.formulario input,
+.formulario label,
+.formulario button {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+}
+
+.formulario input {
+    height: 40px;
+    border: 2px solid #8f4790;
+    border-radius: 10px;
+    padding: 0 8px;
+}
+
+.formulario button {
+    margin-top: 20px;
+    cursor: pointer;
+    border: none;
+    height: 40px;
+    background-color: #824283;
+    box-shadow: 1px 1px 2px #000;
+    color: #fff;
+}
+
+.formulario button:hover {
+    background-color: #8f4790;
+}
+
+#stock-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #fff;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 2em;
+}
+
+header button {
+    padding: 10px 20px;
+    background-color: #824283;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+header button:hover {
+    background-color: #8f4790;
+}
+
+#form-section {
+    margin-bottom: 20px;
+}
+
+#form-section h2 {
+    margin-bottom: 10px;
+}
+
+#stock-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#stock-form input {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px;
+    border: 2px solid #8f4790;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #000;
+}
+
+#stock-form button {
+    padding: 10px 20px;
+    background-color: #824283;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#stock-form button:hover {
+    background-color: #8f4790;
+}
+
+#stock-table {
+    width: 100%;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    color: #000;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #8f4790;
+}
+
+th {
+    background-color: #824283;
+    color: #fff;
+}
+
+td button {
+    padding: 5px 10px;
+    margin-right: 5px;
+    background-color: #824283;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+td button:hover {
+    background-color: #8f4790;
+}
