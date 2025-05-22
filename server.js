@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors({
-  origin: ['https://projeto-estoque-gcl4.onrender.com'], // Atualize com seu domínio do Render
+  origin: ['https://projeto-estoque-a22j.onrender.com'],
   credentials: true
 }));
 app.use(express.json());
@@ -63,18 +63,21 @@ const writeJSON = (file, data) => {
 app.post('/api/register', (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log('Requisição de registro:', { username, password });
+    console.log('Requisição de registro recebida:', { username, password });
     if (!username || !password) {
+      console.log('Erro: Usuário ou senha ausentes');
       return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
 
     const users = readJSON(usersFile);
     if (users.some(u => u.username === username)) {
+      console.log('Erro: Usuário já existe');
       return res.status(400).json({ error: 'Usuário já existe' });
     }
 
     users.push({ id: uuidv4(), username, password });
     writeJSON(usersFile, users);
+    console.log('Registro bem-sucedido:', { username });
     res.json({ message: 'Cadastro realizado com sucesso' });
   } catch (error) {
     console.error('Erro no registro:', error.message);
@@ -85,16 +88,18 @@ app.post('/api/register', (req, res) => {
 app.post('/api/login', (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log('Requisição de login:', { username, password });
+    console.log('Requisição de login recebida:', { username, password });
     if (!username || !password) {
+      console.log('Erro: Usuário ou senha ausentes');
       return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
 
     const users = readJSON(usersFile);
+    console.log('Usuários carregados:', users);
     const user = users.find(u => u.username === username && u.password === password);
     
     if (!user) {
-      console.log('Credenciais inválidas para:', { username });
+      console.log('Erro: Credenciais inválidas para:', { username });
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
     console.log('Login bem-sucedido:', { userId: user.id });
@@ -122,6 +127,7 @@ app.post('/api/estoque', (req, res) => {
     const { produto, tipo, lote, quantidade, validade } = req.body;
     console.log('Requisição de adição de produto:', { produto, tipo, lote, quantidade, validade });
     if (!produto || quantidade === undefined) {
+      console.log('Erro: Produto ou quantidade ausentes');
       return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
     }
 
@@ -138,6 +144,7 @@ app.post('/api/estoque', (req, res) => {
     };
 
     writeJSON(estoqueFile, estoque);
+    console.log('Produto adicionado:', { id });
     res.json({ message: 'Produto adicionado com sucesso', id });
   } catch (error) {
     console.error('Erro ao adicionar produto:', error.message);
@@ -153,6 +160,7 @@ app.put('/api/estoque/:id', (req, res) => {
     const id = req.params.id;
     
     if (!estoque[id]) {
+      console.log('Erro: Produto não encontrado:', { id });
       return res.status(404).json({ error: 'Produto não encontrado' });
     }
 
@@ -167,6 +175,7 @@ app.put('/api/estoque/:id', (req, res) => {
     };
 
     writeJSON(estoqueFile, estoque);
+    console.log('Produto atualizado:', { id });
     res.json({ message: 'Produto atualizado com sucesso' });
   } catch (error) {
     console.error('Erro ao atualizar produto:', error.message);
@@ -181,11 +190,13 @@ app.delete('/api/estoque/:id', (req, res) => {
     const id = req.params.id;
     
     if (!estoque[id]) {
+      console.log('Erro: Produto não encontrado:', { id });
       return res.status(404).json({ error: 'Produto não encontrado' });
     }
 
     delete estoque[id];
     writeJSON(estoqueFile, estoque);
+    console.log('Produto removido:', { id });
     res.json({ message: 'Produto removido com sucesso' });
   } catch (error) {
     console.error('Erro ao remover produto:', error.message);
