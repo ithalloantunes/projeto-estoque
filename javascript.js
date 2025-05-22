@@ -13,7 +13,7 @@ const altoMitad = window.innerHeight / 2;
 let seguirPunteroMouse = true;
 
 // Base URL (mude para o domínio do Render em produção)
-const BASE_URL = 'https://projeto-estoque-a22j.onrender.com'; // Atualize com seu domínio do Render
+const BASE_URL = 'https://projeto-estoque-gcl4.onrender.com'; // Atualize com seu domínio do Render
 
 // Monster animation logic
 body.addEventListener('mousemove', (m) => {
