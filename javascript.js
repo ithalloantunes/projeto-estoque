@@ -2,7 +2,7 @@ const monster = document.getElementById('monster');
 const inputUsuario = document.getElementById('input-usuario');
 const inputClave = document.getElementById('input-clave');
 const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
+const registerForm = document.getElementById(' REGISTER_FORM_ID');
 const loginContainer = document.getElementById('login-container');
 const stockContainer = document.getElementById('stock-container');
 const stockForm = document.getElementById('stock-form');
@@ -11,6 +11,9 @@ const body = document.querySelector('body');
 const anchoMitad = window.innerWidth / 2;
 const altoMitad = window.innerHeight / 2;
 let seguirPunteroMouse = true;
+
+// Base URL (mude para o domínio do Render em produção)
+const BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://projeto-estoque.onrender.com'; // Atualize com seu domínio do Render
 
 // Monster animation logic
 body.addEventListener('mousemove', (m) => {
@@ -92,14 +95,14 @@ async function handleLogin() {
     console.log('Enviando login:', { username, password });
 
     try {
-        const response = await fetch('http://localhost:3000/api/login', {
+        const response = await fetch(`${BASE_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
         const data = await response.json();
 
-        console.log('Resposta do login:', data);
+        console.log('Resposta do login:', { status: response.status, data });
 
         if (response.ok) {
             loginContainer.style.display = 'none';
@@ -121,14 +124,14 @@ async function handleRegister() {
     console.log('Enviando registro:', { username, password });
 
     try {
-        const response = await fetch('http://localhost:3000/api/register', {
+        const response = await fetch(`${BASE_URL}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
         const data = await response.json();
 
-        console.log('Resposta do registro:', data);
+        console.log('Resposta do registro:', { status: response.status, data });
 
         if (response.ok) {
             alert(data.message);
@@ -152,10 +155,10 @@ function logout() {
 
 async function loadStock() {
     try {
-        const response = await fetch('http://localhost:3000/api/estoque');
+        const response = await fetch(`${BASE_URL}/api/estoque`);
         const estoque = await response.json();
 
-        console.log('Estoque carregado:', estoque);
+        console.log('Estoque carregado:', { status: response.status, estoque });
 
         stockTableBody.innerHTML = '';
 
@@ -192,14 +195,14 @@ async function addProduct(event) {
     console.log('Enviando produto:', { produto, tipo, lote, validade, quantidade });
 
     try {
-        const response = await fetch('http://localhost:3000/api/estoque', {
+        const response = await fetch(`${BASE_URL}/api/estoque`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ produto, tipo, lote, validade, quantidade })
         });
         const data = await response.json();
 
-        console.log('Resposta de adição de produto:', data);
+        console.log('Resposta de adição de produto:', { status: response.status, data });
 
         if (response.ok) {
             stockForm.reset();
@@ -223,14 +226,14 @@ async function editProduct(id) {
     console.log('Enviando atualização de produto:', { id, produto, tipo, lote, validade, quantidade });
 
     try {
-        const response = await fetch(`http://localhost:3000/api/estoque/${id}`, {
+        const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ produto, tipo, lote, validade, quantidade })
         });
         const data = await response.json();
 
-        console.log('Resposta de atualização de produto:', data);
+        console.log('Resposta de atualização de produto:', { status: response.status, data });
 
         if (response.ok) {
             loadStock();
@@ -248,12 +251,12 @@ async function deleteProduct(id) {
         console.log('Enviando exclusão de produto:', { id });
 
         try {
-            const response = await fetch(`http://localhost:3000/api/estoque/${id}`, {
+            const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
                 method: 'DELETE'
             });
             const data = await response.json();
 
-            console.log('Resposta de exclusão de produto:', data);
+            console.log('Resposta de exclusão de produto:', { status: response.status, data });
 
             if (response.ok) {
                 loadStock();
