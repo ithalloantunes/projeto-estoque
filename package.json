@@ -1,12 +1,15 @@
 {
-  "name": "projeto-estoque",
+  "name": "controle-estoque",
   "version": "1.0.0",
-  "description": "Sistema de estoque Açaí da Bara com Node.js e HTML",
+  "description": "",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
