@@ -16,7 +16,7 @@ const altoMitad = window.innerHeight / 2;
 let seguirPunteroMouse = true;
 
 // Base URL
-const BASE_URL = 'https://projeto-estoque-a22j.onrender.com';
+const BASE_URL = 'https://projeto-estoque-gcl4.onrender.com';
 
 // Inicializar estado da interface
 document.addEventListener('DOMContentLoaded', () => {
