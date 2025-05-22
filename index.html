@@ -1,40 +1,38 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Estoque</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="/estilos.css">
 </head>
 <body>
     <div id="login-container" class="login">
         <img id="monster" src="img/idle/1.png" alt="Monster">
-        <div id="login-form" class="formulario">
+        <div class="formulario" id="login-form">
             <h2>Login</h2>
-            <label for="input-usuario">Usuário</label>
-            <input type="text" id="input-usuario" placeholder="Digite seu usuário">
-            <label for="input-clave">Senha</label>
-            <input type="password" id="input-clave" placeholder="Digite sua senha">
-            <button onclick="handleLogin()">Entrar</button>
-            <button onclick="showRegisterForm()">Cadastrar</button>
+            <label>Usuário</label>
+            <input type="text" id="input-usuario" required>
+            <label>Senha</label>
+            <input type="password" id="input-clave" required>
+            <button type="submit">Entrar</button>
+            <button type="button" id="show-register">Cadastrar</button>
         </div>
-
-        <div id="register-form" class="formulario" style="display: none;">
+        <div class="formulario hidden" id="register-form">
             <h2>Cadastro</h2>
-            <label for="register-username">Usuário</label>
-            <input type="text" id="register-username" placeholder="Digite seu usuário">
-            <label for="register-password">Senha</label>
-            <input type="password" id="register-password" placeholder="Digite sua senha">
-            <button onclick="handleRegister()">Cadastrar</button>
-            <button onclick="showLoginForm()">Voltar ao Login</button>
+            <label>Usuário</label>
+            <input type="text" id="register-username" required>
+            <label>Senha</label>
+            <input type="password" id="register-password" required>
+            <button type="submit">Cadastrar</button>
+            <button type="button" id="show-login">Voltar ao Login</button>
         </div>
     </div>
 
-    <div id="stock-container" style="display: none;">
+    <div id="stock-container" class="hidden">
         <header>
             <h1>Controle de Estoque</h1>
-            <button onclick="logout()">Sair</button>
+            <button id="logout-btn">Sair</button>
         </header>
 
         <section id="form-section">
@@ -49,24 +47,22 @@
             </form>
         </section>
 
-        <section id="stock-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Produto</th>
-                        <th>Tipo</th>
-                        <th>Lote</th>
-                        <th>Validade</th>
-                        <th>Quantidade</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="stock-table-body"></tbody>
-            </table>
-        </section>
+        <table id="stock-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Produto</th>
+                    <th>Tipo</th>
+                    <th>Lote</th>
+                    <th>Validade</th>
+                    <th>Quantidade</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="stock-table-body"></tbody>
+        </table>
     </div>
 
-    <script src="javascript.js"></script>
+    <script src="/javascript.js"></script>
 </body>
 </html>
