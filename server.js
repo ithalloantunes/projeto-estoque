@@ -1,270 +1,203 @@
-const monster = document.getElementById('monster');
-const inputUsuario = document.getElementById('input-usuario');
-const inputClave = document.getElementById('input-clave');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const loginContainer = document.getElementById('login-container');
-const stockContainer = document.getElementById('stock-container');
-const stockForm = document.getElementById('stock-form');
-const stockTableBody = document.getElementById('stock-table-body');
-const body = document.querySelector('body');
-const anchoMitad = window.innerWidth / 2;
-const altoMitad = window.innerHeight / 2;
-let seguirPunteroMouse = true;
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { v4 as uuidv4 } from 'uuid';
+import http from 'http';
 
-// Monster animation logic
-body.addEventListener('mousemove', (m) => {
-    if (seguirPunteroMouse) {
-        if (m.clientX < anchoMitad && m.clientY < altoMitad) {
-            monster.src = "img/idle/2.png";
-        } else if (m.clientX < anchoMitad && m.clientY > altoMitad) {
-            monster.src = "img/idle/3.png";
-        } else if (m.clientX > anchoMitad && m.clientY < altoMitad) {
-            monster.src = "img/idle/5.png";
-        } else {
-            monster.src = "img/idle/4.png";
-        }
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.static(__dirname));
+
+// Configuração do banco de dados
+const dataDir = path.join(__dirname, 'data');
+const usersFile = path.join(dataDir, 'users.json');
+const estoqueFile = path.join(dataDir, 'estoque.json');
+
+// Garantir que os arquivos existam
+console.log('Verificando diretório e arquivos de dados...');
+if (!fs.existsSync(dataDir)) {
+  console.log('Criando diretório data...');
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+if (!fs.existsSync(usersFile)) {
+  console.log('Criando users.json...');
+  fs.writeFileSync(usersFile, '[]');
+}
+if (!fs.existsSync(estoqueFile)) {
+  console.log('Criando estoque.json...');
+  fs.writeFileSync(estoqueFile, '{}');
+}
+
+// Funções de leitura/escrita
+const readJSON = (file) => {
+  try {
+    const data = fs.readFileSync(file, 'utf8');
+    console.log(`Lendo ${file}:`, data);
+    return JSON.parse(data);
+  } catch (e) {
+    console.error(`Erro ao ler ${file}:`, e.message);
+    return file.includes('users') ? [] : {};
+  }
+};
+
+const writeJSON = (file, data) => {
+  try {
+    console.log(`Escrevendo em ${file}:`, JSON.stringify(data, null, 2));
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.error(`Erro ao escrever em ${file}:`, e.message);
+    throw new Error(`Falha ao escrever no arquivo ${file}`);
+  }
+};
+
+// Rotas de Autenticação
+app.post('/api/register', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    console.log('Requisição de registro:', { username, password });
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
+
+    const users = readJSON(usersFile);
+    if (users.some(u => u.username === username)) {
+      return res.status(400).json({ error: 'Usuário já existe' });
+    }
+
+    users.push({ id: uuidv4(), username, password });
+    writeJSON(usersFile, users);
+    res.json({ message: 'Cadastro realizado com sucesso' });
+  } catch (error) {
+    console.error('Erro no registro:', error.message);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
 });
 
-inputUsuario.addEventListener('focus', () => {
-    seguirPunteroMouse = false;
+app.post('/api/login', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    console.log('Requisição de login:', { username, password });
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
+    }
+
+    const users = readJSON(usersFile);
+    const user = users.find(u => u.username === username && u.password === password);
+    
+    if (!user) {
+      console.log('Credenciais inválidas para:', { username });
+      return res.status(401).json({ error: 'Credenciais inválidas' });
+    }
+    console.log('Login bem-sucedido:', { userId: user.id });
+    res.json({ message: 'Login bem-sucedido', userId: user.id });
+  } catch (error) {
+    console.error('Erro no login:', error.message);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
 });
 
-inputUsuario.addEventListener('blur', () => {
-    seguirPunteroMouse = true;
+// Rotas de Estoque
+app.get('/api/estoque', (req, res) => {
+  try {
+    const estoque = readJSON(estoqueFile);
+    console.log('Estoque carregado:', estoque);
+    res.json(estoque);
+  } catch (error) {
+    console.error('Erro ao carregar estoque:', error.message);
+    res.status(500).json({ error: 'Erro ao carregar estoque' });
+  }
 });
 
-inputUsuario.addEventListener('keyup', () => {
-    let usuario = inputUsuario.value.length;
-    if (usuario >= 0 && usuario <= 5) {
-        monster.src = 'img/read/1.png';
-    } else if (usuario >= 6 && usuario <= 14) {
-        monster.src = 'img/read/2.png';
-    } else if (usuario >= 15 && usuario <= 20) {
-        monster.src = 'img/read/3.png';
-    } else {
-        monster.src = 'img/read/4.png';
+app.post('/api/estoque', (req, res) => {
+  try {
+    const { produto, tipo, lote, quantidade, validade } = req.body;
+    console.log('Requisição de adição de produto:', { produto, tipo, lote, quantidade, validade });
+    if (!produto || quantidade === undefined) {
+      return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
     }
+
+    const estoque = readJSON(estoqueFile);
+    const id = uuidv4();
+
+    estoque[id] = {
+      produto: produto.trim(),
+      tipo: tipo?.trim() || '',
+      lote: lote?.trim() || '',
+      quantidade: parseInt(quantidade) || 0,
+      validade: validade || null,
+      dataCadastro: new Date().toISOString()
+    };
+
+    writeJSON(estoqueFile, estoque);
+    res.json({ message: 'Produto adicionado com sucesso', id });
+  } catch (error) {
+    console.error('Erro ao adicionar produto:', error.message);
+    res.status(500).json({ error: 'Erro ao adicionar produto' });
+  }
 });
 
-inputClave.addEventListener('focus', () => {
-    seguirPunteroMouse = false;
-    let cont = 1;
-    const cubrirOjo = setInterval(() => {
-        monster.src = 'img/cover/' + cont + '.png';
-        if (cont < 8) {
-            cont++;
-        } else {
-            clearInterval(cubrirOjo);
-        }
-    }, 60);
+app.put('/api/estoque/:id', (req, res) => {
+  try {
+    const { produto, tipo, lote, quantidade, validade } = req.body;
+    console.log('Requisição de atualização de produto:', { id: req.params.id, produto, tipo, lote, quantidade, validade });
+    const estoque = readJSON(estoqueFile);
+    const id = req.params.id;
+    
+    if (!estoque[id]) {
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    estoque[id] = {
+      ...estoque[id],
+      produto: produto?.trim() || estoque[id].produto,
+      tipo: tipo?.trim() || estoque[id].tipo,
+      lote: lote?.trim() || estoque[id].lote,
+      quantidade: parseInt(quantidade) || estoque[id].quantidade,
+      validade: validade || estoque[id].validade || null,
+      dataAtualizacao: new Date().toISOString()
+    };
+
+    writeJSON(estoqueFile, estoque);
+    res.json({ message: 'Produto atualizado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao atualizar produto:', error.message);
+    res.status(500).json({ error: 'Erro ao atualizar produto' });
+  }
 });
 
-inputClave.addEventListener('blur', () => {
-    seguirPunteroMouse = true;
-    let cont = 7;
-    const descubrirOjo = setInterval(() => {
-        monster.src = 'img/cover/' + cont + '.png';
-        if (cont > 1) {
-            cont--;
-        } else {
-            clearInterval(descubrirOjo);
-        }
-    }, 60);
+app.delete('/api/estoque/:id', (req, res) => {
+  try {
+    console.log('Requisição de exclusão de produto:', { id: req.params.id });
+    const estoque = readJSON(estoqueFile);
+    const id = req.params.id;
+    
+    if (!estoque[id]) {
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    delete estoque[id];
+    writeJSON(estoqueFile, estoque);
+    res.json({ message: 'Produto removido com sucesso' });
+  } catch (error) {
+    console.error('Erro ao remover produto:', error.message);
+    res.status(500).json({ error: 'Erro ao remover produto' });
+  }
 });
 
-// Authentication and stock management logic
-function showRegisterForm() {
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'block';
-}
+app.get('*', (req, res) => {
+  console.log('Servindo index.html para:', req.url);
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-function showLoginForm() {
-    registerForm.style.display = 'none';
-    loginForm.style.display = 'block';
-}
-
-async function handleLogin() {
-    const username = document.getElementById('input-usuario').value;
-    const password = document.getElementById('input-clave').value;
-
-    console.log('Enviando login:', { username, password });
-
-    try {
-        const response = await fetch('http://localhost:3000/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await response.json();
-
-        console.log('Resposta do login:', data);
-
-        if (response.ok) {
-            loginContainer.style.display = 'none';
-            stockContainer.style.display = 'block';
-            loadStock();
-        } else {
-            alert(data.error);
-        }
-    } catch (error) {
-        console.error('Erro no login:', error.message);
-        alert('Erro no servidor: ' + error.message);
-    }
-}
-
-async function handleRegister() {
-    const username = document.getElementById('register-username').value;
-    const password = document.getElementById('register-password').value;
-
-    console.log('Enviando registro:', { username, password });
-
-    try {
-        const response = await fetch('http://localhost:3000/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await response.json();
-
-        console.log('Resposta do registro:', data);
-
-        if (response.ok) {
-            alert(data.message);
-            showLoginForm();
-        } else {
-            alert(data.error);
-        }
-    } catch (error) {
-        console.error('Erro no registro:', error.message);
-        alert('Erro no servidor: ' + error.message);
-    }
-}
-
-function logout() {
-    loginContainer.style.display = 'flex';
-    stockContainer.style.display = 'none';
-    document.getElementById('input-usuario').value = '';
-    document.getElementById('input-clave').value = '';
-    monster.src = 'img/idle/1.png';
-}
-
-async function loadStock() {
-    try {
-        const response = await fetch('http://localhost:3000/api/estoque');
-        const estoque = await response.json();
-
-        console.log('Estoque carregado:', estoque);
-
-        stockTableBody.innerHTML = '';
-
-        for (const [id, item] of Object.entries(estoque)) {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${id}</td>
-                <td>${item.produto}</td>
-                <td>${item.tipo}</td>
-                <td>${item.lote}</td>
-                <td>${item.validade || 'N/A'}</td>
-                <td>${item.quantidade}</td>
-                <td>
-                    <button onclick="editProduct('${id}')">Editar</button>
-                    <button onclick="deleteProduct('${id}')">Excluir</button>
-                </td>
-            `;
-            stockTableBody.appendChild(row);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar estoque:', error.message);
-        alert('Erro ao carregar estoque: ' + error.message);
-    }
-}
-
-async function addProduct(event) {
-    event.preventDefault();
-    const produto = document.getElementById('produto').value;
-    const tipo = document.getElementById('tipo').value;
-    const lote = document.getElementById('lote').value;
-    const validade = document.getElementById('validade').value;
-    const quantidade = document.getElementById('quantidade').value;
-
-    console.log('Enviando produto:', { produto, tipo, lote, validade, quantidade });
-
-    try {
-        const response = await fetch('http://localhost:3000/api/estoque', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ produto, tipo, lote, validade, quantidade })
-        });
-        const data = await response.json();
-
-        console.log('Resposta de adição de produto:', data);
-
-        if (response.ok) {
-            stockForm.reset();
-            loadStock();
-        } else {
-            alert(data.error);
-        }
-    } catch (error) {
-        console.error('Erro ao adicionar produto:', error.message);
-        alert('Erro ao adicionar produto: ' + error.message);
-    }
-}
-
-async function editProduct(id) {
-    const produto = prompt('Novo produto:', '');
-    const tipo = prompt('Novo tipo:', '');
-    const lote = prompt('Novo lote:', '');
-    const validade = prompt('Nova validade (YYYY-MM-DD):', '');
-    const quantidade = prompt('Nova quantidade:', '');
-
-    console.log('Enviando atualização de produto:', { id, produto, tipo, lote, validade, quantidade });
-
-    try {
-        const response = await fetch(`http://localhost:3000/api/estoque/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ produto, tipo, lote, validade, quantidade })
-        });
-        const data = await response.json();
-
-        console.log('Resposta de atualização de produto:', data);
-
-        if (response.ok) {
-            loadStock();
-        } else {
-            alert(data.error);
-        }
-    } catch (error) {
-        console.error('Erro ao atualizar produto:', error.message);
-        alert('Erro ao atualizar produto: ' + error.message);
-    }
-}
-
-async function deleteProduct(id) {
-    if (confirm('Tem certeza que deseja excluir este produto?')) {
-        console.log('Enviando exclusão de produto:', { id });
-
-        try {
-            const response = await fetch(`http://localhost:3000/api/estoque/${id}`, {
-                method: 'DELETE'
-            });
-            const data = await response.json();
-
-            console.log('Resposta de exclusão de produto:', data);
-
-            if (response.ok) {
-                loadStock();
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error('Erro ao remover produto:', error.message);
-            alert('Erro ao remover produto: ' + error.message);
-        }
-    }
-}
-
-stockForm.addEventListener('submit', addProduct);
+const PORT = process.env.PORT || 3000;
+const server = http.createServer(app);
+server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
