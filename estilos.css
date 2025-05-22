@@ -78,6 +78,10 @@ body {
     color: #fff;
 }
 
+#stock-container.hidden {
+    display: none !important;
+}
+
 header {
     text-align: center;
     margin-bottom: 20px;
@@ -173,4 +177,8 @@ td button {
 
 td button:hover {
     background-color: #8f4790;
+}
+
+.hidden {
+    display: none;
 }
