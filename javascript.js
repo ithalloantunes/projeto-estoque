@@ -2,18 +2,30 @@ const monster = document.getElementById('monster');
 const inputUsuario = document.getElementById('input-usuario');
 const inputClave = document.getElementById('input-clave');
 const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById(' REGISTER_FORM_ID');
+const registerForm = document.getElementById('register-form');
 const loginContainer = document.getElementById('login-container');
 const stockContainer = document.getElementById('stock-container');
 const stockForm = document.getElementById('stock-form');
 const stockTableBody = document.getElementById('stock-table-body');
+const showRegisterBtn = document.getElementById('show-register');
+const showLoginBtn = document.getElementById('show-login');
+const logoutBtn = document.getElementById('logout-btn');
 const body = document.querySelector('body');
 const anchoMitad = window.innerWidth / 2;
 const altoMitad = window.innerHeight / 2;
 let seguirPunteroMouse = true;
 
-// Base URL (mude para o domínio do Render em produção)
-const BASE_URL = 'https://projeto-estoque-gcl4.onrender.com'; // Atualize com seu domínio do Render
+// Base URL
+const BASE_URL = 'https://projeto-estoque-a22j.onrender.com';
+
+// Inicializar estado da interface
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Inicializando interface: exibindo login, ocultando estoque');
+    loginContainer.style.display = 'flex';
+    stockContainer.style.display = 'none';
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+});
 
 // Monster animation logic
 body.addEventListener('mousemove', (m) => {
@@ -79,16 +91,19 @@ inputClave.addEventListener('blur', () => {
 
 // Authentication and stock management logic
 function showRegisterForm() {
+    console.log('Exibindo formulário de cadastro');
     loginForm.style.display = 'none';
     registerForm.style.display = 'block';
 }
 
 function showLoginForm() {
+    console.log('Exibindo formulário de login');
     registerForm.style.display = 'none';
     loginForm.style.display = 'block';
 }
 
-async function handleLogin() {
+async function handleLogin(event) {
+    event.preventDefault();
     const username = document.getElementById('input-usuario').value;
     const password = document.getElementById('input-clave').value;
 
@@ -105,6 +120,7 @@ async function handleLogin() {
         console.log('Resposta do login:', { status: response.status, data });
 
         if (response.ok) {
+            console.log('Login bem-sucedido, exibindo estoque');
             loginContainer.style.display = 'none';
             stockContainer.style.display = 'block';
             loadStock();
@@ -117,7 +133,8 @@ async function handleLogin() {
     }
 }
 
-async function handleRegister() {
+async function handleRegister(event) {
+    event.preventDefault();
     const username = document.getElementById('register-username').value;
     const password = document.getElementById('register-password').value;
 
@@ -146,6 +163,7 @@ async function handleRegister() {
 }
 
 function logout() {
+    console.log('Logout: retornando à tela de login');
     loginContainer.style.display = 'flex';
     stockContainer.style.display = 'none';
     document.getElementById('input-usuario').value = '';
@@ -155,7 +173,11 @@ function logout() {
 
 async function loadStock() {
     try {
-        const response = await fetch(`${BASE_URL}/api/estoque`);
+        console.log('Carregando estoque...');
+        const response = await fetch(`${BASE_URL}/api/estoque`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
         const estoque = await response.json();
 
         console.log('Estoque carregado:', { status: response.status, estoque });
@@ -252,7 +274,8 @@ async function deleteProduct(id) {
 
         try {
             const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
             });
             const data = await response.json();
 
@@ -270,4 +293,10 @@ async function deleteProduct(id) {
     }
 }
 
+// Event Listeners
+loginForm.addEventListener('submit', handleLogin);
+registerForm.addEventListener('submit', handleRegister);
+showRegisterBtn.addEventListener('click', showRegisterForm);
+showLoginBtn.addEventListener('click', showLoginForm);
+logoutBtn.addEventListener('click', logout);
 stockForm.addEventListener('submit', addProduct);
