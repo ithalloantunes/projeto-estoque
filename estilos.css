@@ -6,11 +6,19 @@
 }
 
 body {
-    height: 100vh;
+    min-height: 100vh;
     background-color: #000;
+    color: #fff;
+}
+
+body.login-active {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+body.stock-active {
+    display: block;
 }
 
 .login {
@@ -73,9 +81,10 @@ body {
 #stock-container {
     width: 100%;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 20px auto;
     padding: 20px;
     color: #fff;
+    min-height: 100vh;
 }
 
 #stock-container.hidden {
