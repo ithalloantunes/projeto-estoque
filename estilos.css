@@ -9,16 +9,10 @@ body {
     min-height: 100vh;
     background-color: #000;
     color: #fff;
-}
-
-body.login-active {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-}
-
-body.stock-active {
-    display: block;
+    justify-content: center;
 }
 
 .login {
@@ -81,14 +75,14 @@ body.stock-active {
 #stock-container {
     width: 100%;
     max-width: 1200px;
-    margin: 20px auto;
     padding: 20px;
     color: #fff;
-    min-height: 100vh;
+    display: none; /* Inicialmente oculto */
 }
 
-#stock-container.hidden {
-    display: none !important;
+#stock-container.active {
+    display: block;
+    min-height: 100vh;
 }
 
 header {
