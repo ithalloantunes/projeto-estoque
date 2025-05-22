@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializar estado da interface
     console.log('Exibindo login, ocultando estoque');
+    body.classList.add('login-active');
     loginContainer.style.display = 'flex';
     stockContainer.style.display = 'none';
     loginForm.style.display = 'block';
@@ -63,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let usuario = inputUsuario.value.length;
         if (usuario >= 0 && usuario <= 5) {
             monster.src = 'img/read/1.png';
-        } else if (usuario >= 6 && usuario <= 14) {
+        } else if (usuario >= 6 && usuario <= 14 cron) {
             monster.src = 'img/read/2.png';
         } else if (usuario >= 15 && usuario <= 20) {
             monster.src = 'img/read/3.png';
@@ -141,8 +142,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 console.log('Login bem-sucedido, exibindo estoque');
+                body.classList.remove('login-active');
+                body.classList.add('stock-active');
                 loginContainer.style.display = 'none';
                 stockContainer.style.display = 'block';
+                console.log('stock-container visível:', stockContainer.style.display);
                 loadStock();
             } else {
                 console.log('Erro no login:', data.error);
@@ -196,6 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function logout() {
         console.log('Logout: retornando à tela de login');
+        body.classList.remove('stock-active');
+        body.classList.add('login-active');
         loginContainer.style.display = 'flex';
         stockContainer.style.display = 'none';
         document.getElementById('input-usuario').value = '';
@@ -232,6 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 stockTableBody.appendChild(row);
             }
+
+            console.log('Tabela de estoque atualizada');
         } catch (error) {
             console.error('Erro ao carregar estoque:', error.message);
             alert('Erro ao carregar estoque: ' + error.message);
