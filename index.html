@@ -1,46 +1,51 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Estoque</title>
-    <link rel="stylesheet" href="/estilos.css">
+    <link rel="stylesheet" href="estilos.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Tela de login/cadastro, visível inicialmente -->
-    <div id="login-container" class="login">
-        <img id="monster" src="img/idle/1.png" alt="Monster">
+    <div class="login" id="login-container">
+        <img src="img/idle/1.png" alt="Monster" id="monster">
         <div class="formulario" id="login-form">
             <h2>Login</h2>
-            <form id="login-form" action="#">
-                <label>Nome de Usuário (Login)</label>
-                <input type="text" id="input-usuario" placeholder="Digite seu login" required>
-                <label>Senha de Acesso</label>
-                <input type="password" id="input-clave" placeholder="Digite sua senha" required>
-                <button type="submit">Entrar</button>
-            </form>
+            <label for="input-usuario">Nome de Usuário (Login)</label>
+            <div class="input-container">
+                <input type="text" id="input-usuario" placeholder="Digite seu usuário">
+            </div>
+            <label for="input-clave">Senha de Acesso</label>
+            <div class="input-container">
+                <input type="password" id="input-clave" placeholder="Digite sua senha">
+                <button type="button" id="toggle-password-login" class="toggle-password">👁️</button>
+            </div>
+            <button type="submit">Entrar</button>
             <button type="button" id="show-register">Cadastrar</button>
         </div>
+
         <div class="formulario hidden" id="register-form">
             <h2>Cadastro</h2>
-            <form id="register-form" action="#">
-                <label>Nome de Usuário (Login)</label>
-                <input type="text" id="register-username" placeholder="Escolha seu login" required>
-                <label>Senha de Acesso</label>
-                <input type="password" id="register-password" placeholder="Crie sua senha" required>
-                <button type="submit">Cadastrar</button>
-            </form>
+            <label for="register-username">Nome de Usuário (Login)</label>
+            <div class="input-container">
+                <input type="text" id="register-username" placeholder="Digite seu usuário">
+            </div>
+            <label for="register-password">Senha de Acesso</label>
+            <div class="input-container">
+                <input type="password" id="register-password" placeholder="Digite sua senha">
+                <button type="button" id="toggle-password-register" class="toggle-password">👁️</button>
+            </div>
+            <button type="submit">Cadastrar</button>
             <button type="button" id="show-login">Voltar ao Login</button>
         </div>
     </div>
 
-    <!-- Tela de estoque, oculta até o login ser confirmado -->
-    <div id="stock-container" class="hidden">
+    <div id="stock-container">
         <header>
             <h1>Controle de Estoque</h1>
             <button id="logout-btn">Sair</button>
         </header>
-
         <section id="form-section">
             <h2>Adicionar Novo Produto</h2>
             <form id="stock-form">
@@ -52,23 +57,24 @@
                 <button type="submit">Adicionar Produto</button>
             </form>
         </section>
-
-        <table id="stock-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Produto</th>
-                    <th>Tipo</th>
-                    <th>Lote</th>
-                    <th>Validade</th>
-                    <th>Quantidade</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="stock-table-body"></tbody>
-        </table>
+        <section id="stock-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Produto</th>
+                        <th>Tipo</th>
+                        <th>Lote</th>
+                        <th>Validade</th>
+                        <th>Quantidade</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-table-body"></tbody>
+            </table>
+        </section>
     </div>
 
-    <script src="/javascript.js"></script>
+    <script src="javascript.js"></script>
 </body>
 </html>
