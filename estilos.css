@@ -46,14 +46,14 @@ body {
     height: 40px;
     border: 2px solid #8f4790;
     border-radius: 10px;
-    padding: 0 32px 0 8px;
+    padding: 0 36px 0 8px; /* Ajustado para garantir espaço para o ícone */
     font-size: 1em;
-    line-height: 36px; /* Centraliza texto e ícone verticalmente */
+    line-height: 36px; /* Alinha texto e ícone verticalmente */
 }
 
 .formulario .toggle-password {
     position: absolute;
-    right: 8px;
+    right: 10px; /* Posicionado dentro da borda com margem */
     top: 50%;
     transform: translateY(-50%);
     background: none;
