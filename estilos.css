@@ -6,58 +6,40 @@
 }
 
 body {
-    min-height: 100vh;
+    height: 100vh;
     background-color: #000;
-    color: #fff;
-}
-
-.login {
-    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
 }
 
-#monster {
+.login {
+    height: 550px;
     position: absolute;
-    top: 0;
-    width: 200px;
-    height: auto;
 }
 
 .formulario {
     width: 400px;
+    position: absolute;
     background-color: #fff;
     border: 5px solid #8f4790;
     border-radius: 10px;
     padding: 30px 60px;
-    position: absolute;
     top: 290px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%);
     text-align: center;
 }
 
-.formulario h2 {
-    color: #824283;
-    margin-bottom: 15px;
-}
-
-.formulario label {
+.formulario input, .formulario label, .formulario button {
     display: block;
     width: 100%;
     margin: 5px 0;
-    font-size: 1.1em;
-    color: #824283;
-    font-weight: bold;
-    text-align: left;
 }
 
 .formulario .input-container {
     position: relative;
     width: 100%;
-    margin-bottom: 10px;
 }
 
 .formulario input {
@@ -65,24 +47,29 @@ body {
     border: 2px solid #8f4790;
     border-radius: 10px;
     padding: 0 40px 0 8px;
-    width: 100%;
-    font-size: 1em;
-}
-
-.formulario input::placeholder {
-    color: #aaa;
-    font-family: Arial, sans-serif;
 }
 
 .formulario .toggle-password {
     position: absolute;
-    right: 10px;
+    right: 5px;
     top: 50%;
     transform: translateY(-50%);
-    background: none;
-    border: none;
+    background-color: #824283;
+    border: 2px solid #8f4790;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 1.2em;
+    font-size: 1em;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.formulario .toggle-password:hover {
+    background-color: #8f4790;
 }
 
 .formulario button {
@@ -93,13 +80,17 @@ body {
     background-color: #824283;
     box-shadow: 1px 1px 2px #000;
     color: #fff;
-    width: 100%;
 }
 
 .formulario button:hover {
     background-color: #8f4790;
 }
 
+.hidden {
+    display: none;
+}
+
+/* Estilos para o container de estoque */
 #stock-container {
     width: 100%;
     max-width: 1200px;
@@ -208,72 +199,4 @@ td button {
 
 td button:hover {
     background-color: #8f4790;
-}
-
-.edit-input {
-    width: 100%;
-    padding: 5px;
-    border: 2px solid #8f4790;
-    border-radius: 5px;
-}
-
-.delete-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    border: 5px solid #8f4790;
-}
-
-.modal-content h2 {
-    color: #824283;
-    margin-bottom: 15px;
-}
-
-.modal-content p {
-    color: #000;
-    margin-bottom: 20px;
-}
-
-.modal-content button {
-    padding: 10px 20px;
-    margin: 0 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.confirm-delete-btn {
-    background-color: #824283;
-    color: #fff;
-}
-
-.confirm-delete-btn:hover {
-    background-color: #8f4790;
-}
-
-.cancel-delete-btn {
-    background-color: #ccc;
-    color: #000;
-}
-
-.cancel-delete-btn:hover {
-    background-color: #bbb;
-}
-
-.hidden {
-    display: none;
 }
