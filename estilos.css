@@ -67,11 +67,11 @@ body {
 }
 
 .formulario .toggle-password:hover .eye-icon {
-    stroke: #8f4790;
+    stroke: #333;
 }
 
 .formulario .eye-icon {
-    stroke: #824283;
+    stroke: #666;
     transition: stroke 0.3s;
 }
 
