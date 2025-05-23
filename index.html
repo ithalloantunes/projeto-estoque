@@ -10,7 +10,7 @@
 <body>
     <div class="login" id="login-container">
         <img src="img/idle/1.png" alt="Monster" id="monster">
-        <div class="formulario" id="login-form">
+        <form id="login-form">
             <h2>Login</h2>
             <label for="input-usuario">Nome de Usuário (Login)</label>
             <div class="input-container">
@@ -32,9 +32,9 @@
             </div>
             <button type="submit">Entrar</button>
             <button type="button" id="show-register">Cadastrar</button>
-        </div>
+        </form>
 
-        <div class="formulario hidden" id="register-form">
+        <form id="register-form" class="hidden">
             <h2>Cadastro</h2>
             <label for="register-username">Nome de Usuário (Login)</label>
             <div class="input-container">
@@ -56,12 +56,13 @@
             </div>
             <button type="submit">Cadastrar</button>
             <button type="button" id="show-login">Voltar ao Login</button>
-        </div>
+        </form>
     </div>
 
     <div id="stock-container" class="hidden">
         <header>
             <h1>Controle de Estoque</h1>
+            <span id="logged-in-user"></span>
             <button id="logout-btn">Sair</button>
         </header>
         <section id="form-section">
