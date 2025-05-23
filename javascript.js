@@ -1,6 +1,5 @@
 const BASE_URL = 'https://projeto-estoque-gcl4.onrender.com';
 
-// Aguarda o carregamento do DOM
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM carregado, inicializando interface');
 
@@ -8,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const monster = document.getElementById('monster');
     const inputUsuario = document.getElementById('input-usuario');
     const inputClave = document.getElementById('input-clave');
+    const togglePasswordLogin = document.getElementById('toggle-password-login');
+    const togglePasswordRegister = document.getElementById('toggle-password-register');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const loginContainer = document.getElementById('login-container');
@@ -18,8 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const showLoginBtn = document.getElementById('show-login');
     const logoutBtn = document.getElementById('logout-btn');
     const body = document.querySelector('body');
-    const togglePasswordLogin = document.getElementById('toggle-password-login');
-    const togglePasswordRegister = document.getElementById('toggle-password-register');
 
     // Verifica se os elementos existem
     if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
@@ -38,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const altoMitad = window.innerHeight / 2;
     let seguirPunteroMouse = true;
 
-    // Monster animation logic
+    // Lógica de animação do monstro
     body.addEventListener('mousemove', (m) => {
         if (seguirPunteroMouse) {
             if (m.clientX < anchoMitad && m.clientY < altoMitad) {
@@ -106,9 +105,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (input.type === 'password') {
             input.type = 'text';
             button.textContent = '🙈';
+            monster.src = 'img/idle/1.png'; // Olhos destampados ao mostrar a senha
+            seguirPunteroMouse = false;
         } else {
             input.type = 'password';
             button.textContent = '👁️';
+            seguirPunteroMouse = true;
         }
     }
 
@@ -124,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Authentication and stock management logic
+    // Lógica de autenticação e gerenciamento de estoque
     function showRegisterForm() {
         console.log('Exibindo formulário de cadastro');
         loginForm.style.display = 'none';
@@ -264,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 stockTableBody.appendChild(row);
             }
 
-            // Add event listeners for edit and delete buttons
+            // Adicionar event listeners para os botões de editar e excluir
             document.querySelectorAll('.edit-btn').forEach(button => {
                 button.addEventListener('click', () => editProduct(button.getAttribute('data-id')));
             });
@@ -377,7 +379,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showDeleteModal(id) {
-        // Create modal
         const modal = document.createElement('div');
         modal.className = 'delete-modal';
         modal.innerHTML = `
