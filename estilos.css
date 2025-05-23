@@ -46,14 +46,14 @@ body {
     height: 40px;
     border: 2px solid #8f4790;
     border-radius: 10px;
-    padding: 0 36px 0 8px; /* Ajustado para garantir espaço para o ícone */
+    padding: 0 36px 0 8px;
     font-size: 1em;
-    line-height: 36px; /* Alinha texto e ícone verticalmente */
+    line-height: 40px; /* Centraliza texto e ícone verticalmente */
 }
 
 .formulario .toggle-password {
     position: absolute;
-    right: 10px; /* Posicionado dentro da borda com margem */
+    right: 12px; /* Ajustado para ficar dentro da borda com margem */
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -62,6 +62,7 @@ body {
     padding: 0;
     width: 20px;
     height: 20px;
+    box-sizing: border-box; /* Garante que o tamanho do botão seja respeitado */
     display: flex;
     align-items: center;
     justify-content: center;
