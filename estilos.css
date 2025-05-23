@@ -46,21 +46,21 @@ body {
     height: 40px;
     border: 2px solid #8f4790;
     border-radius: 10px;
-    padding: 0 40px 0 8px;
+    padding: 0 30px 0 8px; /* Ajustado para garantir espaço interno */
     font-size: 1em;
 }
 
 .formulario .toggle-password {
     position: absolute;
-    right: 10px;
+    right: 6px; /* Ajustado para ficar dentro da borda de 2px */
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
     cursor: pointer;
     padding: 0;
-    width: 24px;
-    height: 24px;
+    width: 20px; /* Tamanho do botão ajustado para o ícone */
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,6 +73,8 @@ body {
 .formulario .eye-icon {
     stroke: #666;
     transition: stroke 0.3s;
+    width: 20px; /* Garantindo que o SVG não exceda o espaço */
+    height: 20px;
 }
 
 .formulario button {
