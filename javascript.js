@@ -211,7 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Carregando estoque...');
             const response = await fetch(`${BASE_URL}/api/estoque`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include' // Ensure session is maintained
             });
             const estoque = await response.json();
 
@@ -221,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (const [id, item] of Object.entries(estoque)) {
                 const row = document.createElement('tr');
+                row.setAttribute('data-id', id);
                 row.innerHTML = `
                     <td>${id}</td>
                     <td>${item.produto}</td>
@@ -229,12 +231,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${item.validade || 'N/A'}</td>
                     <td>${item.quantidade}</td>
                     <td>
-                        <button onclick="editProduct('${id}')">Editar</button>
-                        <button onclick="deleteProduct('${id}')">Excluir</button>
+                        <button class="edit-btn" data-id="${id}">Editar</button>
+                        <button class="delete-btn" data-id="${id}">Excluir</button>
                     </td>
                 `;
                 stockTableBody.appendChild(row);
             }
+
+            // Add event listeners for edit and delete buttons
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', () => editProduct(button.getAttribute('data-id')));
+            });
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', () => showDeleteModal(button.getAttribute('data-id')));
+            });
 
             console.log('Tabela de estoque atualizada');
         } catch (error) {
@@ -258,7 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${BASE_URL}/api/estoque`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ produto, tipo, lote, validade, quantidade })
+                body: JSON.stringify({ produto, tipo, lote, validade, quantidade }),
+                credentials: 'include'
             });
             const data = await response.json();
 
@@ -277,20 +288,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function editProduct(id) {
-        const produto = prompt('Novo produto:', '');
-        const tipo = prompt('Novo tipo:', '');
-        const lote = prompt('Novo lote:', '');
-        const validade = prompt('Nova validade (YYYY-MM-DD):', '');
-        const quantidade = prompt('Nova quantidade:', '');
+    function editProduct(id) {
+        const row = stockTableBody.querySelector(`tr[data-id="${id}"]`);
+        const cells = row.querySelectorAll('td');
+        const produto = cells[1].textContent;
+        const tipo = cells[2].textContent;
+        const lote = cells[3].textContent;
+        const validade = cells[4].textContent === 'N/A' ? '' : cells[4].textContent;
+        const quantidade = cells[5].textContent;
 
-        console.log('Enviando atualização de produto:', { id, produto, tipo, lote, validade, quantidade });
+        row.innerHTML = `
+            <td>${id}</td>
+            <td><input type="text" class="edit-input" value="${produto}" data-field="produto"></td>
+            <td><input type="text" class="edit-input" value="${tipo}" data-field="tipo"></td>
+            <td><input type="text" class="edit-input" value="${lote}" data-field="lote"></td>
+            <td><input type="date" class="edit-input" value="${validade}" data-field="validade"></td>
+            <td><input type="number" class="edit-input" value="${quantidade}" data-field="quantidade"></td>
+            <td>
+                <button class="save-btn" data-id="${id}">Salvar</button>
+                <button class="cancel-btn" data-id="${id}">Cancelar</button>
+            </td>
+        `;
+
+        row.querySelector('.save-btn').addEventListener('click', () => saveProduct(id));
+        row.querySelector('.cancel-btn').addEventListener('click', () => loadStock());
+    }
+
+    async function saveProduct(id) {
+        const row = stockTableBody.querySelector(`tr[data-id="${id}"]`);
+        const inputs = row.querySelectorAll('.edit-input');
+        const updatedProduct = {
+            produto: inputs[0].value,
+            tipo: inputs[1].value,
+            lote: inputs[2].value,
+            validade: inputs[3].value || null,
+            quantidade: parseInt(inputs[4].value) || 0
+        };
+
+        console.log('Enviando atualização de produto:', { id, ...updatedProduct });
 
         try {
             const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ produto, tipo, lote, validade, quantidade })
+                body: JSON.stringify(updatedProduct),
+                credentials: 'include'
             });
             const data = await response.json();
 
@@ -308,29 +350,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function showDeleteModal(id) {
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'delete-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Confirmar Exclusão</h2>
+                <p>Tem certeza que deseja excluir este produto?</p>
+                <button class="confirm-delete-btn" data-id="${id}">Confirmar</button>
+                <button class="cancel-delete-btn">Cancelar</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelector('.confirm-delete-btn').addEventListener('click', () => {
+            deleteProduct(id);
+            modal.remove();
+        });
+        modal.querySelector('.cancel-delete-btn').addEventListener('click', () => {
+            modal.remove();
+        });
+    }
+
     async function deleteProduct(id) {
-        if (confirm('Tem certeza que deseja excluir este produto?')) {
-            console.log('Enviando exclusão de produto:', { id });
+        console.log('Enviando exclusão de produto:', { id });
 
-            try {
-                const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const data = await response.json();
+        try {
+            const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            const data = await response.json();
 
-                console.log('Resposta de exclusão de produto:', { status: response.status, data });
+            console.log('Resposta de exclusão de produto:', { status: response.status, data });
 
-                if (response.ok) {
-                    loadStock();
-                } else {
-                    console.log('Erro ao excluir produto:', data.error);
-                    alert(data.error || 'Erro ao excluir produto');
-                }
-            } catch (error) {
-                console.error('Erro ao remover produto:', error.message);
-                alert('Erro ao remover produto: ' + error.message);
+            if (response.ok) {
+                loadStock();
+            } else {
+                console.log('Erro ao excluir produto:', data.error);
+                alert(data.error || 'Erro ao excluir produto');
             }
+        } catch (error) {
+            console.error('Erro ao remover produto:', error.message);
+            alert('Erro ao remover produto: ' + error.message);
         }
     }
 
