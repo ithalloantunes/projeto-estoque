@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function editProduct(id) {
-        const row = stockTableBody.querySelector(`tr[data-id="${id}"]`);
+        const row = document.querySelector(`tr[data-id="${id}"]`);
         const cells = row.querySelectorAll('td');
         const produto = cells[1].textContent;
         const tipo = cells[2].textContent;
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveProduct(id) {
-        const row = stockTableBody.querySelector(`tr[data-id="${id}"]`);
+        const row = document.querySelector(`tr[data-id="${id}"]`);
         const inputs = row.querySelectorAll('.edit-input');
         const updatedProduct = {
             produto: inputs[0].value,
@@ -395,8 +395,8 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         document.body.appendChild(modal);
 
-        modal.querySelector('.confirm-delete-btn').addEventListener('click', () => {
-            deleteProduct(id);
+        modal.querySelector('.confirm-delete-btn').addEventListener('click', async () => {
+            await performDelete(id);
             modal.remove();
         });
         modal.querySelector('.cancel-delete-btn').addEventListener('click', () => {
@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function deleteProduct(id) {
+    async function performDelete(id) {
         console.log('Enviando exclusão de produto:', { id });
 
         try {
