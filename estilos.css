@@ -54,19 +54,35 @@ body {
     text-align: left;
 }
 
+.formulario .input-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
 .formulario input {
     height: 40px;
     border: 2px solid #8f4790;
     border-radius: 10px;
-    padding: 0 8px;
+    padding: 0 40px 0 8px;
     width: 100%;
-    margin-bottom: 10px;
     font-size: 1em;
 }
 
 .formulario input::placeholder {
     color: #aaa;
     font-family: Arial, sans-serif;
+}
+
+.formulario .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
 }
 
 .formulario button {
