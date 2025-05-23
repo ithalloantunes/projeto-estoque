@@ -178,6 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 stockContainer.classList.add('active');
                 console.log('stock-container visível:', stockContainer.style.display);
                 loadStock();
+                // Exibir o nome do usuário logado
+                const loggedInUser = document.getElementById('logged-in-user');
+                loggedInUser.textContent = `Usuário: ${data.username || username}`;
             } else {
                 console.log('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login');
