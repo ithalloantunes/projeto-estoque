@@ -46,9 +46,9 @@ body {
     height: 40px;
     border: 2px solid #8f4790;
     border-radius: 10px;
-    padding: 0 34px 0 8px;
+    padding: 0 32px 0 8px;
     font-size: 1em;
-    line-height: normal; /* Garante que o texto não interfira na centralização vertical */
+    line-height: 36px; /* Centraliza texto e ícone verticalmente */
 }
 
 .formulario .toggle-password {
@@ -205,4 +205,62 @@ td button {
 
 td button:hover {
     background-color: #8f4790;
+}
+
+/* Estilos para o modal de exclusão */
+.delete-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 5px solid #8f4790;
+}
+
+.modal-content h2 {
+    color: #824283;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    color: #000;
+    margin-bottom: 20px;
+}
+
+.modal-content button {
+    padding: 10px 20px;
+    margin: 0 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.confirm-delete-btn {
+    background-color: #824283;
+    color: #fff;
+}
+
+.confirm-delete-btn:hover {
+    background-color: #8f4790;
+}
+
+.cancel-delete-btn {
+    background-color: #ccc;
+    color: #000;
+}
+
+.cancel-delete-btn:hover {
+    background-color: #bbb;
 }
