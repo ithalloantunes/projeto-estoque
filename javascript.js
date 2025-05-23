@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const showLoginBtn = document.getElementById('show-login');
     const logoutBtn = document.getElementById('logout-btn');
     const body = document.querySelector('body');
+    const togglePasswordLogin = document.getElementById('toggle-password-login');
+    const togglePasswordRegister = document.getElementById('toggle-password-register');
 
     // Verifica se os elementos existem
     if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
@@ -97,6 +99,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 60);
     });
+
+    // Função para alternar visibilidade da senha
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            button.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            button.textContent = '👁️';
+        }
+    }
+
+    // Event listeners para os botões de mostrar/esconder senha
+    if (togglePasswordLogin) {
+        togglePasswordLogin.addEventListener('click', () => {
+            togglePassword('input-clave', togglePasswordLogin);
+        });
+    }
+    if (togglePasswordRegister) {
+        togglePasswordRegister.addEventListener('click', () => {
+            togglePassword('register-password', togglePasswordRegister);
+        });
+    }
 
     // Authentication and stock management logic
     function showRegisterForm() {
@@ -212,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${BASE_URL}/api/estoque`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include' // Ensure session is maintained
+                credentials: 'include'
             });
             const estoque = await response.json();
 
