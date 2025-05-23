@@ -102,14 +102,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para alternar visibilidade da senha
     function togglePassword(inputId, button) {
         const input = document.getElementById(inputId);
+        const showIcon = button.querySelector('.eye-icon.show');
+        const hideIcon = button.querySelector('.eye-icon.hide');
         if (input.type === 'password') {
             input.type = 'text';
-            button.textContent = '🙈';
+            showIcon.style.display = 'none';
+            hideIcon.style.display = 'block';
             monster.src = 'img/idle/1.png'; // Olhos destampados ao mostrar a senha
             seguirPunteroMouse = false;
         } else {
             input.type = 'password';
-            button.textContent = '👁️';
+            showIcon.style.display = 'block';
+            hideIcon.style.display = 'none';
             seguirPunteroMouse = true;
         }
     }
