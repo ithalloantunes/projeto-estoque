@@ -1,47 +1,74 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Estoque</title>
+    <title>Açaí da Barra - Estoque</title>
     <link rel="stylesheet" href="estilos.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="login" id="login-container">
-        <img src="img/idle/1.png" alt="Monster" id="monster">
-        <div class="formulario" id="login-form">
-            <h2>Login</h2>
-            <label for="input-usuario">Nome de Usuário (Login)</label>
-            <div class="input-container">
-                <input type="text" id="input-usuario" placeholder="Digite seu usuário">
-            </div>
-            <label for="input-clave">Senha de Acesso</label>
-            <div class="input-container">
-                <input type="password" id="input-clave" placeholder="Digite sua senha">
-                <button type="button" id="toggle-password-login" class="toggle-password">👁️</button>
-            </div>
-            <button type="submit">Entrar</button>
-            <button type="button" id="show-register">Cadastrar</button>
+    <div class="login-container">
+        <div class="login-background">
+            <!-- Placeholder para a imagem de fundo, substitua pelo caminho real da imagem -->
+            <img src="img/login-background.png" alt="Background Açaí da Barra" class="background-image">
         </div>
-
-        <div class="formulario hidden" id="register-form">
-            <h2>Cadastro</h2>
-            <label for="register-username">Nome de Usuário (Login)</label>
-            <div class="input-container">
-                <input type="text" id="register-username" placeholder="Digite seu usuário">
+        <div class="login-form">
+            <h1>Açaí da Barra - Estoque</h1>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="input-email">Email</label>
+                    <input type="email" id="input-email" name="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="input-clave">Senha</label>
+                    <input type="password" id="input-clave" name="password" required>
+                    <button type="button" id="toggle-password-login" class="toggle-password">
+                        <svg class="eye-icon show" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-icon hide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+                <button type="submit" class="login-btn">Entrar</button>
+            </form>
+            <div class="social-login">
+                <button class="social-btn google">Continuar com Google</button>
+                <button class="social-btn apple">Continuar com Apple</button>
+                <button class="social-btn facebook">Continuar com Facebook</button>
             </div>
-            <label for="register-password">Senha de Acesso</label>
-            <div class="input-container">
-                <input type="password" id="register-password" placeholder="Digite sua senha">
-                <button type="button" id="toggle-password-register" class="toggle-password">👁️</button>
+            <div id="register-container" style="display: none;">
+                <form id="register-form">
+                    <div class="input-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" name="email" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="register-password">Senha</label>
+                        <input type="password" id="register-password" name="password" required>
+                        <button type="button" id="toggle-password-register" class="toggle-password">
+                            <svg class="eye-icon show" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="eye-icon hide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <button type="submit" class="login-btn">Cadastrar</button>
+                    <button type="button" id="show-login" class="link-btn">Voltar ao Login</button>
+                </form>
             </div>
-            <button type="submit">Cadastrar</button>
-            <button type="button" id="show-login">Voltar ao Login</button>
+            <button id="show-register" class="link-btn">Cadastrar</button>
         </div>
     </div>
 
-    <div id="stock-container" class="hidden">
+    <div id="stock-container">
         <header>
             <h1>Controle de Estoque</h1>
             <button id="logout-btn">Sair</button>
@@ -57,23 +84,23 @@
                 <button type="submit">Adicionar Produto</button>
             </form>
         </section>
-        <section id="stock-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Produto</th>
-                        <th>Tipo</th>
-                        <th>Lote</th>
-                        <th>Validade</th>
-                        <th>Quantidade</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="stock-table-body"></tbody>
-            </table>
-        </section>
+        <table id="stock-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Produto</th>
+                    <th>Tipo</th>
+                    <th>Lote</th>
+                    <th>Validade</th>
+                    <th>Quantidade</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="stock-table-body"></tbody>
+        </table>
     </div>
+
+    <img id="monster" src="img/idle/1.png" alt="Monster">
 
     <script src="javascript.js"></script>
 </body>
