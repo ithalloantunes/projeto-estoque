@@ -18,6 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const showRegisterBtn = document.getElementById('show-register');
     const showLoginBtn = document.getElementById('show-login');
     const logoutBtn = document.getElementById('logout-btn');
+    const userNameDisplay = document.getElementById('user-name');
+    const userMenu = document.querySelector('.user-menu');
+    const showAddProduct = document.getElementById('show-add-product');
+    const showViewStock = document.getElementById('show-view-stock');
+    const addProductSection = document.getElementById('add-product-section');
+    const viewStockSection = document.getElementById('view-stock-section');
+    const filterInput = document.getElementById('filter-input');
+    const filterType = document.getElementById('filter-type');
     const body = document.querySelector('body');
 
     // Verifica se os elementos existem
@@ -36,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const anchoMitad = window.innerWidth / 2;
     const altoMitad = window.innerHeight / 2;
     let seguirPunteroMouse = true;
+    let currentUser = null; // Armazena o nome do usuário logado
 
     // Lógica de animação do monstro
     body.addEventListener('mousemove', (m) => {
@@ -108,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.type = 'text';
             showIcon.style.display = 'none';
             hideIcon.style.display = 'block';
-            monster.src = 'img/idle/1.png'; // Olhos destampados ao mostrar a senha
+            monster.src = 'img/idle/1.png';
             seguirPunteroMouse = false;
         } else {
             input.type = 'password';
@@ -118,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Event listeners para os botões de mostrar/esconder senha
     if (togglePasswordLogin) {
         togglePasswordLogin.addEventListener('click', () => {
             togglePassword('input-clave', togglePasswordLogin);
@@ -130,19 +138,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Lógica de autenticação e gerenciamento de estoque
-    function showRegisterForm() {
-        console.log('Exibindo formulário de cadastro');
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-    }
+    // Exibir/esconder menu do usuário
+    userNameDisplay.addEventListener('click', () => {
+        userMenu.style.display = userMenu.style.display === 'none' ? 'block' : 'none';
+    });
 
-    function showLoginForm() {
-        console.log('Exibindo formulário de login');
-        registerForm.style.display = 'none';
-        loginForm.style.display = 'block';
-    }
+    // Navegação da barra lateral
+    showAddProduct.addEventListener('click', (e) => {
+        e.preventDefault();
+        addProductSection.style.display = 'block';
+        viewStockSection.style.display = 'none';
+    });
 
+    showViewStock.addEventListener('click', (e) => {
+        e.preventDefault();
+        addProductSection.style.display = 'none';
+        viewStockSection.style.display = 'block';
+        loadStock();
+    });
+
+    // Função de autenticação
     async function handleLogin(event) {
         event.preventDefault();
         console.log('Formulário de login submetido');
@@ -173,10 +188,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 console.log('Login bem-sucedido, exibindo estoque');
+                currentUser = username; // Armazena o usuário logado
+                userNameDisplay.textContent = username; // Atualiza o display do usuário
                 loginContainer.style.display = 'none';
                 stockContainer.style.display = 'block';
                 stockContainer.classList.add('active');
-                console.log('stock-container visível:', stockContainer.style.display);
+                viewStockSection.style.display = 'block'; // Exibe a seção de estoque por padrão
                 loadStock();
             } else {
                 console.log('Erro no login:', data.error);
@@ -236,9 +253,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('input-usuario').value = '';
         document.getElementById('input-clave').value = '';
         monster.src = 'img/idle/1.png';
+        currentUser = null;
+        userNameDisplay.textContent = 'Usuário';
+        userMenu.style.display = 'none';
     }
 
-    async function loadStock() {
+    // Função para carregar e paginar estoque
+    let estoqueData = [];
+    const itemsPerPage = 5;
+
+    async function loadStock(page = 1) {
         try {
             console.log('Carregando estoque...');
             const response = await fetch(`${BASE_URL}/api/estoque`, {
@@ -246,44 +270,88 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
             });
-            const estoque = await response.json();
+            estoqueData = await response.json();
 
-            console.log('Estoque carregado:', { status: response.status, estoque });
+            console.log('Estoque carregado:', { status: response.status, estoque: estoqueData });
 
-            stockTableBody.innerHTML = '';
-
-            for (const [id, item] of Object.entries(estoque)) {
-                const row = document.createElement('tr');
-                row.setAttribute('data-id', id);
-                row.innerHTML = `
-                    <td>${id}</td>
-                    <td>${item.produto}</td>
-                    <td>${item.tipo}</td>
-                    <td>${item.lote}</td>
-                    <td>${item.validade || 'N/A'}</td>
-                    <td>${item.quantidade}</td>
-                    <td>
-                        <button class="edit-btn" data-id="${id}">Editar</button>
-                        <button class="delete-btn" data-id="${id}">Excluir</button>
-                    </td>
-                `;
-                stockTableBody.appendChild(row);
-            }
-
-            // Adicionar event listeners para os botões de editar e excluir
-            document.querySelectorAll('.edit-btn').forEach(button => {
-                button.addEventListener('click', () => editProduct(button.getAttribute('data-id')));
-            });
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', () => showDeleteModal(button.getAttribute('data-id')));
-            });
-
-            console.log('Tabela de estoque atualizada');
+            renderStock(filterStock(estoqueData), page);
+            setupPagination(Object.keys(filterStock(estoqueData)).length, page);
         } catch (error) {
             console.error('Erro ao carregar estoque:', error.message);
             alert('Erro ao carregar estoque: ' + error.message);
         }
     }
+
+    function filterStock(data) {
+        const query = filterInput.value.toLowerCase();
+        const type = filterType.value;
+
+        if (!query) return data;
+
+        return Object.fromEntries(
+            Object.entries(data).filter(([id, item]) => {
+                if (type === 'produto') {
+                    return item.produto.toLowerCase().includes(query);
+                } else if (type === 'tipo') {
+                    return item.tipo.toLowerCase().includes(query);
+                } else {
+                    return (
+                        item.produto.toLowerCase().includes(query) ||
+                        item.tipo.toLowerCase().includes(query)
+                    );
+                }
+            })
+        );
+    }
+
+    function renderStock(data, page) {
+        stockTableBody.innerHTML = '';
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const items = Object.entries(data).slice(start, end);
+
+        for (const [id, item] of items) {
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', id);
+            row.innerHTML = `
+                <td>${id}</td>
+                <td>${item.produto}</td>
+                <td>${item.tipo}</td>
+                <td>${item.lote}</td>
+                <td>${item.validade || 'N/A'}</td>
+                <td>${item.quantidade}</td>
+                <td>
+                    <button class="edit-btn" data-id="${id}">Editar</button>
+                    <button class="delete-btn" data-id="${id}">Excluir</button>
+                </td>
+            `;
+            stockTableBody.appendChild(row);
+        }
+
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', () => editProduct(button.getAttribute('data-id')));
+        });
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', () => showDeleteModal(button.getAttribute('data-id')));
+        });
+    }
+
+    function setupPagination(totalItems, currentPage) {
+        const pageCount = Math.ceil(totalItems / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+
+        for (let i = 1; i <= pageCount; i++) {
+            const button = document.createElement('button');
+            button.textContent = i;
+            button.className = i === currentPage ? 'active' : '';
+            button.addEventListener('click', () => loadStock(i));
+            pagination.appendChild(button);
+        }
+    }
+
+    filterInput.addEventListener('input', () => loadStock(1));
+    filterType.addEventListener('change', () => loadStock(1));
 
     async function addProduct(event) {
         event.preventDefault();
@@ -429,6 +497,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function showRegisterForm() {
+        console.log('Exibindo formulário de cadastro');
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+    }
+
+    function showLoginForm() {
+        console.log('Exibindo formulário de login');
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+    }
+
     // Event Listeners
     console.log('Adicionando listeners para formulários');
     loginForm.addEventListener('submit', handleLogin);
@@ -438,7 +518,6 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.addEventListener('click', logout);
     stockForm.addEventListener('submit', addProduct);
 
-    // Fallback para o botão Entrar
     const loginButton = loginForm.querySelector('button[type="submit"]');
     loginButton.addEventListener('click', (event) => {
         console.log('Botão Entrar clicado');
