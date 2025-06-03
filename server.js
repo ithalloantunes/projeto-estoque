@@ -1,144 +1,173 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs/promises'; // Import fs/promises for async file operations
 
-// Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
-const USERS_FILE = path.join(__dirname, 'data', 'users.json');
-const ESTOQUE_FILE = path.join(__dirname, 'data', 'estoque.json'); // Define path for estoque file as well
+const usersFile = path.join(__dirname, 'users.json');
+const estoqueFile = path.join(__dirname, 'estoque.json');
 
-// Configuração do CORS
+// Configuração de middlewares
 app.use(cors({
-    origin: '*', // Permite todas as origens; substitua por domínio do frontend para maior segurança
+    origin: 'https://projeto-estoque-gcl4.onrender.com', // URL exata do frontend
     credentials: true
 }));
 app.use(express.json());
 
-// Serve static files (CSS, JS, images) from the current directory
-app.use(express.static(path.join(__dirname, '.'))); // Serve files from the project root
+// Servir arquivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public'))); // Assumindo que index.html, estilos.css, javascript.js estão em 'public'
 
-// --- Data Persistence Functions ---
-
-// Load data from a JSON file
-async function loadData(filePath) {
+// Função para carregar users.json
+async function loadUsers() {
     try {
-        const data = await fs.readFile(filePath, 'utf-8');
+        const data = await fs.readFile(usersFile, 'utf-8');
         return JSON.parse(data);
     } catch (error) {
-        // If file doesn't exist or is invalid JSON, return an empty object
-        if (error.code === 'ENOENT') {
-            console.log(`Arquivo não encontrado: ${filePath}. Iniciando com dados vazios.`);
-            return {};
-        } else {
-            console.error(`Erro ao ler o arquivo ${filePath}:`, error);
-            return {}; // Return empty object on other errors too, to avoid crashing
-        }
+        console.error('Erro ao carregar users.json:', error);
+        return [];
     }
 }
 
-// Save data to a JSON file
-async function saveData(filePath, data) {
+// Função para salvar users.json
+async function saveUsers(users) {
     try {
-        await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+        await fs.writeFile(usersFile, JSON.stringify(users, null, 2));
     } catch (error) {
-        console.error(`Erro ao salvar o arquivo ${filePath}:`, error);
+        console.error('Erro ao salvar users.json:', error);
+        throw error;
     }
 }
 
-// In-memory data stores (will be populated from files)
-let users = {};
-let estoque = {};
+// Função para carregar estoque.json
+async function loadEstoque() {
+    try {
+        const data = await fs.readFile(estoqueFile, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Erro ao carregar estoque.json:', error);
+        return {};
+    }
+}
 
-// --- API Routes ---
+// Função para salvar estoque.json
+async function saveEstoque(estoque) {
+    try {
+        await fs.writeFile(estoqueFile, JSON.stringify(estoque, null, 2));
+    } catch (error) {
+        console.error('Erro ao salvar estoque.json:', error);
+        throw error;
+    }
+}
 
 // Rota de registro
-app.post('/api/register', async (req, res) => { // Make route async
+app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
-    if (users[username]) {
-        return res.status(400).json({ error: 'Usuário já existe' });
+
+    try {
+        const users = await loadUsers();
+        if (users.find(u => u.username === username)) {
+            return res.status(400).json({ error: 'Usuário já existe' });
+        }
+
+        const newUser = { id: uuidv4(), username, password };
+        users.push(newUser);
+        await saveUsers(users);
+        res.status(201).json({ message: 'Usuário registrado com sucesso' });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro interno do servidor' });
     }
-    users[username] = { password };
-    await saveData(USERS_FILE, users); // Save updated users to file
-    res.status(201).json({ message: 'Usuário registrado com sucesso' });
 });
 
 // Rota de login
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
-    // Ensure users object is up-to-date (though it should be loaded at start)
-    if (!users[username] || users[username].password !== password) {
-        return res.status(401).json({ error: 'Credenciais inválidas' });
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
-    res.status(200).json({ message: 'Login bem-sucedido' });
+
+    try {
+        const users = await loadUsers();
+        const user = users.find(u => u.username === username && u.password === password);
+        if (!user) {
+            return res.status(401).json({ error: 'Credenciais inválidas' });
+        }
+        res.status(200).json({ message: 'Login bem-sucedido' });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+    }
 });
 
-// Rotas para gerenciar estoque (Updated for persistence)
-app.get('/api/estoque', (req, res) => {
-    res.status(200).json(estoque);
+// Rotas para gerenciar estoque
+app.get('/api/estoque', async (req, res) => {
+    try {
+        const estoque = await loadEstoque();
+        res.status(200).json(estoque);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao carregar estoque' });
+    }
 });
 
-app.post('/api/estoque', async (req, res) => { // Make route async
+app.post('/api/estoque', async (req, res) => {
     const { produto, tipo, lote, validade, quantidade } = req.body;
     if (!produto || !tipo || !lote || !quantidade) {
         return res.status(400).json({ error: 'Todos os campos obrigatórios devem ser preenchidos' });
     }
-    const id = uuidv4();
-    estoque[id] = { produto, tipo, lote, validade, quantidade };
-    await saveData(ESTOQUE_FILE, estoque); // Save updated estoque to file
-    res.status(201).json({ message: 'Produto adicionado com sucesso', id: id }); // Return the new ID
-});
 
-app.put('/api/estoque/:id', async (req, res) => { // Make route async
-    const { id } = req.params;
-    if (!estoque[id]) {
-        return res.status(404).json({ error: 'Produto não encontrado' });
+    try {
+        const estoque = await loadEstoque();
+        const id = uuidv4();
+        estoque[id] = { produto, tipo, lote, validade, quantidade: parseInt(quantidade) };
+        await saveEstoque(estoque);
+        res.status(201).json({ message: 'Produto adicionado com sucesso' });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao adicionar produto' });
     }
-    // Update only provided fields
-    estoque[id] = { ...estoque[id], ...req.body };
-    await saveData(ESTOQUE_FILE, estoque); // Save updated estoque to file
-    res.status(200).json({ message: 'Produto atualizado com sucesso' });
 });
 
-app.delete('/api/estoque/:id', async (req, res) => { // Make route async
+app.put('/api/estoque/:id', async (req, res) => {
     const { id } = req.params;
-    if (!estoque[id]) {
-        return res.status(404).json({ error: 'Produto não encontrado' });
+    try {
+        const estoque = await loadEstoque();
+        if (!estoque[id]) {
+            return res.status(404).json({ error: 'Produto não encontrado' });
+        }
+        estoque[id] = { ...estoque[id], ...req.body, quantidade: parseInt(req.body.quantidade) };
+        await saveEstoque(estoque);
+        res.status(200).json({ message: 'Produto atualizado com sucesso' });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao atualizar produto' });
     }
-    delete estoque[id];
-    await saveData(ESTOQUE_FILE, estoque); // Save updated estoque to file
-    res.status(200).json({ message: 'Produto excluído com sucesso' });
 });
 
-// Route to serve index.html for the root path
+app.delete('/api/estoque/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const estoque = await loadEstoque();
+        if (!estoque[id]) {
+            return res.status(404).json({ error: 'Produto não encontrado' });
+        }
+        delete estoque[id];
+        await saveEstoque(estoque);
+        res.status(200).json({ message: 'Produto excluído com sucesso' });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao excluir produto' });
+    }
+});
+
+// Servir o index.html para a rota raiz
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- Server Initialization ---
-
-async function startServer() {
-    // Load initial data from files
-    users = await loadData(USERS_FILE);
-    estoque = await loadData(ESTOQUE_FILE);
-
-    app.listen(port, () => {
-        console.log(`Servidor rodando na porta ${port}`);
-        console.log(`Usuários carregados: ${Object.keys(users).length}`);
-        console.log(`Itens de estoque carregados: ${Object.keys(estoque).length}`);
-    });
-}
-
-startServer().catch(err => {
-    console.error("Erro ao iniciar o servidor:", err);
-    process.exit(1);
+app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`);
 });
