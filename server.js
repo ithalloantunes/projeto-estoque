@@ -13,13 +13,22 @@ const port = process.env.PORT || 3000;
 const usersFile = path.join(__dirname, 'users.json');
 const estoqueFile = path.join(__dirname, 'estoque.json');
 
+// Configuração de middlewares
 app.use(cors({
     origin: 'https://projeto-estoque-gcl4.onrender.com',
     credentials: true
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
+// Servir arquivos estáticos diretamente da raiz do projeto
+app.use(express.static(__dirname));
+
+// Servir o index.html na rota raiz
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Funções para manipular users.json e estoque.json
 async function loadUsers() {
     try {
         const data = await fs.readFile(usersFile, 'utf-8');
@@ -58,6 +67,23 @@ async function saveEstoque(estoque) {
     }
 }
 
+// Inicializar arquivos se não existirem
+async function initializeFiles() {
+    try {
+        await fs.access(usersFile);
+    } catch (error) {
+        await fs.writeFile(usersFile, JSON.stringify([{ id: uuidv4(), username: "i", password: "123" }], null, 2));
+        console.log('users.json criado com usuário de teste');
+    }
+    try {
+        await fs.access(estoqueFile);
+    } catch (error) {
+        await fs.writeFile(estoqueFile, JSON.stringify({}, null, 2));
+        console.log('estoque.json criado');
+    }
+}
+
+// Rota de registro
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -76,6 +102,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// Rota de login
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -93,6 +120,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Rotas para gerenciar estoque
 app.get('/api/estoque', async (req, res) => {
     try {
         const estoque = await loadEstoque();
@@ -148,10 +176,12 @@ app.delete('/api/estoque/:id', async (req, res) => {
     }
 });
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}`);
+// Inicializar arquivos e iniciar o servidor
+initializeFiles().then(() => {
+    app.listen(port, () => {
+        console.log(`Servidor rodando na porta ${port}`);
+    });
+}).catch(err => {
+    console.error('Erro ao inicializar arquivos:', err);
+    process.exit(1);
 });
