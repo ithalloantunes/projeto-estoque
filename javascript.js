@@ -40,11 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
     stockContainer.style.display = 'none';
     loginForm.style.display = 'block';
     registerForm.style.display = 'none';
+    addProductSection.style.display = 'none';
+    viewStockSection.style.display = 'none';
 
     const anchoMitad = window.innerWidth / 2;
     const altoMitad = window.innerHeight / 2;
     let seguirPunteroMouse = true;
     let currentUser = null; // Armazena o nome do usuário logado
+    let estoqueData = []; // Armazena os dados do estoque
+    const itemsPerPage = 5; // Itens por página para paginação
 
     // Lógica de animação do monstro
     body.addEventListener('mousemove', (m) => {
@@ -154,13 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         addProductSection.style.display = 'none';
         viewStockSection.style.display = 'block';
-        loadStock();
+        loadStock(1);
     });
 
     // Função de autenticação
     async function handleLogin(event) {
         event.preventDefault();
-        console.log('Formulário de login submetido');
+        console.log('Formulário de login enviado');
         const username = document.getElementById('input-usuario').value;
         const password = document.getElementById('input-clave').value;
 
@@ -187,14 +191,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Dados da resposta:', data);
 
             if (response.ok) {
-                console.log('Login bem-sucedido, exibindo estoque');
+                console.log('Login bem-sucedido, exibindo container de estoque sem seções ativas');
                 currentUser = username; // Armazena o usuário logado
                 userNameDisplay.textContent = username; // Atualiza o display do usuário
                 loginContainer.style.display = 'none';
                 stockContainer.style.display = 'block';
                 stockContainer.classList.add('active');
-                viewStockSection.style.display = 'block'; // Exibe a seção de estoque por padrão
-                loadStock();
+                addProductSection.style.display = 'none'; // Garante que a seção de adicionar produto esteja oculta
+                viewStockSection.style.display = 'none'; // Garante que a seção de estoque esteja oculta
             } else {
                 console.log('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login');
@@ -259,9 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Função para carregar e paginar estoque
-    let estoqueData = [];
-    const itemsPerPage = 5;
-
     async function loadStock(page = 1) {
         try {
             console.log('Carregando estoque...');
@@ -377,7 +378,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 stockForm.reset();
-                loadStock();
+                alert('Produto adicionado com sucesso!');
+                addProductSection.style.display = 'none'; // Oculta a seção após adicionar
             } else {
                 console.log('Erro ao adicionar produto:', data.error);
                 alert(data.error || 'Erro ao adicionar produto');
