@@ -1,16 +1,19 @@
 {
-  "name": "projeto-estoque",
+  "name": "controle-estoque",
   "version": "1.0.0",
+  "description": "",
   "main": "server.js",
-  "type": "module", 
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "build": "npm install"
+    "start": "node server.js"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "body-parser": "^1.20.2",
-    "uuid": "^11.1.0"
+    "express": "^4.18.2",
+    "uuid": "^9.0.0",
+    "pagination.js": "^0.4.3"
   }
 }
