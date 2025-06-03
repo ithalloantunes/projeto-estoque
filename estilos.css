@@ -3,29 +3,29 @@ body {
     font-family: 'Bowlby One SC', cursive;
     background: #fdf6ec;
     color: #3c2a1e;
-  }
-  
-  .container {
+}
+
+.container {
     display: flex;
     height: 100vh;
     width: 100vw;
     flex-direction: row;
-  }
-  
-  .imagem {
+}
+
+.imagem {
     width: 50%;
     background-color: #dfffd6;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  
-  .imagem img {
+}
+
+.imagem img {
     max-width: 90%;
     height: auto;
-  }
-  
-  .formulario {
+}
+
+.formulario {
     width: 50%;
     background-color: #fff;
     display: flex;
@@ -34,43 +34,45 @@ body {
     align-items: center;
     padding: 2rem;
     box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-  }
-  
-  h1 {
+}
+
+h1 {
     font-size: 2.5rem;
     color: #4c1a57;
     margin: 0;
-  }
-  
-  h2 {
+}
+
+h2 {
     font-size: 1.5rem;
     color: #6a2f77;
     margin: 1rem 0 2rem;
-  }
-  
-  label {
+}
+
+label {
     font-size: 1rem;
     color: #333;
     margin-bottom: 0.5rem;
     display: block;
-  }
-  
-  .input-container {
+}
+
+.input-container {
     margin-bottom: 1rem;
     width: 100%;
-  }
-  
-  input[type="text"],
-  input[type="password"] {
+}
+
+input[type="text"],
+input[type="password"],
+input[type="date"],
+input[type="number"] {
     width: 100%;
     padding: 0.8rem;
     border: 2px solid #b388eb;
     border-radius: 12px;
     font-size: 1rem;
     outline: none;
-  }
-  
-  button {
+}
+
+button {
     background-color: #4285f4;
     color: white;
     padding: 0.8rem 2rem;
@@ -81,75 +83,148 @@ body {
     transition: background-color 0.3s ease;
     width: 100%;
     margin-top: 1rem;
-  }
-  
-  button:hover {
+}
+
+button:hover {
     background-color: #3367d6;
-  }
-  
-  .social {
-    margin-top: 2rem;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .google,
-  .apple,
-  .facebook {
-    background-color: #f1f1f1;
-    color: #000;
-    border: 1px solid #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.9rem;
-  }
-/* Estilos para o container de estoque */
-#stock-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #4c1a57;
     color: #fff;
+    padding: 20px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.sidebar h2 {
+    color: #fff;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar .menu-item {
+    margin-bottom: 10px;
+}
+
+.sidebar .menu-item > span {
+    display: block;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #6a2f77;
+    border-radius: 5px;
+}
+
+.sidebar .menu-item > span:hover {
+    background-color: #824283;
+}
+
+.sidebar .submenu {
+    display: none;
+    padding-left: 20px;
+}
+
+.sidebar .submenu.active {
+    display: block;
+}
+
+.sidebar .submenu li {
+    margin: 5px 0;
+}
+
+.sidebar .submenu a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.sidebar .submenu a:hover {
+    text-decoration: underline;
+}
+
+/* Main content */
+.main-content {
+    margin-left: 270px;
+    padding: 20px;
+    width: calc(100% - 270px);
+}
+
+/* User profile */
+.user-profile {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+}
+
+.user-profile span {
+    font-size: 1.2rem;
+    color: #4c1a57;
+}
+
+.user-menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.user-menu button {
+    width: 100px;
+    padding: 5px;
+    background-color: #824283;
+}
+
+.user-menu button:hover {
+    background-color: #8f4790;
+}
+
+/* Stock container */
+#stock-container {
     display: none;
 }
 
 #stock-container.active {
-    display: block;
+    display: flex;
 }
 
 header {
     text-align: center;
     margin-bottom: 20px;
+    position: relative;
 }
 
 header h1 {
     font-size: 2em;
 }
 
-header button {
-    padding: 10px 20px;
-    background-color: #824283;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-header button:hover {
-    background-color: #8f4790;
-}
-
-#form-section {
+/* Filter container */
+.filter-container {
     margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
 }
 
-#form-section h2 {
-    margin-bottom: 10px;
+.filter-container input,
+.filter-container select {
+    padding: 10px;
+    border: 2px solid #8f4790;
+    border-radius: 5px;
 }
 
+/* Stock form */
 #stock-form {
     display: flex;
     flex-wrap: wrap;
@@ -179,6 +254,7 @@ header button:hover {
     background-color: #8f4790;
 }
 
+/* Stock table */
 #stock-table {
     width: 100%;
 }
@@ -203,9 +279,33 @@ th {
     color: #fff;
 }
 
-td button {
+td button.edit-btn {
+    background-color: #ff8c00; /* Laranja */
+    color: #fff;
+}
+
+td button.edit-btn:hover {
+    background-color: #e07b00;
+}
+
+td button.delete-btn {
+    background-color: #000; /* Preto */
+    color: #fff;
+}
+
+td button.delete-btn:hover {
+    background-color: #333;
+}
+
+/* Pagination */
+#pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#pagination button {
     padding: 5px 10px;
-    margin-right: 5px;
+    margin: 0 5px;
     background-color: #824283;
     color: #fff;
     border: none;
@@ -213,11 +313,15 @@ td button {
     cursor: pointer;
 }
 
-td button:hover {
+#pagination button.active {
     background-color: #8f4790;
 }
 
-/* Estilos para o modal de exclusão */
+#pagination button:hover {
+    background-color: #8f4790;
+}
+
+/* Modal de exclusão */
 .delete-modal {
     position: fixed;
     top: 0;
