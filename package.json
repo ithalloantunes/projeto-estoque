@@ -2,6 +2,7 @@
   "name": "projeto-estoque",
   "version": "1.0.0",
   "main": "server.js",
+  "type": "module", // Include if using ES Modules
   "scripts": {
     "start": "node server.js",
     "build": "npm install"
@@ -9,6 +10,7 @@
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "body-parser": "^1.20.2"
+    "body-parser": "^1.20.2",
+    "uuid": "^11.1.0"
   }
 }
