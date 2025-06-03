@@ -1,187 +1,113 @@
-import express from 'express';
-import cors from 'cors';
-import fs from 'fs/promises';
-import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
-import { fileURLToPath } from 'url';
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Estoque</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <!-- Container de Login -->
+    <div id="login-container" class="container">
+        <div class="imagem">
+            <img src="img/idle/1.png" alt="monster" id="monster">
+        </div>
+        <div class="formulario">
+            <div id="login-form">
+                <h1>Login</h1>
+                <label for="input-usuario">Nome de Usuário (Login)</label>
+                <div class="input-container">
+                    <input type="text" id="input-usuario" placeholder="Digite seu usuário">
+                </div>
+                <label for="input-clave">Senha de Acesso</label>
+                <div class="input-container">
+                    <input type="password" id="input-clave" placeholder="Digite sua senha">
+                    <span id="toggle-password-login">👁️</span>
+                </div>
+                <button type="submit">Entrar</button>
+                <button id="show-register">Cadastrar</button>
+            </div>
+            <div id="register-form" style="display: none;">
+                <h1>Cadastro</h1>
+                <label for="register-username">Nome de Usuário (Login)</label>
+                <div class="input-container">
+                    <input type="text" id="register-username" placeholder="Digite seu usuário">
+                </div>
+                <label for="register-password">Senha de Acesso</label>
+                <div class="input-container">
+                    <input type="password" id="register-password" placeholder="Digite sua senha">
+                    <span id="toggle-password-register">👁️</span>
+                </div>
+                <button type="submit">Cadastrar</button>
+                <button id="show-login">Voltar ao Login</button>
+            </div>
+        </div>
+    </div>
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+    <!-- Container de Estoque -->
+    <div id="stock-container" style="display: none;">
+        <div class="sidebar">
+            <h2>Menu</h2>
+            <ul>
+                <li class="menu-item">
+                    <span>Estoque</span>
+                    <ul class="submenu">
+                        <li><a href="#" id="show-add-product">Adicionar Produto</a></li>
+                        <li><a href="#" id="show-view-stock">Ver Estoque</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <header>
+                <h1>Controle de Estoque</h1>
+                <div class="user-profile">
+                    <span id="user-name">Usuário</span>
+                    <div class="user-menu" style="display: none;">
+                        <button id="logout-btn">Sair</button>
+                    </div>
+                </div>
+            </header>
+            <div id="add-product-section" style="display: none;">
+                <h2>Adicionar Novo Produto</h2>
+                <form id="stock-form">
+                    <input type="text" id="produto" placeholder="Produto" required>
+                    <input type="text" id="tipo" placeholder="Tipo">
+                    <input type="text" id="lote" placeholder="Lote">
+                    <input type="date" id="validade" placeholder="Validade">
+                    <input type="number" id="quantidade" placeholder="Quantidade" required>
+                    <button type="submit">Adicionar Produto</button>
+                </form>
+            </div>
+            <div id="view-stock-section" style="display: none;">
+                <h2>Estoque</h2>
+                <div class="filter-container">
+                    <input type="text" id="filter-input" placeholder="Filtrar por nome ou tipo">
+                    <select id="filter-type">
+                        <option value="all">Todos</option>
+                        <option value="produto">Nome</option>
+                        <option value="tipo">Tipo</option>
+                    </select>
+                </div>
+                <table id="stock-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Produto</th>
+                            <th>Tipo</th>
+                            <th>Lote</th>
+                            <th>Validade</th>
+                            <th>Quantidade</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-table-body"></tbody>
+                </table>
+                <div id="pagination"></div>
+            </div>
+        </div>
+    </div>
 
-const app = express();
-const port = process.env.PORT || 3000;
-const usersFile = path.join(__dirname, 'users.json');
-const estoqueFile = path.join(__dirname, 'estoque.json');
-
-// Configuração de middlewares
-app.use(cors({
-    origin: 'https://projeto-estoque-gcl4.onrender.com',
-    credentials: true
-}));
-app.use(express.json());
-
-// Servir arquivos estáticos diretamente da raiz do projeto
-app.use(express.static(__dirname));
-
-// Servir o index.html na rota raiz
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Funções para manipular users.json e estoque.json
-async function loadUsers() {
-    try {
-        const data = await fs.readFile(usersFile, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Erro ao carregar users.json:', error);
-        return [];
-    }
-}
-
-async function saveUsers(users) {
-    try {
-        await fs.writeFile(usersFile, JSON.stringify(users, null, 2));
-    } catch (error) {
-        console.error('Erro ao salvar users.json:', error);
-        throw error;
-    }
-}
-
-async function loadEstoque() {
-    try {
-        const data = await fs.readFile(estoqueFile, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Erro ao carregar estoque.json:', error);
-        return {};
-    }
-}
-
-async function saveEstoque(estoque) {
-    try {
-        await fs.writeFile(estoqueFile, JSON.stringify(estoque, null, 2));
-    } catch (error) {
-        console.error('Erro ao salvar estoque.json:', error);
-        throw error;
-    }
-}
-
-// Inicializar arquivos se não existirem
-async function initializeFiles() {
-    try {
-        await fs.access(usersFile);
-    } catch (error) {
-        await fs.writeFile(usersFile, JSON.stringify([{ id: uuidv4(), username: "i", password: "123" }], null, 2));
-        console.log('users.json criado com usuário de teste');
-    }
-    try {
-        await fs.access(estoqueFile);
-    } catch (error) {
-        await fs.writeFile(estoqueFile, JSON.stringify({}, null, 2));
-        console.log('estoque.json criado');
-    }
-}
-
-// Rota de registro
-app.post('/api/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
-    }
-    try {
-        const users = await loadUsers();
-        if (users.find(u => u.username === username)) {
-            return res.status(400).json({ error: 'Usuário já existe' });
-        }
-        users.push({ id: uuidv4(), username, password });
-        await saveUsers(users);
-        res.status(201).json({ message: 'Usuário registrado com sucesso' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-});
-
-// Rota de login
-app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
-    }
-    try {
-        const users = await loadUsers();
-        const user = users.find(u => u.username === username && u.password === password);
-        if (!user) {
-            return res.status(401).json({ error: 'Credenciais inválidas' });
-        }
-        res.status(200).json({ message: 'Login bem-sucedido' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-});
-
-// Rotas para gerenciar estoque
-app.get('/api/estoque', async (req, res) => {
-    try {
-        const estoque = await loadEstoque();
-        res.status(200).json(estoque);
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao carregar estoque' });
-    }
-});
-
-app.post('/api/estoque', async (req, res) => {
-    const { produto, tipo, lote, validade, quantidade } = req.body;
-    if (!produto || !tipo || !lote || !quantidade) {
-        return res.status(400).json({ error: 'Todos os campos obrigatórios devem ser preenchidos' });
-    }
-    try {
-        const estoque = await loadEstoque();
-        const id = uuidv4();
-        estoque[id] = { produto, tipo, lote, validade, quantidade: parseInt(quantidade) };
-        await saveEstoque(estoque);
-        res.status(201).json({ message: 'Produto adicionado com sucesso' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao adicionar produto' });
-    }
-});
-
-app.put('/api/estoque/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const estoque = await loadEstoque();
-        if (!estoque[id]) {
-            return res.status(404).json({ error: 'Produto não encontrado' });
-        }
-        estoque[id] = { ...estoque[id], ...req.body, quantidade: parseInt(req.body.quantidade) };
-        await saveEstoque(estoque);
-        res.status(200).json({ message: 'Produto atualizado com sucesso' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao atualizar produto' });
-    }
-});
-
-app.delete('/api/estoque/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const estoque = await loadEstoque();
-        if (!estoque[id]) {
-            return res.status(404).json({ error: 'Produto não encontrado' });
-        }
-        delete estoque[id];
-        await saveEstoque(estoque);
-        res.status(200).json({ message: 'Produto excluído com sucesso' });
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao excluir produto' });
-    }
-});
-
-// Inicializar arquivos e iniciar o servidor
-initializeFiles().then(() => {
-    app.listen(port, () => {
-        console.log(`Servidor rodando na porta ${port}`);
-    });
-}).catch(err => {
-    console.error('Erro ao inicializar arquivos:', err);
-    process.exit(1);
-});
+    <script src="javascript.js"></script>
+</body>
+</html>
