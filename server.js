@@ -13,17 +13,13 @@ const port = process.env.PORT || 3000;
 const usersFile = path.join(__dirname, 'users.json');
 const estoqueFile = path.join(__dirname, 'estoque.json');
 
-// Configuração de middlewares
 app.use(cors({
-    origin: 'https://projeto-estoque-gcl4.onrender.com', // URL exata do frontend
+    origin: 'https://projeto-estoque-gcl4.onrender.com',
     credentials: true
 }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Servir arquivos estáticos (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public'))); // Assumindo que index.html, estilos.css, javascript.js estão em 'public'
-
-// Função para carregar users.json
 async function loadUsers() {
     try {
         const data = await fs.readFile(usersFile, 'utf-8');
@@ -34,7 +30,6 @@ async function loadUsers() {
     }
 }
 
-// Função para salvar users.json
 async function saveUsers(users) {
     try {
         await fs.writeFile(usersFile, JSON.stringify(users, null, 2));
@@ -44,7 +39,6 @@ async function saveUsers(users) {
     }
 }
 
-// Função para carregar estoque.json
 async function loadEstoque() {
     try {
         const data = await fs.readFile(estoqueFile, 'utf-8');
@@ -55,7 +49,6 @@ async function loadEstoque() {
     }
 }
 
-// Função para salvar estoque.json
 async function saveEstoque(estoque) {
     try {
         await fs.writeFile(estoqueFile, JSON.stringify(estoque, null, 2));
@@ -65,21 +58,17 @@ async function saveEstoque(estoque) {
     }
 }
 
-// Rota de registro
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
-
     try {
         const users = await loadUsers();
         if (users.find(u => u.username === username)) {
             return res.status(400).json({ error: 'Usuário já existe' });
         }
-
-        const newUser = { id: uuidv4(), username, password };
-        users.push(newUser);
+        users.push({ id: uuidv4(), username, password });
         await saveUsers(users);
         res.status(201).json({ message: 'Usuário registrado com sucesso' });
     } catch (error) {
@@ -87,13 +76,11 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// Rota de login
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
-
     try {
         const users = await loadUsers();
         const user = users.find(u => u.username === username && u.password === password);
@@ -106,7 +93,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Rotas para gerenciar estoque
 app.get('/api/estoque', async (req, res) => {
     try {
         const estoque = await loadEstoque();
@@ -121,7 +107,6 @@ app.post('/api/estoque', async (req, res) => {
     if (!produto || !tipo || !lote || !quantidade) {
         return res.status(400).json({ error: 'Todos os campos obrigatórios devem ser preenchidos' });
     }
-
     try {
         const estoque = await loadEstoque();
         const id = uuidv4();
@@ -163,7 +148,6 @@ app.delete('/api/estoque/:id', async (req, res) => {
     }
 });
 
-// Servir o index.html para a rota raiz
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
