@@ -13,18 +13,22 @@ const port = process.env.PORT || 3000;
 const usersFile = path.join(__dirname, 'users.json');
 const estoqueFile = path.join(__dirname, 'estoque.json');
 
+// Configuração de middlewares
 app.use(cors({
     origin: 'https://projeto-estoque-gcl4.onrender.com',
     credentials: true
 }));
 app.use(express.json());
 
+// Servir arquivos estáticos diretamente da raiz do projeto
 app.use(express.static(__dirname));
 
+// Servir o index.html na rota raiz
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Funções para manipular users.json e estoque.json
 async function loadUsers() {
     try {
         const data = await fs.readFile(usersFile, 'utf-8');
@@ -63,6 +67,7 @@ async function saveEstoque(estoque) {
     }
 }
 
+// Inicializar arquivos se não existirem
 async function initializeFiles() {
     try {
         await fs.access(usersFile);
@@ -78,6 +83,7 @@ async function initializeFiles() {
     }
 }
 
+// Rota de registro
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -92,10 +98,12 @@ app.post('/api/register', async (req, res) => {
         await saveUsers(users);
         res.status(201).json({ message: 'Usuário registrado com sucesso' });
     } catch (error) {
+        console.error('Erro ao registrar:', error); // Log do erro pra debug
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 });
 
+// Rota de login
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -109,15 +117,18 @@ app.post('/api/login', async (req, res) => {
         }
         res.status(200).json({ message: 'Login bem-sucedido' });
     } catch (error) {
+        console.error('Erro ao logar:', error); // Log do erro pra debug
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 });
 
+// Rotas para gerenciar estoque
 app.get('/api/estoque', async (req, res) => {
     try {
         const estoque = await loadEstoque();
         res.status(200).json(estoque);
     } catch (error) {
+        console.error('Erro ao carregar estoque:', error); // Log do erro pra debug
         res.status(500).json({ error: 'Erro ao carregar estoque' });
     }
 });
@@ -134,6 +145,7 @@ app.post('/api/estoque', async (req, res) => {
         await saveEstoque(estoque);
         res.status(201).json({ message: 'Produto adicionado com sucesso' });
     } catch (error) {
+        console.error('Erro ao adicionar produto:', error); // Log do erro pra debug
         res.status(500).json({ error: 'Erro ao adicionar produto' });
     }
 });
@@ -149,6 +161,7 @@ app.put('/api/estoque/:id', async (req, res) => {
         await saveEstoque(estoque);
         res.status(200).json({ message: 'Produto atualizado com sucesso' });
     } catch (error) {
+        console.error('Erro ao atualizar produto:', error); // Log do erro pra debug
         res.status(500).json({ error: 'Erro ao atualizar produto' });
     }
 });
@@ -164,10 +177,12 @@ app.delete('/api/estoque/:id', async (req, res) => {
         await saveEstoque(estoque);
         res.status(200).json({ message: 'Produto excluído com sucesso' });
     } catch (error) {
+        console.error('Erro ao excluir produto:', error); // Log do erro pra debug
         res.status(500).json({ error: 'Erro ao excluir produto' });
     }
 });
 
+// Inicializar arquivos e iniciar o servidor
 initializeFiles().then(() => {
     app.listen(port, () => {
         console.log(`Servidor rodando na porta ${port}`);
