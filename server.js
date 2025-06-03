@@ -1,6 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path'; // Import path module
+import { fileURLToPath } from 'url'; // Import fileURLToPath
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -11,6 +17,9 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+
+// Serve static files (CSS, JS, images) from the current directory
+app.use(express.static(path.join(__dirname, '.'))); // Serve files from the project root
 
 // Simulação de banco de dados
 const users = {};
@@ -70,6 +79,12 @@ app.delete('/api/estoque/:id', (req, res) => {
     delete estoque[id];
     res.status(200).json({ message: 'Produto excluído com sucesso' });
 });
+
+// Route to serve index.html for the root path
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 
 app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
