@@ -1,50 +1,80 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Açaí da Barra - Estoque</title>
-  <link rel="stylesheet" href="estilos.css">
-  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Estoque</title>
+    <link rel="stylesheet" href="estilos.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <div class="formulario" style="width: 100%;">
-      <h1>Açaí da Barra</h1>
-      <h2>- Estoque</h2>
-      <div class="login" id="login-container">
+    <div class="login" id="login-container">
+        <img src="img/idle/1.png" alt="Monster" id="monster">
         <div class="formulario" id="login-form">
-          <label for="input-usuario">Nome de Usuário (Login)</label>
-          <div class="input-container">
-            <input type="text" id="input-usuario" placeholder="Digite seu usuário">
-          </div>
-
-          <label for="input-clave">Senha de Acesso</label>
-          <div class="input-container">
-            <input type="password" id="input-clave" placeholder="Digite sua senha">
-            <button type="button" id="toggle-password"></button>
-          </div>
-
-          <button id="btn-entrar">Entrar</button>
-
-          <div class="social">
-            <button class="google">Continuar com Google</button>
-            <button class="apple">Continuar com Apple</button>
-            <button class="facebook">Continuar com Facebook</button>
-          </div>
+            <h2>Login</h2>
+            <label for="input-usuario">Nome de Usuário (Login)</label>
+            <div class="input-container">
+                <input type="text" id="input-usuario" placeholder="Digite seu usuário">
+            </div>
+            <label for="input-clave">Senha de Acesso</label>
+            <div class="input-container">
+                <input type="password" id="input-clave" placeholder="Digite sua senha">
+                <button type="button" id="toggle-password-login" class="toggle-password">👁️</button>
+            </div>
+            <button type="submit">Entrar</button>
+            <button type="button" id="show-register">Cadastrar</button>
         </div>
-      </div>
 
-      <section id="estoque-container" style="display: none;">
-        <h2>Controle de Estoque</h2>
-        <!-- Aqui mantemos o que já existia antes na interface de estoque -->
-        <div id="estoque-conteudo">
-          <!-- Conteúdo real do estoque vem do JavaScript -->
+        <div class="formulario hidden" id="register-form">
+            <h2>Cadastro</h2>
+            <label for="register-username">Nome de Usuário (Login)</label>
+            <div class="input-container">
+                <input type="text" id="register-username" placeholder="Digite seu usuário">
+            </div>
+            <label for="register-password">Senha de Acesso</label>
+            <div class="input-container">
+                <input type="password" id="register-password" placeholder="Digite sua senha">
+                <button type="button" id="toggle-password-register" class="toggle-password">👁️</button>
+            </div>
+            <button type="submit">Cadastrar</button>
+            <button type="button" id="show-login">Voltar ao Login</button>
         </div>
-      </section>
     </div>
-  </div>
 
-  <script src="javascript.js"></script>
+    <div id="stock-container" class="hidden">
+        <header>
+            <h1>Controle de Estoque</h1>
+            <button id="logout-btn">Sair</button>
+        </header>
+        <section id="form-section">
+            <h2>Adicionar Novo Produto</h2>
+            <form id="stock-form">
+                <input type="text" id="produto" placeholder="Produto" required>
+                <input type="text" id="tipo" placeholder="Tipo">
+                <input type="text" id="lote" placeholder="Lote">
+                <input type="date" id="validade" placeholder="Validade">
+                <input type="number" id="quantidade" placeholder="Quantidade" required>
+                <button type="submit">Adicionar Produto</button>
+            </form>
+        </section>
+        <section id="stock-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Produto</th>
+                        <th>Tipo</th>
+                        <th>Lote</th>
+                        <th>Validade</th>
+                        <th>Quantidade</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-table-body"></tbody>
+            </table>
+        </section>
+    </div>
+
+    <script src="javascript.js"></script>
 </body>
 </html>
