@@ -765,3 +765,432 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         
+
+        modal.querySelector('.cancel-delete-btn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
+        });
+
+        // Fechar modal clicando fora do conteúdo
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+            }
+        });
+
+        // Fechar modal com a tecla ESC
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    }
+
+    async function performDelete(id) {
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        
+        console.log('Enviando exclusão de produto:', { id });
+
+        // Adicionar animação de saída
+        row.classList.add('removing');
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            const data = await response.json();
+
+            console.log('Resposta de exclusão de produto:', { status: response.status, data });
+
+            if (response.ok) {
+                // Aguardar a animação de saída antes de recarregar
+                setTimeout(() => {
+                    alert('Produto excluído com sucesso!');
+                    loadStock();
+                }, 300);
+            } else {
+                console.log('Erro ao excluir produto:', data.error);
+                alert(data.error || 'Erro ao excluir produto');
+                row.classList.remove('removing');
+            }
+        } catch (error) {
+            console.error('Erro ao excluir produto:', error.message);
+            alert('Erro ao excluir produto: ' + error.message);
+            row.classList.remove('removing');
+        }
+    }
+
+    function showLoginForm() {
+        console.log('Exibindo formulário de login');
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        document.getElementById('register-username').value = '';
+        document.getElementById('register-password').value = '';
+    }
+
+    function showRegisterForm() {
+        console.log('Exibindo formulário de cadastro');
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+        document.getElementById('input-usuario').value = '';
+        document.getElementById('input-clave').value = '';
+    }
+
+    // Event Listeners para os formulários
+    loginForm.addEventListener('submit', handleLogin);
+    registerForm.addEventListener('submit', handleRegister);
+    stockForm.addEventListener('submit', addProduct);
+    
+    showRegisterBtn.addEventListener('click', showRegisterForm);
+    showLoginBtn.addEventListener('click', showLoginForm);
+    logoutBtn.addEventListener('click', logout);
+
+    // Funcionalidades adicionais para melhorar a experiência do usuário
+
+    // Adicionar tooltips aos botões
+    function addTooltips() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .tooltip {
+                position: relative;
+                display: inline-block;
+            }
+            
+            .tooltip::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                bottom: 125%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                z-index: 1000;
+            }
+            
+            .tooltip::before {
+                content: '';
+                position: absolute;
+                bottom: 115%;
+                left: 50%;
+                transform: translateX(-50%);
+                border: 5px solid transparent;
+                border-top-color: rgba(0, 0, 0, 0.8);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+            
+            .tooltip:hover::after,
+            .tooltip:hover::before {
+                opacity: 1;
+                visibility: visible;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Adicionar funcionalidade de busca em tempo real
+    function setupRealTimeSearch() {
+        let searchTimeout;
+        
+        filterInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                console.log('Realizando busca:', filterInput.value);
+                loadStock(1);
+            }, 300); // Debounce de 300ms
+        });
+    }
+
+    // Adicionar funcionalidade de ordenação
+    function setupTableSorting() {
+        const headers = document.querySelectorAll('#stock-table th');
+        let sortOrder = {};
+
+        headers.forEach((header, index) => {
+            if (index < 5) { // Excluir a coluna de ações
+                header.style.cursor = 'pointer';
+                header.style.userSelect = 'none';
+                header.addEventListener('click', () => sortTable(index));
+                
+                // Adicionar indicador visual de ordenação
+                const sortIcon = document.createElement('span');
+                sortIcon.className = 'sort-icon';
+                sortIcon.innerHTML = ' ↕️';
+                sortIcon.style.opacity = '0.5';
+                header.appendChild(sortIcon);
+            }
+        });
+
+        function sortTable(columnIndex) {
+            const currentOrder = sortOrder[columnIndex] || 'asc';
+            const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+            sortOrder = { [columnIndex]: newOrder };
+
+            // Atualizar ícones
+            document.querySelectorAll('.sort-icon').forEach(icon => {
+                icon.innerHTML = ' ↕️';
+                icon.style.opacity = '0.5';
+            });
+
+            const currentIcon = headers[columnIndex].querySelector('.sort-icon');
+            currentIcon.innerHTML = newOrder === 'asc' ? ' ↑' : ' ↓';
+            currentIcon.style.opacity = '1';
+
+            // Ordenar dados
+            const sortedData = Object.entries(estoqueData).sort(([, a], [, b]) => {
+                const fields = ['produto', 'tipo', 'lote', 'validade', 'quantidade'];
+                const field = fields[columnIndex];
+                
+                let aValue = a[field] || '';
+                let bValue = b[field] || '';
+
+                // Tratamento especial para números
+                if (field === 'quantidade') {
+                    aValue = parseInt(aValue) || 0;
+                    bValue = parseInt(bValue) || 0;
+                }
+                
+                // Tratamento especial para datas
+                if (field === 'validade') {
+                    aValue = aValue && aValue !== 'N/A' ? new Date(aValue) : new Date(0);
+                    bValue = bValue && bValue !== 'N/A' ? new Date(bValue) : new Date(0);
+                }
+
+                if (aValue < bValue) return newOrder === 'asc' ? -1 : 1;
+                if (aValue > bValue) return newOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Reconverter para objeto
+            const sortedObject = Object.fromEntries(sortedData);
+            renderStock(sortedObject, 1);
+            setupPagination(Object.keys(sortedObject).length, 1);
+        }
+    }
+
+    // Adicionar funcionalidade de exportação
+    function setupExportFeatures() {
+        const exportBtn = document.createElement('button');
+        exportBtn.innerHTML = '📊 Exportar CSV';
+        exportBtn.className = 'export-btn';
+        exportBtn.style.cssText = `
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        `;
+        
+        exportBtn.addEventListener('mouseenter', () => {
+            exportBtn.style.background = 'linear-gradient(135deg, #2980b9, #1f618d)';
+            exportBtn.style.transform = 'translateY(-2px)';
+            exportBtn.style.boxShadow = '0 4px 15px rgba(52, 152, 219, 0.3)';
+        });
+        
+        exportBtn.addEventListener('mouseleave', () => {
+            exportBtn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+            exportBtn.style.transform = 'translateY(0)';
+            exportBtn.style.boxShadow = 'none';
+        });
+
+        exportBtn.addEventListener('click', exportToCSV);
+        
+        // Inserir antes da tabela
+        const stockTable = document.getElementById('stock-table');
+        stockTable.parentNode.insertBefore(exportBtn, stockTable);
+    }
+
+    function exportToCSV() {
+        const headers = ['Produto', 'Tipo', 'Lote', 'Validade', 'Quantidade'];
+        const csvContent = [
+            headers.join(','),
+            ...Object.values(estoqueData).map(item => [
+                `"${item.produto}"`,
+                `"${item.tipo}"`,
+                `"${item.lote}"`,
+                `"${item.validade || 'N/A'}"`,
+                item.quantidade
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `estoque_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Adicionar funcionalidade de estatísticas
+    function setupStatistics() {
+        const statsContainer = document.createElement('div');
+        statsContainer.className = 'stats-container';
+        statsContainer.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 0;
+        `;
+
+        const homeSection = document.getElementById('home-section');
+        const welcomeCard = homeSection.querySelector('.welcome-card');
+        welcomeCard.parentNode.insertBefore(statsContainer, welcomeCard.nextSibling);
+
+        updateStatistics();
+    }
+
+    function updateStatistics() {
+        const statsContainer = document.querySelector('.stats-container');
+        if (!statsContainer) return;
+
+        const stats = calculateStats();
+        
+        statsContainer.innerHTML = `
+            <div class="stat-card" style="
+                background: linear-gradient(135deg, #3498db, #2980b9);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+                transition: transform 0.3s ease;
+            ">
+                <h3 style="margin: 0 0 10px 0; font-size: 2rem;">📦</h3>
+                <p style="margin: 0; font-size: 1.2rem; font-weight: bold;">${stats.totalProducts}</p>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">Total de Produtos</p>
+            </div>
+            
+            <div class="stat-card" style="
+                background: linear-gradient(135deg, #e74c3c, #c0392b);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+                transition: transform 0.3s ease;
+            ">
+                <h3 style="margin: 0 0 10px 0; font-size: 2rem;">⚠️</h3>
+                <p style="margin: 0; font-size: 1.2rem; font-weight: bold;">${stats.lowStock}</p>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">Estoque Baixo</p>
+            </div>
+            
+            <div class="stat-card" style="
+                background: linear-gradient(135deg, #f39c12, #d68910);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+                transition: transform 0.3s ease;
+            ">
+                <h3 style="margin: 0 0 10px 0; font-size: 2rem;">⏰</h3>
+                <p style="margin: 0; font-size: 1.2rem; font-weight: bold;">${stats.expiringSoon}</p>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">Vencem em 30 dias</p>
+            </div>
+            
+            <div class="stat-card" style="
+                background: linear-gradient(135deg, #27ae60, #229954);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+                transition: transform 0.3s ease;
+            ">
+                <h3 style="margin: 0 0 10px 0; font-size: 2rem;">📊</h3>
+                <p style="margin: 0; font-size: 1.2rem; font-weight: bold;">${stats.totalQuantity}</p>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">Itens em Estoque</p>
+            </div>
+        `;
+
+        // Adicionar efeito hover aos cards
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    }
+
+    function calculateStats() {
+        const products = Object.values(estoqueData);
+        const stats = {
+            totalProducts: products.length,
+            lowStock: 0,
+            expiringSoon: 0,
+            totalQuantity: 0
+        };
+
+        products.forEach(product => {
+            const quantity = parseInt(product.quantidade) || 0;
+            stats.totalQuantity += quantity;
+
+            // Estoque baixo
+            if (quantity < 10) {
+                stats.lowStock++;
+            }
+
+            // Vencimento próximo
+            if (product.validade && product.validade !== 'N/A') {
+                const validadeDate = new Date(product.validade);
+                const hoje = new Date();
+                const diasParaVencer = Math.ceil((validadeDate - hoje) / (1000 * 60 * 60 * 24));
+                
+                if (diasParaVencer <= 30 && diasParaVencer >= 0) {
+                    stats.expiringSoon++;
+                }
+            }
+        });
+
+        return stats;
+    }
+
+    // Inicializar todas as funcionalidades quando a página carregar
+    function initializeEnhancements() {
+        addTooltips();
+        setupRealTimeSearch();
+        setupStatistics();
+        
+        // Aguardar um pouco para garantir que a tabela foi criada
+        setTimeout(() => {
+            setupTableSorting();
+            setupExportFeatures();
+        }, 1000);
+    }
+
+    // Modificar a função loadStock para atualizar estatísticas
+    const originalLoadStock = loadStock;
+    loadStock = async function(page = 1) {
+        await originalLoadStock(page);
+        updateStatistics();
+    };
+
+    // Inicializar melhorias
+    initializeEnhancements();
+
+    console.log('Sistema de controle de estoque inicializado com todas as melhorias!');
+});
