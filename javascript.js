@@ -146,12 +146,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showAddProduct.addEventListener('click', (e) => {
         e.preventDefault();
+        stockContainer.style.display = 'block';
+        stockContainer.classList.add('active');
         addProductSection.style.display = 'block';
         viewStockSection.style.display = 'none';
     });
 
     showViewStock.addEventListener('click', (e) => {
         e.preventDefault();
+        stockContainer.style.display = 'block';
+        stockContainer.classList.add('active');
         addProductSection.style.display = 'none';
         viewStockSection.style.display = 'block';
         loadStock();
@@ -186,14 +190,13 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Dados da resposta:', data);
 
             if (response.ok) {
-                console.log('Login bem-sucedido, exibindo estoque');
+                console.log('Login bem-sucedido');
                 currentUser = username;
                 userNameDisplay.textContent = username;
                 loginContainer.style.display = 'none';
-                stockContainer.style.display = 'block';
-                stockContainer.classList.add('active');
-                viewStockSection.style.display = 'block';
-                loadStock();
+                stockContainer.style.display = 'none'; // Mantém estoque oculto
+                addProductSection.style.display = 'none';
+                viewStockSection.style.display = 'none';
             } else {
                 console.log('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login');
@@ -370,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
 
-            console.log('Resposta de adição de produto:', { status: null, data });
+            console.log('Resposta de adição de produto:', { status: response.status, data });
 
             if (response.ok) {
                 stockForm.reset();
@@ -432,17 +435,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
 
-            console.log('Resposta de atualização de produto:', { status: null, data });
+            console.log('Resposta de atualização de produto:', { status: response.status, data });
 
-            if (response.status == 200) {
+            if (response.ok) {
                 loadStock();
             } else {
                 console.log('Erro ao atualizar produto:', data.error);
                 alert(data.error || 'Erro ao atualizar produto');
             }
-        } catch (err) {
-            console.error('Erro ao atualizar produto:', err.message);
-            alert('Erro ao atualizar produto: ' + err.message);
+        } catch (error) {
+            console.error('Erro ao atualizar produto:', error.message);
+            alert('Erro ao atualizar produto: ' + error.message);
         }
     }
 
@@ -454,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h2>Confirmar Exclusão</h2>
                 <p>Tem certeza que deseja excluir este produto?</p>
                 <button class="confirm-delete-btn" data-id="${id}">Confirmar</button>
-                <button class="delete-cancel-btn">Cancelar</button>
+                <button class="cancel-delete-btn">Cancelar</button>
             </div>
         `;
         document.body.appendChild(modal);
@@ -463,13 +466,13 @@ document.addEventListener('DOMContentLoaded', () => {
             await performDelete(id);
             modal.remove();
         });
-        modal.querySelector('.delete-cancel-btn').addEventListener('click', () => {
+        modal.querySelector('.cancel-delete-btn').addEventListener('click', () => {
             modal.remove();
         });
     }
 
     async function performDelete(id) {
-        console.log('id do produto:', { id });
+        console.log('Enviando exclusão de produto:', { id });
 
         try {
             const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
@@ -479,17 +482,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
 
-            console.log('Resposta de exclusão:', { id });
+            console.log('Resposta de exclusão de produto:', { status: response.status, data });
 
             if (response.ok) {
                 loadStock();
             } else {
-                console.log('Erro ao excluir:', data.error);
+                console.log('Erro ao excluir produto:', data.error);
                 alert(data.error || 'Erro ao excluir produto');
             }
         } catch (error) {
-            console.error('Erro ao excluir:', error.message);
-            alert('Erro ao excluir: ' + error.message);
+            console.error('Erro ao excluir produto:', error.message);
+            alert('Erro ao excluir produto: ' + error.message);
         }
     }
 
