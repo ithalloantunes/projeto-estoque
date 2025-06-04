@@ -20,13 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const userNameDisplay = document.getElementById('user-name');
     const userMenu = document.querySelector('.user-menu');
     const showAddProduct = document.getElementById('show-add-product');
-    const showViewStock = document.getElementById('show-view-stock');
     const addProductSection = document.getElementById('add-product-section');
     const viewStockSection = document.getElementById('view-stock-section');
     const filterInput = document.getElementById('filter-input');
     const filterType = document.getElementById('filter-type');
     const body = document.querySelector('body');
-    const estoqueMenu = document.querySelector('.menu-item > span');
+    const estoqueMenu = document.getElementById('estoque-menu');
     const submenu = document.querySelector('.submenu');
 
     if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
@@ -140,21 +139,19 @@ document.addEventListener('DOMContentLoaded', () => {
         userMenu.style.display = userMenu.style.display === 'none' ? 'block' : 'none';
     });
 
+    // Evento para o menu "Estoque" - agora carrega e exibe o estoque
     estoqueMenu.addEventListener('click', () => {
         submenu.classList.toggle('active');
+        // Exibir a seção de visualização do estoque e carregar os dados
+        addProductSection.style.display = 'none';
+        viewStockSection.style.display = 'block';
+        loadStock();
     });
 
     showAddProduct.addEventListener('click', (e) => {
         e.preventDefault();
         addProductSection.style.display = 'block';
         viewStockSection.style.display = 'none';
-    });
-
-    showViewStock.addEventListener('click', (e) => {
-        e.preventDefault();
-        addProductSection.style.display = 'none';
-        viewStockSection.style.display = 'block';
-        loadStock();
     });
 
     async function handleLogin(event) {
@@ -186,14 +183,16 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Dados da resposta:', data);
 
             if (response.ok) {
-                console.log('Login bem-sucedido, exibindo estoque');
+                console.log('Login bem-sucedido, exibindo painel principal');
                 currentUser = username;
                 userNameDisplay.textContent = username;
                 loginContainer.style.display = 'none';
                 stockContainer.style.display = 'block';
                 stockContainer.classList.add('active');
-                viewStockSection.style.display = 'block';
-                loadStock();
+                // Não carregar mais o estoque automaticamente
+                // Apenas exibir o painel principal sem nenhuma seção ativa
+                addProductSection.style.display = 'none';
+                viewStockSection.style.display = 'none';
             } else {
                 console.log('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login');
@@ -255,6 +254,10 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = null;
         userNameDisplay.textContent = 'Usuário';
         userMenu.style.display = 'none';
+        // Resetar as seções
+        addProductSection.style.display = 'none';
+        viewStockSection.style.display = 'none';
+        submenu.classList.remove('active');
     }
 
     let estoqueData = [];
@@ -374,7 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 stockForm.reset();
-                loadStock();
+                // Só recarregar o estoque se a seção estiver visível
+                if (viewStockSection.style.display !== 'none') {
+                    loadStock();
+                }
             } else {
                 console.log('Erro ao adicionar produto:', data.error);
                 alert(data.error || 'Erro ao adicionar produto');
