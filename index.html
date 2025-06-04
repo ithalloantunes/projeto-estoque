@@ -50,6 +50,9 @@
             <h2>Menu</h2>
             <ul>
                 <li class="menu-item">
+                    <span id="home-menu">Início</span>
+                </li>
+                <li class="menu-item">
                     <span id="estoque-menu">Estoque</span>
                     <ul class="submenu">
                         <li><a href="#" id="show-add-product">Adicionar Produto</a></li>
@@ -67,6 +70,15 @@
                     </div>
                 </div>
             </header>
+            
+            <!-- Seção Home -->
+            <div id="home-section" class="home-section">
+                <div class="welcome-card">
+                    <h2>Bem-vindo ao Sistema de Controle de Estoque!</h2>
+                    <p>Gerencie seus produtos de forma eficiente e organizada. Use o menu lateral para navegar pelas funcionalidades do sistema.</p>
+                </div>
+            </div>
+            
             <div id="add-product-section" style="display: none;">
                 <h2>Adicionar Novo Produto</h2>
                 <form id="stock-form">
@@ -91,7 +103,6 @@
                 <table id="stock-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Produto</th>
                             <th>Tipo</th>
                             <th>Lote</th>
