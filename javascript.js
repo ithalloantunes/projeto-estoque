@@ -141,13 +141,13 @@ document.addEventListener('DOMContentLoaded', () => {
         userMenu.style.display = userMenu.style.display === 'none' ? 'block' : 'none';
     });
 
-    // Evento para o menu "Início" - volta para a tela inicial
+    // Evento para o menu "Início" - volta para a tela inicial (apenas home)
     homeMenu.addEventListener('click', () => {
         addProductSection.style.display = 'none';
-        viewStockSection.style.display = 'block';
+        viewStockSection.style.display = 'none'; // Mudança aqui: ocultar o estoque
         homeSection.style.display = 'block';
         submenu.classList.remove('active');
-        console.log('Voltando para a tela inicial');
+        console.log('Voltando para a tela inicial - apenas home');
     });
 
     // Evento para o menu "Estoque" - carrega e exibe o estoque
