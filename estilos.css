@@ -1,5 +1,5 @@
 body {
-    margin: 052
+    margin: 0; /* Corrigido: removi '052' que é inválido */
     font-family: 'Arial', sans-serif;
     background: #fdf6ec;
     color: #3c2a1e;
@@ -273,13 +273,23 @@ table {
 
 th, td {
     padding: 10px;
-    text-align: left;
     border-bottom: 1px solid #8f4790;
+    text-align: center; /* Centraliza o texto nas células */
 }
 
 th {
     background-color: #824283;
     color: #fff;
+}
+
+td:last-child {
+    text-align: right; /* Alinha os botões à direita */
+}
+
+td button {
+    padding: 5px 10px; /* Reduz o tamanho dos botões */
+    font-size: 0.9rem; /* Diminui a fonte */
+    margin-left: 5px; /* Espaço entre botões */
 }
 
 td button.edit-btn {
@@ -298,6 +308,12 @@ td button.delete-btn {
 
 td button.delete-btn:hover {
     background-color: #333;
+}
+
+.edit-input {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
 }
 
 /* Pagination */
