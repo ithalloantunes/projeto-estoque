@@ -30,6 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeMenu = document.getElementById('home-menu');
     const submenu = document.querySelector('.submenu');
 
+    // Elementos do modal de foto de perfil
+    const userProfilePic = document.getElementById('user-profile-pic');
+    const profileModal = document.getElementById('profile-modal');
+    const profileModalPic = document.getElementById('profile-modal-pic');
+    const closeProfileModal = document.getElementById('close-profile-modal');
+    const changePhotoBtn = document.getElementById('change-photo-btn');
+    const photoUpload = document.getElementById('photo-upload');
+
     if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
         console.error('Erro: Elementos do DOM não encontrados');
         return;
@@ -46,6 +54,95 @@ document.addEventListener('DOMContentLoaded', () => {
     const altoMitad = window.innerHeight / 2;
     let seguirPunteroMouse = true;
     let currentUser = null;
+
+    // Funcionalidade do modal de foto de perfil
+    function initProfilePhoto() {
+        // Carregar foto salva do localStorage (se existir)
+        const savedPhoto = localStorage.getItem(`profilePhoto_${currentUser}`);
+        if (savedPhoto) {
+            userProfilePic.src = savedPhoto;
+            profileModalPic.src = savedPhoto;
+        }
+
+        // Abrir modal ao clicar na foto de perfil
+        userProfilePic.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evitar que o clique abra o menu do usuário
+            profileModal.style.display = 'flex';
+            profileModalPic.src = userProfilePic.src; // Sincronizar a imagem do modal
+        });
+
+        // Fechar modal
+        closeProfileModal.addEventListener('click', () => {
+            profileModal.style.display = 'none';
+        });
+
+        // Fechar modal clicando fora do conteúdo
+        profileModal.addEventListener('click', (e) => {
+            if (e.target === profileModal) {
+                profileModal.style.display = 'none';
+            }
+        });
+
+        // Fechar modal com a tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && profileModal.style.display === 'flex') {
+                profileModal.style.display = 'none';
+            }
+        });
+
+        // Botão alterar foto
+        changePhotoBtn.addEventListener('click', () => {
+            photoUpload.click();
+        });
+
+        // Upload de foto
+        photoUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Verificar se é uma imagem
+                if (!file.type.startsWith('image/')) {
+                    alert('Por favor, selecione apenas arquivos de imagem.');
+                    return;
+                }
+
+                // Verificar tamanho do arquivo (máximo 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('O arquivo é muito grande. Por favor, selecione uma imagem menor que 5MB.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageDataUrl = e.target.result;
+                    
+                    // Atualizar as imagens
+                    userProfilePic.src = imageDataUrl;
+                    profileModalPic.src = imageDataUrl;
+                    
+                    // Salvar no localStorage
+                    localStorage.setItem(`profilePhoto_${currentUser}`, imageDataUrl);
+                    
+                    // Fechar o modal
+                    profileModal.style.display = 'none';
+                    
+                    alert('Foto de perfil atualizada com sucesso!');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Função para resetar foto de perfil
+    function resetProfilePhoto() {
+        const defaultPhoto = 'https://via.placeholder.com/40x40/6a2f77/ffffff?text=👤';
+        userProfilePic.src = defaultPhoto;
+        profileModalPic.src = 'https://via.placeholder.com/200x200/6a2f77/ffffff?text=👤';
+        
+        // Remover foto salva do localStorage
+        if (currentUser) {
+            localStorage.removeItem(`profilePhoto_${currentUser}`);
+        }
+    }
 
     body.addEventListener('mousemove', (m) => {
         if (seguirPunteroMouse) {
@@ -114,14 +211,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const hideIcon = button.querySelector('.eye-icon.hide');
         if (input.type === 'password') {
             input.type = 'text';
-            showIcon.style.display = 'none';
-            hideIcon.style.display = 'block';
+            if (showIcon) showIcon.style.display = 'none';
+            if (hideIcon) hideIcon.style.display = 'block';
             monster.src = 'img/idle/1.png';
             seguirPunteroMouse = false;
         } else {
             input.type = 'password';
-            showIcon.style.display = 'block';
-            hideIcon.style.display = 'none';
+            if (showIcon) showIcon.style.display = 'block';
+            if (hideIcon) hideIcon.style.display = 'none';
             seguirPunteroMouse = true;
         }
     }
@@ -137,8 +234,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    userNameDisplay.addEventListener('click', () => {
+    userNameDisplay.addEventListener('click', (e) => {
+        e.stopPropagation();
         userMenu.style.display = userMenu.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Fechar menu do usuário ao clicar fora
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-profile')) {
+            userMenu.style.display = 'none';
+        }
     });
 
     // Evento para o menu "Início" - volta para a tela inicial (apenas home)
@@ -206,6 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 addProductSection.style.display = 'none';
                 viewStockSection.style.display = 'none';
                 homeSection.style.display = 'block';
+                
+                // Inicializar funcionalidade de foto de perfil
+                initProfilePhoto();
             } else {
                 console.log('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login');
@@ -267,6 +375,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = null;
         userNameDisplay.textContent = 'Usuário';
         userMenu.style.display = 'none';
+        profileModal.style.display = 'none'; // Fechar modal se estiver aberto
+        resetProfilePhoto(); // Resetar foto de perfil
         // Resetar as seções
         addProductSection.style.display = 'none';
         viewStockSection.style.display = 'none';
