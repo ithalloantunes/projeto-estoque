@@ -1,6 +1,6 @@
 body {
-    margin: 0;
-    font-family: 'Bowlby One SC', cursive;
+    margin: 052
+    font-family: 'Arial', sans-serif;
     background: #fdf6ec;
     color: #3c2a1e;
 }
@@ -91,7 +91,7 @@ button:hover {
 
 /* Sidebar */
 .sidebar {
-    width: 250px;
+    width: 200px;
     background-color: #4c1a57;
     color: #fff;
     padding: 20px;
@@ -152,22 +152,25 @@ button:hover {
 
 /* Main content */
 .main-content {
-    margin-left: 270px;
+    margin-left: 220px;
     padding: 20px;
-    width: calc(100% - 270px);
+    width: calc(100% - 220px);
 }
 
 /* User profile */
 .user-profile {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #6a2f77;
+    padding: 5px 10px;
+    border-radius: 5px;
     cursor: pointer;
 }
 
 .user-profile span {
     font-size: 1.2rem;
-    color: #4c1a57;
+    color: #fff;
 }
 
 .user-menu {
@@ -280,7 +283,7 @@ th {
 }
 
 td button.edit-btn {
-    background-color: #ff8c00; /* Laranja */
+    background-color: #ff8c00;
     color: #fff;
 }
 
@@ -289,7 +292,7 @@ td button.edit-btn:hover {
 }
 
 td button.delete-btn {
-    background-color: #000; /* Preto */
+    background-color: #000;
     color: #fff;
 }
 
