@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentUser = username;
                 userNameDisplay.textContent = username;
                 loginContainer.style.display = 'none';
-                stockContainer.style.display = 'none';
+                stockContainer.style.display = 'none'; // Mantém estoque oculto
                 addProductSection.style.display = 'none';
                 viewStockSection.style.display = 'none';
             } else {
