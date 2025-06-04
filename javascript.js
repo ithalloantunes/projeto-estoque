@@ -22,10 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const showAddProduct = document.getElementById('show-add-product');
     const addProductSection = document.getElementById('add-product-section');
     const viewStockSection = document.getElementById('view-stock-section');
+    const homeSection = document.getElementById('home-section');
     const filterInput = document.getElementById('filter-input');
     const filterType = document.getElementById('filter-type');
     const body = document.querySelector('body');
     const estoqueMenu = document.getElementById('estoque-menu');
+    const homeMenu = document.getElementById('home-menu');
     const submenu = document.querySelector('.submenu');
 
     if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
@@ -139,12 +141,22 @@ document.addEventListener('DOMContentLoaded', () => {
         userMenu.style.display = userMenu.style.display === 'none' ? 'block' : 'none';
     });
 
-    // Evento para o menu "Estoque" - agora carrega e exibe o estoque
+    // Evento para o menu "Início" - volta para a tela inicial
+    homeMenu.addEventListener('click', () => {
+        addProductSection.style.display = 'none';
+        viewStockSection.style.display = 'block';
+        homeSection.style.display = 'block';
+        submenu.classList.remove('active');
+        console.log('Voltando para a tela inicial');
+    });
+
+    // Evento para o menu "Estoque" - carrega e exibe o estoque
     estoqueMenu.addEventListener('click', () => {
         submenu.classList.toggle('active');
         // Exibir a seção de visualização do estoque e carregar os dados
         addProductSection.style.display = 'none';
         viewStockSection.style.display = 'block';
+        homeSection.style.display = 'none';
         loadStock();
     });
 
@@ -152,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         addProductSection.style.display = 'block';
         viewStockSection.style.display = 'none';
+        homeSection.style.display = 'none';
     });
 
     async function handleLogin(event) {
@@ -189,10 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginContainer.style.display = 'none';
                 stockContainer.style.display = 'block';
                 stockContainer.classList.add('active');
-                // Não carregar mais o estoque automaticamente
-                // Apenas exibir o painel principal sem nenhuma seção ativa
+                // Exibir apenas a seção home inicial
                 addProductSection.style.display = 'none';
                 viewStockSection.style.display = 'none';
+                homeSection.style.display = 'block';
             } else {
                 console.log('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login');
@@ -257,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Resetar as seções
         addProductSection.style.display = 'none';
         viewStockSection.style.display = 'none';
+        homeSection.style.display = 'none';
         submenu.classList.remove('active');
     }
 
@@ -376,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Resposta de adição de produto:', { status: response.status, data });
 
             if (response.ok) {
+                alert('Produto adicionado com sucesso!');
                 stockForm.reset();
                 // Só recarregar o estoque se a seção estiver visível
                 if (viewStockSection.style.display !== 'none') {
@@ -441,6 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Resposta de atualização de produto:', { status: response.status, data });
 
             if (response.ok) {
+                alert('Produto atualizado com sucesso!');
                 loadStock();
             } else {
                 console.log('Erro ao atualizar produto:', data.error);
@@ -488,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Resposta de exclusão de produto:', { status: response.status, data });
 
             if (response.ok) {
+                alert('Produto excluído com sucesso!');
                 loadStock();
             } else {
                 console.log('Erro ao excluir produto:', data.error);
