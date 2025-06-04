@@ -3,7 +3,6 @@ const BASE_URL = 'https://projeto-estoque-gcl4.onrender.com';
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM carregado, inicializando interface');
 
-    // Seleção de elementos
     const monster = document.getElementById('monster');
     const inputUsuario = document.getElementById('input-usuario');
     const inputClave = document.getElementById('input-clave');
@@ -27,26 +26,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterInput = document.getElementById('filter-input');
     const filterType = document.getElementById('filter-type');
     const body = document.querySelector('body');
+    const estoqueMenu = document.querySelector('.menu-item > span');
+    const submenu = document.querySelector('.submenu');
 
-    // Verifica se os elementos existem
     if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
         console.error('Erro: Elementos do DOM não encontrados');
         return;
     }
 
-    // Inicializar estado da interface
     console.log('Exibindo login, ocultando estoque');
     loginContainer.style.display = 'flex';
     stockContainer.style.display = 'none';
     loginForm.style.display = 'block';
     registerForm.style.display = 'none';
+    submenu.classList.remove('active');
 
     const anchoMitad = window.innerWidth / 2;
     const altoMitad = window.innerHeight / 2;
     let seguirPunteroMouse = true;
-    let currentUser = null; // Armazena o nome do usuário logado
+    let currentUser = null;
 
-    // Lógica de animação do monstro
     body.addEventListener('mousemove', (m) => {
         if (seguirPunteroMouse) {
             if (m.clientX < anchoMitad && m.clientY < altoMitad) {
@@ -108,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 60);
     });
 
-    // Função para alternar visibilidade da senha
     function togglePassword(inputId, button) {
         const input = document.getElementById(inputId);
         const showIcon = button.querySelector('.eye-icon.show');
@@ -138,12 +136,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Exibir/esconder menu do usuário
     userNameDisplay.addEventListener('click', () => {
         userMenu.style.display = userMenu.style.display === 'none' ? 'block' : 'none';
     });
 
-    // Navegação da barra lateral
+    estoqueMenu.addEventListener('click', () => {
+        submenu.classList.toggle('active');
+    });
+
     showAddProduct.addEventListener('click', (e) => {
         e.preventDefault();
         addProductSection.style.display = 'block';
@@ -157,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadStock();
     });
 
-    // Função de autenticação
     async function handleLogin(event) {
         event.preventDefault();
         console.log('Formulário de login submetido');
@@ -188,12 +187,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 console.log('Login bem-sucedido, exibindo estoque');
-                currentUser = username; // Armazena o usuário logado
-                userNameDisplay.textContent = username; // Atualiza o display do usuário
+                currentUser = username;
+                userNameDisplay.textContent = username;
                 loginContainer.style.display = 'none';
                 stockContainer.style.display = 'block';
                 stockContainer.classList.add('active');
-                viewStockSection.style.display = 'block'; // Exibe a seção de estoque por padrão
+                viewStockSection.style.display = 'block';
                 loadStock();
             } else {
                 console.log('Erro no login:', data.error);
@@ -258,7 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
         userMenu.style.display = 'none';
     }
 
-    // Função para carregar e paginar estoque
     let estoqueData = [];
     const itemsPerPage = 5;
 
@@ -314,7 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('tr');
             row.setAttribute('data-id', id);
             row.innerHTML = `
-                <td>${id}</td>
                 <td>${item.produto}</td>
                 <td>${item.tipo}</td>
                 <td>${item.lote}</td>
@@ -391,14 +388,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function editProduct(id) {
         const row = document.querySelector(`tr[data-id="${id}"]`);
         const cells = row.querySelectorAll('td');
-        const produto = cells[1].textContent;
-        const tipo = cells[2].textContent;
-        const lote = cells[3].textContent;
-        const validade = cells[4].textContent === 'N/A' ? '' : cells[4].textContent;
-        const quantidade = cells[5].textContent;
+        const produto = cells[0].textContent;
+        const tipo = cells[1].textContent;
+        const lote = cells[2].textContent;
+        const validade = cells[3].textContent === 'N/A' ? '' : cells[3].textContent;
+        const quantidade = cells[4].textContent;
 
         row.innerHTML = `
-            <td>${id}</td>
             <td><input type="text" class="edit-input" value="${produto}" data-field="produto"></td>
             <td><input type="text" class="edit-input" value="${tipo}" data-field="tipo"></td>
             <td><input type="text" class="edit-input" value="${lote}" data-field="lote"></td>
@@ -509,7 +505,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.style.display = 'block';
     }
 
-    // Event Listeners
     console.log('Adicionando listeners para formulários');
     loginForm.addEventListener('submit', handleLogin);
     registerForm.addEventListener('submit', handleRegister);
