@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
 
-            console.log('Resposta de adição de produto:', { status: response.status, data });
+            console.log('Resposta de adição de produto:', { status: null, data });
 
             if (response.ok) {
                 stockForm.reset();
@@ -432,17 +432,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
 
-            console.log('Resposta de atualização de produto:', { status: response.status, data });
+            console.log('Resposta de atualização de produto:', { status: null, data });
 
-            if (response.ok) {
+            if (response.status == 200) {
                 loadStock();
             } else {
                 console.log('Erro ao atualizar produto:', data.error);
                 alert(data.error || 'Erro ao atualizar produto');
             }
-        } catch (error) {
-            console.error('Erro ao atualizar produto:', error.message);
-            alert('Erro ao atualizar produto: ' + error.message);
+        } catch (err) {
+            console.error('Erro ao atualizar produto:', err.message);
+            alert('Erro ao atualizar produto: ' + err.message);
         }
     }
 
@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h2>Confirmar Exclusão</h2>
                 <p>Tem certeza que deseja excluir este produto?</p>
                 <button class="confirm-delete-btn" data-id="${id}">Confirmar</button>
-                <button class="cancel-delete-btn">Cancelar</button>
+                <button class="delete-cancel-btn">Cancelar</button>
             </div>
         `;
         document.body.appendChild(modal);
@@ -463,13 +463,13 @@ document.addEventListener('DOMContentLoaded', () => {
             await performDelete(id);
             modal.remove();
         });
-        modal.querySelector('.cancel-delete-btn').addEventListener('click', () => {
+        modal.querySelector('.delete-cancel-btn').addEventListener('click', () => {
             modal.remove();
         });
     }
 
     async function performDelete(id) {
-        console.log('Enviando exclusão de produto:', { id });
+        console.log('id do produto:', { id });
 
         try {
             const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
@@ -479,17 +479,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
 
-            console.log('Resposta de exclusão de produto:', { status: response.status, data });
+            console.log('Resposta de exclusão:', { id });
 
             if (response.ok) {
                 loadStock();
             } else {
-                console.log('Erro ao excluir produto:', data.error);
+                console.log('Erro ao excluir:', data.error);
                 alert(data.error || 'Erro ao excluir produto');
             }
         } catch (error) {
-            console.error('Erro ao remover produto:', error.message);
-            alert('Erro ao remover produto: ' + error.message);
+            console.error('Erro ao excluir:', error.message);
+            alert('Erro ao excluir: ' + error.message);
         }
     }
 
