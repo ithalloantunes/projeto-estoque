@@ -429,6 +429,32 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
+    // Função para verificar condições especiais dos produtos
+    function checkProductConditions(item) {
+        const conditions = {
+            lowStock: false,
+            expireSoon: false
+        };
+
+        // Verificar estoque baixo (menos de 10 unidades)
+        if (parseInt(item.quantidade) < 10) {
+            conditions.lowStock = true;
+        }
+
+        // Verificar vencimento próximo (próximos 30 dias)
+        if (item.validade && item.validade !== 'N/A') {
+            const validadeDate = new Date(item.validade);
+            const hoje = new Date();
+            const diasParaVencer = Math.ceil((validadeDate - hoje) / (1000 * 60 * 60 * 24));
+            
+            if (diasParaVencer <= 30 && diasParaVencer >= 0) {
+                conditions.expireSoon = true;
+            }
+        }
+
+        return conditions;
+    }
+
     function renderStock(data, page) {
         stockTableBody.innerHTML = '';
         const start = (page - 1) * itemsPerPage;
@@ -438,6 +464,18 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const [id, item] of items) {
             const row = document.createElement('tr');
             row.setAttribute('data-id', id);
+            
+            // Verificar condições especiais do produto
+            const conditions = checkProductConditions(item);
+            
+            // Aplicar classes condicionais
+            if (conditions.lowStock) {
+                row.setAttribute('data-low-stock', 'true');
+            }
+            if (conditions.expireSoon) {
+                row.setAttribute('data-expire-soon', 'true');
+            }
+            
             row.innerHTML = `
                 <td>${item.produto}</td>
                 <td>${item.tipo}</td>
@@ -449,9 +487,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="delete-btn" data-id="${id}">Excluir</button>
                 </td>
             `;
+            
+            // Adicionar animação de entrada
+            row.style.animation = 'slideIn 0.3s ease-out';
+            
             stockTableBody.appendChild(row);
         }
 
+        // Adicionar event listeners para os botões
         document.querySelectorAll('.edit-btn').forEach(button => {
             button.addEventListener('click', () => editProduct(button.getAttribute('data-id')));
         });
@@ -465,12 +508,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const pagination = document.getElementById('pagination');
         pagination.innerHTML = '';
 
+        // Botão "Anterior"
+        if (currentPage > 1) {
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '‹';
+            prevButton.title = 'Página Anterior';
+            prevButton.addEventListener('click', () => loadStock(currentPage - 1));
+            pagination.appendChild(prevButton);
+        }
+
+        // Botões de página
         for (let i = 1; i <= pageCount; i++) {
             const button = document.createElement('button');
             button.textContent = i;
             button.className = i === currentPage ? 'active' : '';
             button.addEventListener('click', () => loadStock(i));
             pagination.appendChild(button);
+        }
+
+        // Botão "Próximo"
+        if (currentPage < pageCount) {
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '›';
+            nextButton.title = 'Próxima Página';
+            nextButton.addEventListener('click', () => loadStock(currentPage + 1));
+            pagination.appendChild(nextButton);
         }
     }
 
@@ -525,34 +587,72 @@ document.addEventListener('DOMContentLoaded', () => {
         const validade = cells[3].textContent === 'N/A' ? '' : cells[3].textContent;
         const quantidade = cells[4].textContent;
 
+        // Adicionar classe de edição
+        row.classList.add('editing');
+
         row.innerHTML = `
             <td><input type="text" class="edit-input" value="${produto}" data-field="produto"></td>
             <td><input type="text" class="edit-input" value="${tipo}" data-field="tipo"></td>
             <td><input type="text" class="edit-input" value="${lote}" data-field="lote"></td>
             <td><input type="date" class="edit-input" value="${validade}" data-field="validade"></td>
-            <td><input type="number" class="edit-input" value="${quantidade}" data-field="quantidade"></td>
+            <td><input type="number" class="edit-input" value="${quantidade}" data-field="quantidade" min="0"></td>
             <td>
                 <button class="save-btn" data-id="${id}">Salvar</button>
                 <button class="cancel-btn" data-id="${id}">Cancelar</button>
             </td>
         `;
 
+        // Focar no primeiro input
+        const firstInput = row.querySelector('.edit-input');
+        if (firstInput) {
+            firstInput.focus();
+        }
+
         row.querySelector('.save-btn').addEventListener('click', () => saveProduct(id));
-        row.querySelector('.cancel-btn').addEventListener('click', () => loadStock());
+        row.querySelector('.cancel-btn').addEventListener('click', () => {
+            row.classList.remove('editing');
+            loadStock();
+        });
+
+        // Permitir salvar com Enter
+        row.querySelectorAll('.edit-input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveProduct(id);
+                }
+            });
+        });
     }
 
     async function saveProduct(id) {
         const row = document.querySelector(`tr[data-id="${id}"]`);
         const inputs = row.querySelectorAll('.edit-input');
+        
+        // Validação básica
+        if (!inputs[0].value.trim()) {
+            alert('O nome do produto é obrigatório!');
+            inputs[0].focus();
+            return;
+        }
+
+        if (parseInt(inputs[4].value) < 0) {
+            alert('A quantidade não pode ser negativa!');
+            inputs[4].focus();
+            return;
+        }
+
         const updatedProduct = {
-            produto: inputs[0].value,
-            tipo: inputs[1].value,
-            lote: inputs[2].value,
+            produto: inputs[0].value.trim(),
+            tipo: inputs[1].value.trim(),
+            lote: inputs[2].value.trim(),
             validade: inputs[3].value || null,
             quantidade: parseInt(inputs[4].value) || 0
         };
 
         console.log('Enviando atualização de produto:', { id, ...updatedProduct });
+
+        // Adicionar classe de loading
+        row.classList.add('loading-row');
 
         try {
             const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
@@ -567,88 +667,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 alert('Produto atualizado com sucesso!');
+                row.classList.remove('editing', 'loading-row');
                 loadStock();
             } else {
                 console.log('Erro ao atualizar produto:', data.error);
                 alert(data.error || 'Erro ao atualizar produto');
+                row.classList.remove('loading-row');
             }
         } catch (error) {
             console.error('Erro ao atualizar produto:', error.message);
             alert('Erro ao atualizar produto: ' + error.message);
+            row.classList.remove('loading-row');
         }
     }
 
     function showDeleteModal(id) {
+        // Buscar o produto para mostrar informações na confirmação
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        const produtoNome = row.querySelector('td').textContent;
+
         const modal = document.createElement('div');
         modal.className = 'delete-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        `;
+        
         modal.innerHTML = `
-            <div class="modal-content">
-                <h2>Confirmar Exclusão</h2>
-                <p>Tem certeza que deseja excluir este produto?</p>
-                <button class="confirm-delete-btn" data-id="${id}">Confirmar</button>
-                <button class="cancel-delete-btn">Cancelar</button>
+            <div class="modal-content" style="
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                text-align: center;
+                max-width: 400px;
+                animation: slideIn 0.3s ease;
+            ">
+                <h2 style="color: #e74c3c; margin-bottom: 15px;">⚠️ Confirmar Exclusão</h2>
+                <p style="margin-bottom: 20px; color: #333;">
+                    Tem certeza que deseja excluir o produto:<br>
+                    <strong>"${produtoNome}"</strong>?
+                </p>
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 25px;">
+                    Esta ação não pode ser desfeita.
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="confirm-delete-btn" data-id="${id}" style="
+                        background: linear-gradient(135deg, #e74c3c, #c0392b);
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                    ">Confirmar Exclusão</button>
+                    <button class="cancel-delete-btn" style="
+                        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                    ">Cancelar</button>
+                </div>
             </div>
         `;
+        
         document.body.appendChild(modal);
 
+        // Adicionar estilos de animação
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Event listeners para os botões
         modal.querySelector('.confirm-delete-btn').addEventListener('click', async () => {
             await performDelete(id);
-            modal.remove();
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
         });
-        modal.querySelector('.cancel-delete-btn').addEventListener('click', () => {
-            modal.remove();
-        });
-    }
-
-    async function performDelete(id) {
-        console.log('Enviando exclusão de produto:', { id });
-
-        try {
-            const response = await fetch(`${BASE_URL}/api/estoque/${id}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include'
-            });
-            const data = await response.json();
-
-            console.log('Resposta de exclusão de produto:', { status: response.status, data });
-
-            if (response.ok) {
-                alert('Produto excluído com sucesso!');
-                loadStock();
-            } else {
-                console.log('Erro ao excluir produto:', data.error);
-                alert(data.error || 'Erro ao excluir produto');
-            }
-        } catch (error) {
-            console.error('Erro ao remover produto:', error.message);
-            alert('Erro ao remover produto: ' + error.message);
-        }
-    }
-
-    function showRegisterForm() {
-        console.log('Exibindo formulário de cadastro');
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-    }
-
-    function showLoginForm() {
-        console.log('Exibindo formulário de login');
-        registerForm.style.display = 'none';
-        loginForm.style.display = 'block';
-    }
-
-    console.log('Adicionando listeners para formulários');
-    loginForm.addEventListener('submit', handleLogin);
-    registerForm.addEventListener('submit', handleRegister);
-    showRegisterBtn.addEventListener('click', showRegisterForm);
-    showLoginBtn.addEventListener('click', showLoginForm);
-    logoutBtn.addEventListener('click', logout);
-    stockForm.addEventListener('submit', addProduct);
-
-    const loginButton = loginForm.querySelector('button[type="submit"]');
-    loginButton.addEventListener('click', (event) => {
-        console.log('Botão Entrar clicado');
-        handleLogin(event);
-    });
-});
+        
+        
