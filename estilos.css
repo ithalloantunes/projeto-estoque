@@ -1,5 +1,5 @@
 body {
-    margin: 0; /* Corrigido: removi '052' que é inválido */
+    margin: 0;
     font-family: 'Arial', sans-serif;
     background: #fdf6ec;
     color: #3c2a1e;
@@ -211,6 +211,35 @@ header {
 
 header h1 {
     font-size: 2em;
+}
+
+/* Seção home */
+.home-section {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.welcome-card {
+    background: linear-gradient(135deg, #b388eb, #6a2f77);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin: 20px auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    max-width: 800px;
+}
+
+.welcome-card h2 {
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.welcome-card p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin: 0;
+    opacity: 0.9;
 }
 
 /* Filter container */
