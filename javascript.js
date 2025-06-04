@@ -146,16 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showAddProduct.addEventListener('click', (e) => {
         e.preventDefault();
-        stockContainer.style.display = 'block';
-        stockContainer.classList.add('active');
         addProductSection.style.display = 'block';
         viewStockSection.style.display = 'none';
     });
 
     showViewStock.addEventListener('click', (e) => {
         e.preventDefault();
-        stockContainer.style.display = 'block';
-        stockContainer.classList.add('active');
         addProductSection.style.display = 'none';
         viewStockSection.style.display = 'block';
         loadStock();
@@ -190,13 +186,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Dados da resposta:', data);
 
             if (response.ok) {
-                console.log('Login bem-sucedido');
+                console.log('Login bem-sucedido, exibindo estoque');
                 currentUser = username;
                 userNameDisplay.textContent = username;
                 loginContainer.style.display = 'none';
-                stockContainer.style.display = 'none'; // Mantém estoque oculto
-                addProductSection.style.display = 'none';
-                viewStockSection.style.display = 'none';
+                stockContainer.style.display = 'block';
+                stockContainer.classList.add('active');
+                viewStockSection.style.display = 'block';
+                loadStock();
             } else {
                 console.log('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login');
@@ -491,8 +488,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(data.error || 'Erro ao excluir produto');
             }
         } catch (error) {
-            console.error('Erro ao excluir produto:', error.message);
-            alert('Erro ao excluir produto: ' + error.message);
+            console.error('Erro ao remover produto:', error.message);
+            alert('Erro ao remover produto: ' + error.message);
         }
     }
 
