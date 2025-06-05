@@ -1,432 +1,135 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Açaí da Barra - Estoque</title>
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #2c3e50;
-      --secondary: #3498db;
-      --success: #27ae60;
-      --danger: #e74c3c;
-      --light: #ecf0f1;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f8f9fa;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .auth-section {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-      margin-bottom: 2rem;
-    }
-
-    .auth-form {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    input {
-      width: 100%;
-      padding: 0.8rem;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 1rem;
-    }
-
-    button {
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary {
-      background-color: var(--secondary);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background-color: #2980b9;
-    }
-
-    .btn-danger {
-      background-color: var(--danger);
-      color: white;
-    }
-
-    .btn-success {
-      background-color: var(--success);
-      color: white;
-    }
-
-    .estoque-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-    }
-
-    .estoque-table th,
-    .estoque-table td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-
-    .estoque-table th {
-      background-color: var(--primary);
-      color: white;
-    }
-
-    .actions-cell {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .alert {
-      padding: 1rem;
-      border-radius: 5px;
-      margin: 1rem 0;
-    }
-
-    .alert-success {
-      background-color: #d4edda;
-      color: #155724;
-    }
-
-    .alert-error {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Estoque</title>
+    <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
-  <div class="container">
-    <!-- Seção de Autenticação -->
-    <div id="auth" class="auth-section">
-      <div class="auth-form">
-        <div>
-          <h2>Login</h2>
-          <div class="form-group">
-            <input id="loginUser" placeholder="Usuário" class="form-input">
-          </div>
-          <div class="form-group">
-            <input id="loginPass" type="password" placeholder="Senha" class="form-input">
-          </div>
-          <button onclick="login()" class="btn-primary">Entrar</button>
+    <!-- Container de Login -->
+    <div id="login-container" class="container">
+        <div class="imagem">
+            <img src="img/idle/1.png" alt="monster" id="monster">
         </div>
-
-        <div>
-          <h2>Cadastro</h2>
-          <div class="form-group">
-            <input id="regUser" placeholder="Novo usuário" class="form-input">
-          </div>
-          <div class="form-group">
-            <input id="regPass" type="password" placeholder="Nova senha" class="form-input">
-          </div>
-          <button onclick="register()" class="btn-success">Cadastrar</button>
+        <div class="formulario">
+            <div id="login-form">
+                <h1>Login</h1>
+                <label for="input-usuario">Nome de Usuário (Login)</label>
+                <div class="input-container">
+                    <input type="text" id="input-usuario" placeholder="Digite seu usuário">
+                </div>
+                <label for="input-clave">Senha de Acesso</label>
+                <div class="input-container">
+                    <input type="password" id="input-clave" placeholder="Digite sua senha">
+                    <span id="toggle-password-login">👁️</span>
+                </div>
+                <button type="submit">Entrar</button>
+                <button id="show-register">Cadastrar</button>
+            </div>
+            <div id="register-form" style="display: none;">
+                <h1>Cadastro</h1>
+                <label for="register-username">Nome de Usuário (Login)</label>
+                <div class="input-container">
+                    <input type="text" id="register-username" placeholder="Digite seu usuário">
+                </div>
+                <label for="register-password">Senha de Acesso</label>
+                <div class="input-container">
+                    <input type="password" id="register-password" placeholder="Digite sua senha">
+                    <span id="toggle-password-register">👁️</span>
+                </div>
+                <button type="submit">Cadastrar</button>
+                <button id="show-login">Voltar ao Login</button>
+            </div>
         </div>
-      </div>
-      <div id="authMsg" class="alert"></div>
     </div>
 
-    <!-- Seção Principal -->
-    <div id="main" class="hidden">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1 style="color: var(--primary);">Controle de Estoque</h1>
-        <button onclick="logout()" class="btn-danger">Sair</button>
-      </div>
-
-      <!-- Formulário de Adição -->
-      <div style="background: white; padding: 2rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
-        <h2>Adicionar Novo Produto</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
-          <input id="produto" placeholder="Nome do Produto" class="form-input">
-          <input id="tipo" placeholder="Tipo" class="form-input">
-          <input id="lote" placeholder="Lote" class="form-input">
-         <input id="validade" type="text" placeholder="Validade (dd/mm/aaaa)" 
-       class="form-input" pattern="\d{2}/\d{2}/\d{4}"
-       oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3')">
-          <input id="quantidade" type="number" placeholder="Quantidade" class="form-input">
-          <button onclick="adicionar()" class="btn-primary">Adicionar Produto</button>
+    <!-- Container de Estoque -->
+    <div id="stock-container" style="display: none;">
+        <div class="sidebar">
+            <h2>Menu</h2>
+            <ul>
+                <li class="menu-item">
+                    <span id="home-menu">Início</span>
+                </li>
+                <li class="menu-item">
+                    <span id="estoque-menu">Estoque</span>
+                    <ul class="submenu">
+                        <li><a href="#" id="show-add-product">Adicionar Produto</a></li>
+                    </ul>
+                </li>
+            </ul>
         </div>
-      </div>
-
-      <!-- Tabela de Estoque -->
-      <div id="msg" class="alert"></div>
-      <table class="estoque-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Produto</th>
-            <th>Tipo</th>
-            <th>Lote</th>
-            <th>Validade</th>
-            <th>Quantidade</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabela-body"></tbody>
-      </table>
+        <div class="main-content">
+            <header>
+                <h1>Controle de Estoque</h1>
+                <div class="user-profile">
+                    <img src="https://via.placeholder.com/40x40/6a2f77/ffffff?text=👤" alt="Foto do Usuário" class="user-profile-pic" id="user-profile-pic">
+                    <span id="user-name">Usuário</span>
+                    <div class="user-menu" style="display: none;">
+                        <button id="logout-btn">Sair</button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Seção Home -->
+            <div id="home-section" class="home-section">
+                <div class="welcome-card">
+                    <h2>Bem-vindo ao Sistema de Controle de Estoque!</h2>
+                    <p>Gerencie seus produtos de forma eficiente e organizada. Use o menu lateral para navegar pelas funcionalidades do sistema.</p>
+                </div>
+            </div>
+            
+            <div id="add-product-section" style="display: none;">
+                <h2>Adicionar Novo Produto</h2>
+                <form id="stock-form">
+                    <input type="text" id="produto" placeholder="Produto" required>
+                    <input type="text" id="tipo" placeholder="Tipo">
+                    <input type="text" id="lote" placeholder="Lote">
+                    <input type="date" id="validade" placeholder="Validade">
+                    <input type="number" id="quantidade" placeholder="Quantidade" required>
+                    <button type="submit">Adicionar Produto</button>
+                </form>
+            </div>
+            <div id="view-stock-section" style="display: none;">
+                <h2>Estoque</h2>
+                <div class="filter-container">
+                    <input type="text" id="filter-input" placeholder="Filtrar por nome ou tipo">
+                    <select id="filter-type">
+                        <option value="all">Todos</option>
+                        <option value="produto">Nome</option>
+                        <option value="tipo">Tipo</option>
+                    </select>
+                </div>
+                <table id="stock-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Tipo</th>
+                            <th>Lote</th>
+                            <th>Validade</th>
+                            <th>Quantidade</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-table-body"></tbody>
+                </table>
+                <div id="pagination"></div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const api = '/api';
-    let userId = null;
+    <!-- Modal de Foto de Perfil -->
+    <div id="profile-modal" class="profile-modal" style="display: none;">
+        <div class="profile-modal-content">
+            <button class="close-btn" id="close-profile-modal">&times;</button>
+            <img src="https://via.placeholder.com/200x200/6a2f77/ffffff?text=👤" alt="Foto do Usuário" class="profile-modal-pic" id="profile-modal-pic">
+            <br>
+            <button class="change-photo-btn" id="change-photo-btn">Alterar Foto</button>
+            <input type="file" id="photo-upload" class="photo-upload" accept="image/*">
+        </div>
+    </div>
 
-    // Funções de UI
-    function show(id) {
-      document.getElementById(id).classList.remove('hidden');
-    }
-
-    function hide(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    function setMsg(id, message, isError = false) {
-      const elem = document.getElementById(id);
-      elem.textContent = message;
-      elem.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
-      setTimeout(() => elem.textContent = '', 5000);
-    }
-
-    // Autenticação
-    async function register() {
-      try {
-        const username = document.getElementById('regUser').value.trim();
-        const password = document.getElementById('regPass').value.trim();
-
-        if (!username || !password) {
-          setMsg('authMsg', 'Preencha todos os campos!', true);
-          return;
-        }
-
-        const res = await fetch(`${api}/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        
-        setMsg('authMsg', 'Cadastro realizado com sucesso!');
-        document.getElementById('regUser').value = '';
-        document.getElementById('regPass').value = '';
-      } catch (error) {
-        setMsg('authMsg', error.message, true);
-      }
-    }
-
-    async function login() {
-      try {
-        const username = document.getElementById('loginUser').value.trim();
-        const password = document.getElementById('loginPass').value.trim();
-
-        if (!username || !password) {
-          setMsg('authMsg', 'Preencha todos os campos!', true);
-          return;
-        }
-
-        const res = await fetch(`${api}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-
-        userId = data.userId;
-        hide('auth');
-        show('main');
-        await listar();
-      } catch (error) {
-        setMsg('authMsg', error.message, true);
-      }
-    }
-
-    function logout() {
-      userId = null;
-      hide('main');
-      show('auth');
-    }
-
-    // Funções de Estoque
-   async function adicionar() {
-  try {
-    const produto = document.getElementById('produto').value.trim();
-    const tipo = document.getElementById('tipo').value.trim();
-    const lote = document.getElementById('lote').value.trim();
-    const validadeTexto = document.getElementById('validade').value.trim();
-    const quantidade = document.getElementById('quantidade').value;
-
-    if (!produto || !quantidade) {
-      setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
-      return;
-    }
-
-    // Conversão da data para formato ISO (yyyy-mm-dd)
-    let validadeISO = null;
-    if (validadeTexto) {
-      const [dia, mes, ano] = validadeTexto.split('/');
-      if (dia && mes && ano && dia.length === 2 && mes.length === 2 && ano.length === 4) {
-        validadeISO = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-      } else {
-        setMsg('msg', 'Formato de data inválido. Use dd/mm/aaaa', true);
-        return;
-      }
-    }
-
-    const res = await fetch(`${api}/estoque`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        produto,
-        tipo,
-        lote,
-        quantidade: Number(quantidade),
-        validade: validadeISO
-      })
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error);
-    }
-
-    setMsg('msg', 'Produto adicionado com sucesso!');
-    // Limpa os campos
-    document.getElementById('produto').value = '';
-    document.getElementById('tipo').value = '';
-    document.getElementById('lote').value = '';
-    document.getElementById('validade').value = '';
-    document.getElementById('quantidade').value = '';
-    
-    await listar();
-  } catch (error) {
-    setMsg('msg', error.message, true);
-  }
-}
-    
-    async function remover(id) {
-      if (!confirm('Tem certeza que deseja remover este produto?')) return;
-      
-      try {
-        const res = await fetch(`${api}/estoque/${id}`, { 
-          method: 'DELETE' 
-        });
-
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error);
-        }
-
-        setMsg('msg', 'Produto removido com sucesso!');
-        await listar();
-      } catch (error) {
-        setMsg('msg', error.message, true);
-      }
-    }
-
-    async function salvarEdicao(id) {
-  try {
-    const produto = document.getElementById(`prod-${id}`).value.trim();
-    const tipo = document.getElementById(`tipo-${id}`).value.trim();
-    const lote = document.getElementById(`lote-${id}`).value.trim();
-    const quantidade = document.getElementById(`quant-${id}`).value;
-
-    if (!produto || quantidade === '') {
-      setMsg('msg', 'Produto e quantidade são obrigatórios!', true);
-      return;
-    }
-
-    const res = await fetch(`${api}/estoque/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        produto,
-        tipo,
-        lote,
-        quantidade: Number(quantidade)
-      })
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error);
-    }
-
-    setMsg('msg', 'Produto atualizado com sucesso!');
-    await listar();
-  } catch (error) {
-    setMsg('msg', error.message, true);
-  }
-}
-    
-    async function listar() {
-  try {
-    const res = await fetch(`${api}/estoque`);
-    const data = await res.json();
-    const tbody = document.getElementById('tabela-body');
-
-    tbody.innerHTML = Object.entries(data).map(([id, item]) => {
-      // Formata a data ISO (yyyy-mm-dd) para exibição (dd/mm/aaaa)
-      const validadeBR = item.validade 
-        ? item.validade.split('-').reverse().join('/')
-        : '';
-
-      return `
-        <tr id="linha-${id}">
-          <td>${id}</td>
-          <td><input type="text" id="prod-${id}" value="${item.produto || ''}" class="form-input"></td>
-          <td><input type="text" id="tipo-${id}" value="${item.tipo || ''}" class="form-input"></td>
-          <td><input type="text" id="lote-${id}" value="${item.lote || ''}" class="form-input"></td>
-          <td>${validadeBR}</td>
-          <td><input type="number" id="quant-${id}" value="${item.quantidade || 0}" class="form-input"></td>
-          <td class="actions-cell">
-            <button class="btn-success" onclick="salvarEdicao('${id}')">Salvar</button>
-            <button class="btn-danger" onclick="remover('${id}')">Remover</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  } catch (error) {
-    console.error('Erro ao carregar estoque:', error);
-    setMsg('msg', 'Erro ao carregar estoque', true);
-  }
-}
-
-    // Inicialização
-    hide('main');
-  </script>
+    <script src="javascript.js"></script>
 </body>
 </html>
