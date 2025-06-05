@@ -10,20 +10,25 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Configuração de CORS com o domínio correto
 app.use(cors({
   origin: 'https://projeto-estoque-gcl4.onrender.com',
   credentials: true
 }));
+
 app.use(express.json());
-app.use(express.static('public'));
+
+// Servir arquivos estáticos da raiz do projeto
+app.use(express.static(__dirname));
 
 const USERS_FILE = path.join(__dirname, 'data', 'users.json');
 const ESTOQUE_FILE = path.join(__dirname, 'data', 'estoque.json');
 
+// Função para ler users.json
 async function readUsers() {
   try {
     const data = await fs.readFile(USERS_FILE, 'utf8');
-    console.log('users.json lido com sucesso:', data); // Log para depuração
+    console.log('users.json lido com sucesso:', data);
     return JSON.parse(data);
   } catch (error) {
     console.error('Erro ao ler users.json:', error);
@@ -31,6 +36,7 @@ async function readUsers() {
   }
 }
 
+// Função para escrever em users.json
 async function writeUsers(users) {
   try {
     await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
@@ -40,6 +46,7 @@ async function writeUsers(users) {
   }
 }
 
+// Função para ler estoque.json
 async function readEstoque() {
   try {
     const data = await fs.readFile(ESTOQUE_FILE, 'utf8');
@@ -51,6 +58,7 @@ async function readEstoque() {
   }
 }
 
+// Função para escrever em estoque.json
 async function writeEstoque(estoque) {
   try {
     await fs.writeFile(ESTOQUE_FILE, JSON.stringify(estoque, null, 2));
@@ -60,6 +68,7 @@ async function writeEstoque(estoque) {
   }
 }
 
+// Rota para registro de usuário
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   console.log('Requisição de registro:', { username, password });
@@ -79,6 +88,7 @@ app.post('/api/register', async (req, res) => {
   res.status(201).json({ message: 'Usuário registrado com sucesso' });
 });
 
+// Rota para login
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   console.log('Tentativa de login:', { username, password });
@@ -95,11 +105,13 @@ app.post('/api/login', async (req, res) => {
   res.json({ message: 'Login bem-sucedido' });
 });
 
+// Rota para obter o estoque
 app.get('/api/estoque', async (req, res) => {
   const estoque = await readEstoque();
   res.json(estoque);
 });
 
+// Rota para adicionar produto ao estoque
 app.post('/api/estoque', async (req, res) => {
   const { produto, tipo, lote, validade, quantidade } = req.body;
   console.log('Adicionando produto:', { produto, tipo, lote, validade, quantidade });
@@ -115,6 +127,7 @@ app.post('/api/estoque', async (req, res) => {
   res.status(201).json({ message: 'Produto adicionado com sucesso' });
 });
 
+// Rota para atualizar produto no estoque
 app.put('/api/estoque/:id', async (req, res) => {
   const { id } = req.params;
   const { produto, tipo, lote, validade, quantidade } = req.body;
@@ -131,6 +144,7 @@ app.put('/api/estoque/:id', async (req, res) => {
   res.json({ message: 'Produto atualizado com sucesso' });
 });
 
+// Rota para excluir produto do estoque
 app.delete('/api/estoque/:id', async (req, res) => {
   const { id } = req.params;
   console.log('Excluindo produto:', { id });
@@ -146,8 +160,16 @@ app.delete('/api/estoque/:id', async (req, res) => {
   res.json({ message: 'Produto excluído com sucesso' });
 });
 
+// Rota para servir o index.html da raiz do projeto
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexPath = path.join(__dirname, 'index.html');
+  console.log('Tentando servir index.html em:', indexPath);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Erro ao servir index.html:', err);
+      res.status(500).send('Erro ao carregar a página');
+    }
+  });
 });
 
 const PORT = process.env.PORT || 3000;
