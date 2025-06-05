@@ -479,7 +479,9 @@ table {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Cabeçalho da tabela com gradiente */
+/* ===== ESTILOS DE ORDENAÇÃO ===== */
+
+/* Cabeçalho da tabela com gradiente e funcionalidade de ordenação */
 th {
     background: linear-gradient(135deg, #6a2f77, #824283);
     color: #fff;
@@ -494,8 +496,77 @@ th {
     transition: all 0.3s ease;
 }
 
-/* Efeito hover no cabeçalho */
-th:hover {
+/* Cabeçalhos clicáveis para ordenação */
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+}
+
+th.sortable:hover {
+    background: linear-gradient(135deg, #824283, #9d4edd);
+    transform: translateY(-1px);
+}
+
+/* Container do texto da coluna */
+.column-text {
+    flex: 1;
+    text-align: center;
+}
+
+/* Container das setas de ordenação */
+.sort-arrows {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+    font-size: 0.7rem;
+    min-width: 12px;
+}
+
+/* Hover nas setas */
+th.sortable:hover .sort-arrows {
+    opacity: 1;
+}
+
+/* Setas individuais */
+.arrow-up,
+.arrow-down {
+    display: block;
+    line-height: 1;
+    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Estados das setas */
+th.sortable.sort-asc .arrow-up {
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+    transform: scale(1.2);
+}
+
+th.sortable.sort-desc .arrow-down {
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+    transform: scale(1.2);
+}
+
+/* Setas inativas ficam mais transparentes */
+th.sortable.sort-asc .arrow-down,
+th.sortable.sort-desc .arrow-up {
+    opacity: 0.3;
+}
+
+/* Efeito hover no cabeçalho normal (não ordenável) */
+th:not(.sortable):hover {
     background: linear-gradient(135deg, #824283, #9d4edd);
     transform: translateY(-1px);
 }
@@ -509,6 +580,11 @@ th:not(:last-child)::after {
     height: 50%;
     width: 1px;
     background: rgba(255, 255, 255, 0.2);
+}
+
+/* Ajustes para cabeçalhos ordenáveis */
+th.sortable::after {
+    right: 2px;
 }
 
 /* Células da tabela */
@@ -714,135 +790,3 @@ tr.editing {
 }
 
 .loading-row::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(106, 47, 119, 0.1), transparent);
-    animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-/* ===== MELHORIAS NA PAGINAÇÃO ===== */
-
-#pagination {
-    margin-top: 25px;
-    text-align: center;
-    padding: 20px 0;
-}
-
-#pagination button {
-    padding: 10px 15px;
-    margin: 0 5px;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    color: #6a2f77;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    min-width: 45px;
-}
-
-#pagination button:hover {
-    background: linear-gradient(135deg, #6a2f77, #824283);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(106, 47, 119, 0.3);
-}
-
-#pagination button.active {
-    background: linear-gradient(135deg, #6a2f77, #824283);
-    color: #fff;
-    border-color: #6a2f77;
-    box-shadow: 0 3px 10px rgba(106, 47, 119, 0.3);
-}
-
-#pagination button.active:hover {
-    background: linear-gradient(135deg, #824283, #9d4edd);
-}
-
-/* ===== RESPONSIVIDADE ===== */
-
-@media (max-width: 768px) {
-    table {
-        font-size: 0.8rem;
-    }
-    
-    th, td {
-        padding: 12px 8px;
-    }
-    
-    td button {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-        min-width: 70px;
-    }
-    
-    td:last-child {
-        flex-direction: column;
-        gap: 4px;
-    }
-}
-
-/* ===== INDICADORES VISUAIS ===== */
-
-/* Destaque para produtos com estoque baixo */
-tr[data-low-stock="true"] {
-    background: linear-gradient(90deg, #fff5f5, #fff);
-    border-left: 4px solid #e74c3c;
-}
-
-tr[data-low-stock="true"]:hover {
-    background: linear-gradient(90deg, #ffebee, #fff);
-}
-
-/* Destaque para produtos próximos do vencimento */
-tr[data-expire-soon="true"] {
-    background: linear-gradient(90deg, #fffbf0, #fff);
-    border-left: 4px solid #f39c12;
-}
-
-tr[data-expire-soon="true"]:hover {
-    background: linear-gradient(90deg, #fef9e7, #fff);
-}
-
-/* ===== ANIMAÇÕES SUAVES ===== */
-
-/* Animação de entrada das linhas */
-tbody tr {
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Animação de saída das linhas */
-tbody tr.removing {
-    animation: slideOut 0.3s ease-in forwards;
-}
-
-@keyframes slideOut {
-    from {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-}
