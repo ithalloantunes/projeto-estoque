@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -60,7 +61,27 @@
       <!-- Seções padrão -->
       <div id="home-section" class="home-section">…</div>
       <div id="add-product-section" style="display:none;">…</div>
-      <div id="view-stock-section" style="display:none;">…</div>
+
+      <!-- Seção de visualização do estoque com filtro e tabela -->
+      <div id="view-stock-section" style="display:none; padding: 20px;">
+        <h2>Estoque</h2>
+        <input type="text" id="filter-input" placeholder="Filtrar por nome, tipo ou seção">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Tipo</th>
+              <th>Seção</th>
+              <th>Quantidade</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="stock-table-body">
+            <!-- Produtos inseridos via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </div>
 
