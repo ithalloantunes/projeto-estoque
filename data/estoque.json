@@ -1,402 +1,402 @@
 [
   {
     "id":0,
-    "produto":"Produto 1",
-    "tipo":"Embalagem",
-    "lote":"LOT-826",
-    "quantidade":32,
-    "validade":"2025-09-11"
+    "produto":"Açaí Tradicional 300ml",
+    "tipo":"Açaí",
+    "lote":"LOT-683",
+    "quantidade":75,
+    "validade":"2025-11-01"
   },
   {
     "id":1,
-    "produto":"Produto 2",
+    "produto":"Açaí Tradicional 500ml",
     "tipo":"Açaí",
-    "lote":"LOT-360",
-    "quantidade":109,
-    "validade":"2025-11-16"
+    "lote":"LOT-851",
+    "quantidade":186,
+    "validade":"2026-06-04"
   },
   {
     "id":2,
-    "produto":"Produto 3",
-    "tipo":"Embalagem",
-    "lote":"LOT-653",
-    "quantidade":79,
-    "validade":"2026-04-07"
+    "produto":"Açaí Premium 300ml",
+    "tipo":"Açaí",
+    "lote":"LOT-138",
+    "quantidade":51,
+    "validade":"2026-05-10"
   },
   {
     "id":3,
-    "produto":"Produto 4",
-    "tipo":"Bebida",
-    "lote":"LOT-349",
-    "quantidade":38,
-    "validade":"2026-01-05"
+    "produto":"Açaí Premium 500ml",
+    "tipo":"Açaí",
+    "lote":"LOT-191",
+    "quantidade":40,
+    "validade":"2026-02-16"
   },
   {
     "id":4,
-    "produto":"Produto 5",
-    "tipo":"Embalagem",
-    "lote":"LOT-599",
-    "quantidade":155,
-    "validade":"2026-03-07"
+    "produto":"Açaí com Banana 300ml",
+    "tipo":"Açaí",
+    "lote":"LOT-307",
+    "quantidade":111,
+    "validade":"2025-09-07"
   },
   {
     "id":5,
-    "produto":"Produto 6",
+    "produto":"Açaí com Banana 500ml",
     "tipo":"Açaí",
-    "lote":"LOT-753",
-    "quantidade":101,
-    "validade":"2026-05-07"
+    "lote":"LOT-864",
+    "quantidade":19,
+    "validade":"2025-10-02"
   },
   {
     "id":6,
-    "produto":"Produto 7",
-    "tipo":"Higiene",
-    "lote":"LOT-944",
-    "quantidade":44,
-    "validade":"2026-02-15"
+    "produto":"Açaí com Morango 300ml",
+    "tipo":"Açaí",
+    "lote":"LOT-923",
+    "quantidade":97,
+    "validade":"2025-09-17"
   },
   {
     "id":7,
-    "produto":"Produto 8",
-    "tipo":"Bebida",
-    "lote":"LOT-740",
-    "quantidade":47,
-    "validade":"2026-01-16"
+    "produto":"Açaí com Morango 500ml",
+    "tipo":"Açaí",
+    "lote":"LOT-699",
+    "quantidade":123,
+    "validade":"2025-11-11"
   },
   {
     "id":8,
-    "produto":"Produto 9",
+    "produto":"Açaí com Granola 300ml",
     "tipo":"Açaí",
-    "lote":"LOT-474",
-    "quantidade":33,
-    "validade":"2025-12-09"
+    "lote":"LOT-324",
+    "quantidade":41,
+    "validade":"2025-10-24"
   },
   {
     "id":9,
-    "produto":"Produto 10",
-    "tipo":"Bebida",
-    "lote":"LOT-339",
-    "quantidade":76,
-    "validade":"2025-11-17"
-  },
-  {
-    "id":10,
-    "produto":"Produto 11",
-    "tipo":"Embalagem",
-    "lote":"LOT-998",
-    "quantidade":105,
-    "validade":"2025-11-25"
-  },
-  {
-    "id":11,
-    "produto":"Produto 12",
+    "produto":"Açaí com Granola 500ml",
     "tipo":"Açaí",
-    "lote":"LOT-428",
-    "quantidade":10,
-    "validade":"2026-04-01"
-  },
-  {
-    "id":12,
-    "produto":"Produto 13",
-    "tipo":"Higiene",
-    "lote":"LOT-530",
-    "quantidade":126,
-    "validade":"2026-01-18"
-  },
-  {
-    "id":13,
-    "produto":"Produto 14",
-    "tipo":"Embalagem",
-    "lote":"LOT-323",
-    "quantidade":106,
-    "validade":"2025-09-12"
-  },
-  {
-    "id":14,
-    "produto":"Produto 15",
-    "tipo":"Embalagem",
-    "lote":"LOT-614",
-    "quantidade":31,
-    "validade":"2025-10-14"
-  },
-  {
-    "id":15,
-    "produto":"Produto 16",
-    "tipo":"Embalagem",
-    "lote":"LOT-230",
-    "quantidade":87,
-    "validade":"2026-06-05"
-  },
-  {
-    "id":16,
-    "produto":"Produto 17",
-    "tipo":"Complemento",
-    "lote":"LOT-963",
-    "quantidade":68,
-    "validade":"2026-03-21"
-  },
-  {
-    "id":17,
-    "produto":"Produto 18",
-    "tipo":"Complemento",
-    "lote":"LOT-343",
-    "quantidade":157,
-    "validade":"2026-06-07"
-  },
-  {
-    "id":18,
-    "produto":"Produto 19",
-    "tipo":"Embalagem",
-    "lote":"LOT-431",
-    "quantidade":171,
-    "validade":"2025-08-25"
-  },
-  {
-    "id":19,
-    "produto":"Produto 20",
-    "tipo":"Embalagem",
-    "lote":"LOT-197",
-    "quantidade":156,
-    "validade":"2025-09-04"
-  },
-  {
-    "id":20,
-    "produto":"Produto 21",
-    "tipo":"Açaí",
-    "lote":"LOT-960",
-    "quantidade":127,
-    "validade":"2025-09-18"
-  },
-  {
-    "id":21,
-    "produto":"Produto 22",
-    "tipo":"Complemento",
-    "lote":"LOT-701",
-    "quantidade":91,
-    "validade":"2026-06-06"
-  },
-  {
-    "id":22,
-    "produto":"Produto 23",
-    "tipo":"Bebida",
-    "lote":"LOT-531",
-    "quantidade":40,
-    "validade":"2025-11-10"
-  },
-  {
-    "id":23,
-    "produto":"Produto 24",
-    "tipo":"Bebida",
-    "lote":"LOT-462",
-    "quantidade":102,
-    "validade":"2025-11-02"
-  },
-  {
-    "id":24,
-    "produto":"Produto 25",
-    "tipo":"Complemento",
-    "lote":"LOT-682",
-    "quantidade":50,
-    "validade":"2026-05-22"
-  },
-  {
-    "id":25,
-    "produto":"Produto 26",
-    "tipo":"Embalagem",
-    "lote":"LOT-175",
-    "quantidade":60,
-    "validade":"2025-12-09"
-  },
-  {
-    "id":26,
-    "produto":"Produto 27",
-    "tipo":"Complemento",
-    "lote":"LOT-308",
-    "quantidade":24,
-    "validade":"2025-12-20"
-  },
-  {
-    "id":27,
-    "produto":"Produto 28",
-    "tipo":"Açaí",
-    "lote":"LOT-692",
-    "quantidade":9,
-    "validade":"2026-04-27"
-  },
-  {
-    "id":28,
-    "produto":"Produto 29",
-    "tipo":"Higiene",
-    "lote":"LOT-609",
-    "quantidade":73,
-    "validade":"2025-07-10"
-  },
-  {
-    "id":29,
-    "produto":"Produto 30",
-    "tipo":"Complemento",
-    "lote":"LOT-947",
-    "quantidade":144,
-    "validade":"2026-05-14"
-  },
-  {
-    "id":30,
-    "produto":"Produto 31",
-    "tipo":"Açaí",
-    "lote":"LOT-726",
-    "quantidade":52,
-    "validade":"2026-03-07"
-  },
-  {
-    "id":31,
-    "produto":"Produto 32",
-    "tipo":"Complemento",
-    "lote":"LOT-164",
-    "quantidade":57,
-    "validade":"2025-12-11"
-  },
-  {
-    "id":32,
-    "produto":"Produto 33",
-    "tipo":"Embalagem",
-    "lote":"LOT-112",
-    "quantidade":81,
-    "validade":"2026-06-06"
-  },
-  {
-    "id":33,
-    "produto":"Produto 34",
-    "tipo":"Higiene",
-    "lote":"LOT-742",
-    "quantidade":158,
-    "validade":"2026-01-24"
-  },
-  {
-    "id":34,
-    "produto":"Produto 35",
-    "tipo":"Embalagem",
-    "lote":"LOT-443",
-    "quantidade":39,
-    "validade":"2026-04-18"
-  },
-  {
-    "id":35,
-    "produto":"Produto 36",
-    "tipo":"Bebida",
-    "lote":"LOT-274",
-    "quantidade":103,
-    "validade":"2026-02-11"
-  },
-  {
-    "id":36,
-    "produto":"Produto 37",
-    "tipo":"Bebida",
-    "lote":"LOT-633",
-    "quantidade":32,
-    "validade":"2025-09-25"
-  },
-  {
-    "id":37,
-    "produto":"Produto 38",
-    "tipo":"Embalagem",
-    "lote":"LOT-270",
-    "quantidade":120,
-    "validade":"2025-09-16"
-  },
-  {
-    "id":38,
-    "produto":"Produto 39",
-    "tipo":"Complemento",
-    "lote":"LOT-920",
-    "quantidade":16,
-    "validade":"2025-10-07"
-  },
-  {
-    "id":39,
-    "produto":"Produto 40",
-    "tipo":"Açaí",
-    "lote":"LOT-773",
-    "quantidade":162,
-    "validade":"2025-12-14"
-  },
-  {
-    "id":40,
-    "produto":"Produto 41",
-    "tipo":"Higiene",
-    "lote":"LOT-978",
-    "quantidade":15,
+    "lote":"LOT-817",
+    "quantidade":44,
     "validade":"2025-09-19"
   },
   {
-    "id":41,
-    "produto":"Produto 42",
-    "tipo":"Complemento",
-    "lote":"LOT-921",
-    "quantidade":7,
+    "id":10,
+    "produto":"Açaí com Creme de Cupuaçu 300ml",
+    "tipo":"Açaí",
+    "lote":"LOT-877",
+    "quantidade":184,
+    "validade":"2025-07-26"
+  },
+  {
+    "id":11,
+    "produto":"Açaí com Creme de Cupuaçu 500ml",
+    "tipo":"Açaí",
+    "lote":"LOT-656",
+    "quantidade":131,
+    "validade":"2026-03-21"
+  },
+  {
+    "id":12,
+    "produto":"Açaí Fit 300ml",
+    "tipo":"Açaí",
+    "lote":"LOT-910",
+    "quantidade":89,
+    "validade":"2026-02-18"
+  },
+  {
+    "id":13,
+    "produto":"Açaí Fit 500ml",
+    "tipo":"Açaí",
+    "lote":"LOT-584",
+    "quantidade":148,
+    "validade":"2026-01-20"
+  },
+  {
+    "id":14,
+    "produto":"Smoothie de Açaí 300ml",
+    "tipo":"Açaí",
+    "lote":"LOT-531",
+    "quantidade":109,
+    "validade":"2025-07-13"
+  },
+  {
+    "id":15,
+    "produto":"Smoothie de Açaí 500ml",
+    "tipo":"Açaí",
+    "lote":"LOT-620",
+    "quantidade":134,
     "validade":"2026-01-19"
   },
   {
-    "id":42,
-    "produto":"Produto 43",
+    "id":16,
+    "produto":"Suco de Laranja 500ml",
+    "tipo":"Bebida",
+    "lote":"LOT-628",
+    "quantidade":78,
+    "validade":"2025-11-24"
+  },
+  {
+    "id":17,
+    "produto":"Suco de Maracujá 500ml",
+    "tipo":"Bebida",
+    "lote":"LOT-175",
+    "quantidade":136,
+    "validade":"2026-04-22"
+  },
+  {
+    "id":18,
+    "produto":"Água de Coco 300ml",
+    "tipo":"Bebida",
+    "lote":"LOT-373",
+    "quantidade":42,
+    "validade":"2026-01-05"
+  },
+  {
+    "id":19,
+    "produto":"Água Mineral 500ml",
+    "tipo":"Bebida",
+    "lote":"LOT-320",
+    "quantidade":164,
+    "validade":"2026-04-22"
+  },
+  {
+    "id":20,
+    "produto":"Granola Natural 100g",
+    "tipo":"Complemento",
+    "lote":"LOT-513",
+    "quantidade":86,
+    "validade":"2026-01-16"
+  },
+  {
+    "id":21,
+    "produto":"Granola com Castanhas 100g",
+    "tipo":"Complemento",
+    "lote":"LOT-117",
+    "quantidade":185,
+    "validade":"2025-07-12"
+  },
+  {
+    "id":22,
+    "produto":"Leite Condensado 50g",
+    "tipo":"Complemento",
+    "lote":"LOT-843",
+    "quantidade":191,
+    "validade":"2026-01-11"
+  },
+  {
+    "id":23,
+    "produto":"Mel Natural 50g",
+    "tipo":"Complemento",
+    "lote":"LOT-590",
+    "quantidade":56,
+    "validade":"2025-12-18"
+  },
+  {
+    "id":24,
+    "produto":"Morango Fatiado 100g",
+    "tipo":"Complemento",
+    "lote":"LOT-282",
+    "quantidade":136,
+    "validade":"2025-07-15"
+  },
+  {
+    "id":25,
+    "produto":"Banana Fatiada 100g",
+    "tipo":"Complemento",
+    "lote":"LOT-553",
+    "quantidade":87,
+    "validade":"2026-03-01"
+  },
+  {
+    "id":26,
+    "produto":"Kiwi Fatiado 100g",
+    "tipo":"Complemento",
+    "lote":"LOT-302",
+    "quantidade":51,
+    "validade":"2026-03-24"
+  },
+  {
+    "id":27,
+    "produto":"Chocolate Granulado 50g",
+    "tipo":"Complemento",
+    "lote":"LOT-213",
+    "quantidade":118,
+    "validade":"2026-04-11"
+  },
+  {
+    "id":28,
+    "produto":"Paçoca 2 unidades",
+    "tipo":"Complemento",
+    "lote":"LOT-275",
+    "quantidade":18,
+    "validade":"2025-10-20"
+  },
+  {
+    "id":29,
+    "produto":"Leite em Pó 50g",
+    "tipo":"Complemento",
+    "lote":"LOT-370",
+    "quantidade":123,
+    "validade":"2025-07-27"
+  },
+  {
+    "id":30,
+    "produto":"Coco Ralado 50g",
+    "tipo":"Complemento",
+    "lote":"LOT-781",
+    "quantidade":14,
+    "validade":"2026-01-31"
+  },
+  {
+    "id":31,
+    "produto":"Creme de Cupuaçu 100g",
+    "tipo":"Complemento",
+    "lote":"LOT-294",
+    "quantidade":133,
+    "validade":"2025-11-21"
+  },
+  {
+    "id":32,
+    "produto":"Topping de Caramelo 50g",
+    "tipo":"Complemento",
+    "lote":"LOT-378",
+    "quantidade":168,
+    "validade":"2025-08-08"
+  },
+  {
+    "id":33,
+    "produto":"Topping de Nutella 50g",
+    "tipo":"Complemento",
+    "lote":"LOT-637",
+    "quantidade":129,
+    "validade":"2026-04-19"
+  },
+  {
+    "id":34,
+    "produto":"Xarope de Guaraná 50ml",
+    "tipo":"Complemento",
+    "lote":"LOT-379",
+    "quantidade":77,
+    "validade":"2026-02-15"
+  },
+  {
+    "id":35,
+    "produto":"Xarope de Morango 50ml",
+    "tipo":"Complemento",
+    "lote":"LOT-326",
+    "quantidade":186,
+    "validade":"2025-12-16"
+  },
+  {
+    "id":36,
+    "produto":"Copo Descartável 300ml",
+    "tipo":"Embalagem",
+    "lote":"LOT-620",
+    "quantidade":140,
+    "validade":"2026-01-26"
+  },
+  {
+    "id":37,
+    "produto":"Copo Descartável 500ml",
     "tipo":"Embalagem",
     "lote":"LOT-594",
-    "quantidade":178,
-    "validade":"2025-08-12"
+    "quantidade":174,
+    "validade":"2026-04-18"
+  },
+  {
+    "id":38,
+    "produto":"Colher Descartável",
+    "tipo":"Embalagem",
+    "lote":"LOT-533",
+    "quantidade":129,
+    "validade":"2026-04-14"
+  },
+  {
+    "id":39,
+    "produto":"Canudo Descartável",
+    "tipo":"Embalagem",
+    "lote":"LOT-974",
+    "quantidade":191,
+    "validade":"2025-12-21"
+  },
+  {
+    "id":40,
+    "produto":"Guardanapo de Papel",
+    "tipo":"Embalagem",
+    "lote":"LOT-700",
+    "quantidade":141,
+    "validade":"2025-08-03"
+  },
+  {
+    "id":41,
+    "produto":"Caixa Delivery Pequena",
+    "tipo":"Embalagem",
+    "lote":"LOT-890",
+    "quantidade":102,
+    "validade":"2025-12-20"
+  },
+  {
+    "id":42,
+    "produto":"Caixa Delivery Média",
+    "tipo":"Embalagem",
+    "lote":"LOT-389",
+    "quantidade":123,
+    "validade":"2026-02-19"
   },
   {
     "id":43,
-    "produto":"Produto 44",
-    "tipo":"Açaí",
-    "lote":"LOT-781",
-    "quantidade":59,
-    "validade":"2026-02-09"
+    "produto":"Caixa Delivery Grande",
+    "tipo":"Embalagem",
+    "lote":"LOT-252",
+    "quantidade":76,
+    "validade":"2026-02-06"
   },
   {
     "id":44,
-    "produto":"Produto 45",
-    "tipo":"Açaí",
-    "lote":"LOT-269",
-    "quantidade":90,
-    "validade":"2025-09-23"
+    "produto":"Pote Plástico 500ml",
+    "tipo":"Embalagem",
+    "lote":"LOT-343",
+    "quantidade":193,
+    "validade":"2026-05-01"
   },
   {
     "id":45,
-    "produto":"Produto 46",
+    "produto":"Pote Plástico 700ml",
     "tipo":"Embalagem",
-    "lote":"LOT-358",
-    "quantidade":51,
-    "validade":"2025-07-10"
+    "lote":"LOT-153",
+    "quantidade":104,
+    "validade":"2026-02-26"
   },
   {
     "id":46,
-    "produto":"Produto 47",
-    "tipo":"Açaí",
-    "lote":"LOT-907",
-    "quantidade":78,
-    "validade":"2025-11-09"
+    "produto":"Bowl de Vidro",
+    "tipo":"Embalagem",
+    "lote":"LOT-403",
+    "quantidade":166,
+    "validade":"2026-02-01"
   },
   {
     "id":47,
-    "produto":"Produto 48",
-    "tipo":"Bebida",
-    "lote":"LOT-625",
-    "quantidade":148,
-    "validade":"2026-04-06"
+    "produto":"Bowl de Plástico",
+    "tipo":"Embalagem",
+    "lote":"LOT-596",
+    "quantidade":153,
+    "validade":"2026-01-09"
   },
   {
     "id":48,
-    "produto":"Produto 49",
-    "tipo":"Higiene",
-    "lote":"LOT-917",
-    "quantidade":162,
-    "validade":"2025-12-22"
+    "produto":"Suco Detox 300ml",
+    "tipo":"Bebida",
+    "lote":"LOT-558",
+    "quantidade":39,
+    "validade":"2025-12-25"
   },
   {
     "id":49,
-    "produto":"Produto 50",
-    "tipo":"Bebida",
-    "lote":"LOT-950",
-    "quantidade":41,
-    "validade":"2025-07-22"
+    "produto":"Vitaminado de Frutas Vermelhas 300ml",
+    "tipo":"Outros",
+    "lote":"LOT-567",
+    "quantidade":154,
+    "validade":"2025-09-16"
   }
 ]
