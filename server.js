@@ -118,25 +118,34 @@ app.post('/api/estoque', (req, res) => {
 
 // Atualizar produto existente
 app.put('/api/estoque/:id', (req, res) => {
-  const id = req.params.id;
-  const { produto, tipo, lote, quantidade, validade } = req.body;
-  const estoque = readJSON(estoqueFile);
-  const idx = estoque.findIndex(item => item.id === id);
+  // Converte 'id' de string para número
+  const idParam = parseInt(req.params.id, 10);
+  const estoque = readJSON(estoqueFile) || [];
+
+  // Encontra o índice com id === idParam
+  const idx = estoque.findIndex(item => item.id === idParam);
   if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
+
+  // Atualiza apenas os campos enviados (sem perder o id)
+  const atual = estoque[idx];
   estoque[idx] = {
-    ...estoque[idx],
-    produto: produto?.trim() || estoque[idx].produto,
-    tipo: tipo?.trim()    || estoque[idx].tipo,
-    lote: lote?.trim()    || estoque[idx].lote,
-    quantidade: parseInt(quantidade, 10) || estoque[idx].quantidade,
-    validade: validade || estoque[idx].validade || null,
+    ...atual,
+    produto:    req.body.produto?.trim()    || atual.produto,
+    tipo:       req.body.tipo?.trim()       || atual.tipo,
+    lote:       req.body.lote?.trim()       || atual.lote,
+    quantidade: Number.isInteger(+req.body.quantidade)
+                  ? parseInt(req.body.quantidade, 10)
+                  : atual.quantidade,
+    validade:   req.body.validade ?? atual.validade,
     dataAtualizacao: new Date().toISOString()
   };
+
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto atualizado com sucesso' });
 });
+
 
 // Excluir produto (remove de verdade com splice)
 // DELETE /api/estoque/:id — splice em vez de delete
