@@ -47,31 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Estado inicial
-
-  const filterInput = document.getElementById('filter-input');
-  if (filterInput) {
-    filterInput.addEventListener('input', async () => {
-      const filter = filterInput.value.toLowerCase();
-      try {
-        const res = await fetch(`${BASE_URL}/api/estoque`);
-        const data = await res.json();
-        if (res.ok) {
-          const filtered = data.estoque.filter(item =>
-            item.produto.toLowerCase().includes(filter) ||
-            item.tipo.toLowerCase().includes(filter) ||
-            item.secao.toLowerCase().includes(filter)
-          );
-          renderStock(filtered, 1);
-          setupPagination(filtered.length, 1);
-        }
-      } catch (err) {
-        alert('Erro ao filtrar: ' + err.message);
-      }
-    });
-  } else {
-    console.warn("filter-input não encontrado no DOM");
-  }
-
   loginContainer.style.display   = 'flex';
   stockContainer.style.display   = 'none';
   loginForm.style.display        = 'block';
