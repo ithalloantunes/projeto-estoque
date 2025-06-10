@@ -101,7 +101,7 @@ app.post('/api/estoque', (req, res) => {
 });
 
 app.put('/api/estoque/:id', (req, res) => {
-  const idParam = parseInt(req.params.id, 10);
+  const idParam = req.params.id;
   const estoque = readJSON(estoqueFile) || [];
   const idx     = estoque.findIndex(item => item.id === idParam);
   if (idx === -1) {
