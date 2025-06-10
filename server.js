@@ -18,8 +18,8 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // Configuração dos arquivos de dados
-const dataDir = path.join(__dirname, 'data');
-const usersFile = path.join(dataDir, 'users.json');
+const dataDir    = path.join(__dirname, 'data');
+const usersFile  = path.join(dataDir, 'users.json');
 const estoqueFile = path.join(dataDir, 'estoque.json');
 
 // Garante existência de pasta e arquivos
@@ -30,8 +30,8 @@ if (!fs.existsSync(usersFile)) {
   fs.writeFileSync(usersFile, '[]', 'utf8');
 }
 if (!fs.existsSync(estoqueFile)) {
-  // Como vocês manipulam o estoque como objeto, inicialize como "{}"
-  fs.writeFileSync(estoqueFile, '{}', 'utf8');
+  // Agora inicializa como array em vez de objeto
+  fs.writeFileSync(estoqueFile, '[]', 'utf8');
 }
 
 // Helpers de leitura/escrita
@@ -40,7 +40,8 @@ const readJSON = file => {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   } catch (e) {
     console.error(`Erro ao ler ${file}:`, e.message);
-    return file.includes('users') ? [] : {};
+    // Se for users.json retorna array; se for estoque.json, array também
+    return [];
   }
 };
 const writeJSON = (file, data) => {
@@ -52,7 +53,7 @@ const writeJSON = (file, data) => {
   }
 };
 
-// --- Rotas de Autenticação (inalteradas) ---
+// --- Rotas de Autenticação ---
 
 app.post('/api/register', (req, res) => {
   const { username, password } = req.body;
@@ -83,13 +84,18 @@ app.post('/api/login', (req, res) => {
 
 // --- Rotas de Estoque ---
 
-// Listar todo o estoque (objeto)
+// Listar todo o estoque (sempre retorna array)
 app.get('/api/estoque', (req, res) => {
-  const estoque = readJSON(estoqueFile);
+  let estoque = readJSON(estoqueFile);
+  if (!Array.isArray(estoque)) {
+    // Se por algum motivo vier objeto, converte para array
+    estoque = Object.entries(estoque).map(([id, item]) => ({ id, ...item }));
+    writeJSON(estoqueFile, estoque);
+  }
   res.json(estoque);
 });
 
-// Adicionar novo produto (gera UUID como chave)
+// Adicionar novo produto
 app.post('/api/estoque', (req, res) => {
   const { produto, tipo, lote, quantidade, validade } = req.body;
   if (!produto || quantidade === undefined) {
@@ -97,49 +103,52 @@ app.post('/api/estoque', (req, res) => {
   }
   const estoque = readJSON(estoqueFile);
   const id = uuidv4();
-  estoque[id] = {
+  estoque.push({
+    id,
     produto: produto.trim(),
     tipo: tipo?.trim() || '',
     lote: lote?.trim() || '',
     quantidade: parseInt(quantidade, 10) || 0,
     validade: validade || null,
     dataCadastro: new Date().toISOString()
-  };
+  });
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto adicionado com sucesso', id });
 });
 
-// Atualizar dados de um produto existente
+// Atualizar produto existente
 app.put('/api/estoque/:id', (req, res) => {
   const id = req.params.id;
   const { produto, tipo, lote, quantidade, validade } = req.body;
   const estoque = readJSON(estoqueFile);
-  if (!estoque[id]) {
+  const idx = estoque.findIndex(item => item.id === id);
+  if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
-  estoque[id] = {
-    ...estoque[id],
-    produto: produto?.trim() || estoque[id].produto,
-    tipo: tipo?.trim() || estoque[id].tipo,
-    lote: lote?.trim() || estoque[id].lote,
-    quantidade: parseInt(quantidade, 10) || estoque[id].quantidade,
-    validade: validade || estoque[id].validade || null,
+  estoque[idx] = {
+    ...estoque[idx],
+    produto: produto?.trim() || estoque[idx].produto,
+    tipo: tipo?.trim()    || estoque[idx].tipo,
+    lote: lote?.trim()    || estoque[idx].lote,
+    quantidade: parseInt(quantidade, 10) || estoque[idx].quantidade,
+    validade: validade || estoque[idx].validade || null,
     dataAtualizacao: new Date().toISOString()
   };
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto atualizado com sucesso' });
 });
 
-// **Rota DELETE única e correta**
+// Excluir produto (remove de verdade com splice)
 app.delete('/api/estoque/:id', (req, res) => {
   const id = req.params.id;
   const estoque = readJSON(estoqueFile);
-  if (!estoque[id]) {
+  const idx = estoque.findIndex(item => item.id === id);
+  if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
-  delete estoque[id];
+  estoque.splice(idx, 1);
   writeJSON(estoqueFile, estoque);
-  return res.json({ message: 'Produto excluído com sucesso!' });
+  res.json({ message: 'Produto excluído com sucesso!' });
 });
 
 // Front-end fallback
