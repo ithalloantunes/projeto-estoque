@@ -139,17 +139,23 @@ app.put('/api/estoque/:id', (req, res) => {
 });
 
 // Excluir produto (remove de verdade com splice)
+// DELETE /api/estoque/:id — splice em vez de delete
 app.delete('/api/estoque/:id', (req, res) => {
-  const id = req.params.id;
-  const estoque = readJSON(estoqueFile);
-  const idx = estoque.findIndex(item => item.id === id);
+  // transforma a string '0' em número 0
+  const idParam = parseInt(req.params.id, 10);
+  const estoque = readJSON(estoqueFile) || [];
+
+  // agora compara number === number
+  const idx = estoque.findIndex(item => item.id === idParam);
   if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
+
   estoque.splice(idx, 1);
   writeJSON(estoqueFile, estoque);
-  res.json({ message: 'Produto excluído com sucesso!' });
+  return res.json({ message: 'Produto excluído com sucesso!' });
 });
+
 
 // Front-end fallback
 app.get('*', (req, res) => {
