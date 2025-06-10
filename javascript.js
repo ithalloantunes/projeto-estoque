@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function resetProfilePhoto() {
-    const defaultPic = 'https://via.placeholder.com/40x40/6a2f77/ffffff?text=👤';
+    const defaultPic = 'https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png';
     userProfilePic.src = defaultPic;
     profileModalPic.src = defaultPic.replace('40x40','200x200');
     if (currentUser) {
