@@ -315,9 +315,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         document.querySelectorAll('.edit-btn')
-            .forEach(btn => btn.addEventListener('click', () => editProduct(btn.dataset.id)));
+            .forEach(btn => btn.addEventListener('click', () => {
+                const id = btn.closest('tr').getAttribute('data-id');
+                editProduct(id);
+            }));
         document.querySelectorAll('.delete-btn')
-            .forEach(btn => btn.addEventListener('click', () => showDeleteModal(btn.dataset.id)));
+            .forEach(btn => btn.addEventListener('click', e => {
+                const row = e.currentTarget.closest('tr');
+                const id = row ? row.getAttribute('data-id') : e.currentTarget.dataset.id;
+                showDeleteModal(id);
+            }));
     }
 
     function setupPagination(totalItems, currentPage) {
@@ -426,8 +433,9 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         document.body.appendChild(modal);
         modal.querySelector('.confirm-delete-btn')
-             .addEventListener('click', async () => {
-                 await performDelete(id);
+             .addEventListener('click', async e => {
+                 const idToDelete = e.currentTarget.dataset.id;
+                 await performDelete(idToDelete);
                  modal.remove();
              });
         modal.querySelector('.cancel-delete-btn')
