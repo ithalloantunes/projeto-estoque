@@ -18,8 +18,8 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // Configuração dos arquivos de dados
-const dataDir = path.join(__dirname, 'data');
-const usersFile = path.join(dataDir, 'users.json');
+const dataDir    = path.join(__dirname, 'data');
+const usersFile  = path.join(dataDir, 'users.json');
 const estoqueFile = path.join(dataDir, 'estoque.json');
 
 // Garante existência de pasta e arquivos
@@ -30,7 +30,7 @@ if (!fs.existsSync(usersFile)) {
   fs.writeFileSync(usersFile, '[]', 'utf8');
 }
 if (!fs.existsSync(estoqueFile)) {
-  // Como o estoque é armazenado como array, inicialize como "[]"
+  // Agora inicializa como array em vez de objeto
   fs.writeFileSync(estoqueFile, '[]', 'utf8');
 }
 
@@ -40,11 +40,8 @@ const readJSON = file => {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   } catch (e) {
     console.error(`Erro ao ler ${file}:`, e.message);
-    if (file === usersFile || file === estoqueFile) {
-      return [];
-    } else {
-      return {};
-    }
+    // Se for users.json retorna array; se for estoque.json, array também
+    return [];
   }
 };
 const writeJSON = (file, data) => {
@@ -57,6 +54,7 @@ const writeJSON = (file, data) => {
 };
 
 // --- Rotas de Autenticação ---
+
 app.post('/api/register', (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -85,9 +83,15 @@ app.post('/api/login', (req, res) => {
 });
 
 // --- Rotas de Estoque ---
-// Listar todo o estoque (lista)
+
+// Listar todo o estoque (sempre retorna array)
 app.get('/api/estoque', (req, res) => {
-  const estoque = readJSON(estoqueFile);
+  let estoque = readJSON(estoqueFile);
+  if (!Array.isArray(estoque)) {
+    // Se por algum motivo vier objeto, converte para array
+    estoque = Object.entries(estoque).map(([id, item]) => ({ id, ...item }));
+    writeJSON(estoqueFile, estoque);
+  }
   res.json(estoque);
 });
 
@@ -98,57 +102,51 @@ app.post('/api/estoque', (req, res) => {
     return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
   }
   const estoque = readJSON(estoqueFile);
-  // Determina novo ID (incremental único)
-  let newId = 0;
-  if (estoque.length > 0) {
-    newId = Math.max(...estoque.map(item => item.id)) + 1;
-  }
-  const novoProduto = {
+  const id = uuidv4();
+  estoque.push({
+    id,
     produto: produto.trim(),
     tipo: tipo?.trim() || '',
     lote: lote?.trim() || '',
     quantidade: parseInt(quantidade, 10) || 0,
     validade: validade || null,
-    id: newId,
     dataCadastro: new Date().toISOString()
-  };
-  estoque.push(novoProduto);
+  });
   writeJSON(estoqueFile, estoque);
-  res.json({ message: 'Produto adicionado com sucesso', id: newId });
+  res.json({ message: 'Produto adicionado com sucesso', id });
 });
 
-// Atualizar dados de um produto existente
+// Atualizar produto existente
 app.put('/api/estoque/:id', (req, res) => {
-  const idParam = parseInt(req.params.id, 10);
+  const id = req.params.id;
   const { produto, tipo, lote, quantidade, validade } = req.body;
   const estoque = readJSON(estoqueFile);
-  const index = estoque.findIndex(item => item.id === idParam);
-  if (index === -1) {
+  const idx = estoque.findIndex(item => item.id === id);
+  if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
-  const itemAtual = estoque[index];
-  estoque[index] = {
-    ...itemAtual,
-    produto: produto?.trim() || itemAtual.produto,
-    tipo: tipo?.trim() || itemAtual.tipo,
-    lote: lote?.trim() || itemAtual.lote,
-    quantidade: quantidade !== undefined ? (isNaN(parseInt(quantidade, 10)) ? itemAtual.quantidade : parseInt(quantidade, 10)) : itemAtual.quantidade,
-    validade: validade !== undefined ? (validade || null) : itemAtual.validade,
+  estoque[idx] = {
+    ...estoque[idx],
+    produto: produto?.trim() || estoque[idx].produto,
+    tipo: tipo?.trim()    || estoque[idx].tipo,
+    lote: lote?.trim()    || estoque[idx].lote,
+    quantidade: parseInt(quantidade, 10) || estoque[idx].quantidade,
+    validade: validade || estoque[idx].validade || null,
     dataAtualizacao: new Date().toISOString()
   };
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto atualizado com sucesso' });
 });
 
-// Excluir um produto
+// Excluir produto (remove de verdade com splice)
 app.delete('/api/estoque/:id', (req, res) => {
-  const idParam = parseInt(req.params.id, 10);
+  const id = req.params.id;
   const estoque = readJSON(estoqueFile);
-  const index = estoque.findIndex(item => item.id === idParam);
-  if (index === -1) {
+  const idx = estoque.findIndex(item => item.id === id);
+  if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
-  estoque.splice(index, 1);
+  estoque.splice(idx, 1);
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto excluído com sucesso!' });
 });
