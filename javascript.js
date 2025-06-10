@@ -319,13 +319,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const id = btn.closest('tr').getAttribute('data-id');
                 editProduct(id);
             }));
-        document.querySelectorAll('.delete-btn')
-            .forEach(btn => btn.addEventListener('click', e => {
-                const row = e.currentTarget.closest('tr');
-                const id = row ? row.getAttribute('data-id') : e.currentTarget.dataset.id;
-                showDeleteModal(id);
-            }));
-    }
+     document.querySelectorAll('.delete-btn')
+  .forEach(btn =>
+    btn.addEventListener('click', e => {
+      // 1) encontra o <tr> pai e pega o data-id
+      const tr = e.currentTarget.closest('tr');
+      const id = tr?.dataset.id;
+      console.log('Excluir item id=', id);
+      showDeleteModal(id);
+    })
+  );
 
     function setupPagination(totalItems, currentPage) {
         const pageCount = Math.ceil(totalItems / itemsPerPage);
