@@ -56,7 +56,11 @@ const writeJSON = (file, data) => {
 // --- Rotas de Autenticação ---
 
 app.post('/api/register', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, roleAtuante } = req.body;
+  // Só quem já estiver logado como admin pode criar novos usuários
+  if (roleAtuante !== 'admin') {
+    return res.status(403).json({ error: 'Somente administradores podem criar usuários' });
+  }
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
   }
@@ -64,7 +68,12 @@ app.post('/api/register', (req, res) => {
   if (users.some(u => u.username === username)) {
     return res.status(400).json({ error: 'Usuário já existe' });
   }
-  users.push({ id: uuidv4(), username, password });
+  users.push({
+    id: uuidv4(),
+    username,
+    password,
+    role: 'user'       // todo novo usuário é criado como ROLE=user
+  });
   writeJSON(usersFile, users);
   res.json({ message: 'Cadastro realizado com sucesso' });
 });
