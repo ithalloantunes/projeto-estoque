@@ -422,28 +422,30 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Erro ao atualizar produto: ' + err.message);
         }
     }
+function showDeleteModal(id) {
+  const modal = document.createElement('div');
+  modal.className = 'delete-modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h2>Confirmar Exclusão</h2>
+      <p>Tem certeza que deseja excluir o produto de id <strong>${id}</strong>?</p>
+      <button class="confirm-delete-btn">Confirmar</button>
+      <button class="cancel-delete-btn">Cancelar</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
 
-    function showDeleteModal(id) {
-        const modal = document.createElement('div');
-        modal.className = 'delete-modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h2>Confirmar Exclusão</h2>
-                <p>Tem certeza que deseja excluir este produto?</p>
-                <button class="confirm-delete-btn" data-id="${id}">Confirmar</button>
-                <button class="cancel-delete-btn">Cancelar</button>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        modal.querySelector('.confirm-delete-btn')
-             .addEventListener('click', async e => {
-                 const idToDelete = e.currentTarget.dataset.id;
-                 await performDelete(idToDelete);
-                 modal.remove();
-             });
-        modal.querySelector('.cancel-delete-btn')
-             .addEventListener('click', () => modal.remove());
-    }
+  // 2) usa o id que veio por parâmetro
+  modal.querySelector('.confirm-delete-btn')
+    .addEventListener('click', async () => {
+      console.log('Confirmar exclusão, id=', id);
+      await performDelete(id);
+      modal.remove();
+    });
+
+  modal.querySelector('.cancel-delete-btn')
+    .addEventListener('click', () => modal.remove());
+}
 
     async function performDelete(id) {
         try {
