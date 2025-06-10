@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${item.quantidade}</td>
         <td>
           <button class="edit-btn"   data-id="${item.id}">Editar</button>
-          <button class="delete-btn" data-id="${item.id}">Excluir</button>
+          <button class="delete-btn">Excluir</button>
         </td>
       `;
       stockTableBody.appendChild(row);
