@@ -482,6 +482,10 @@ document.addEventListener('DOMContentLoaded', () => {
   showLoginBtn.addEventListener('click', showLoginForm);
   logoutBtn.addEventListener('click', logout);
   stockForm.addEventListener('submit', addProduct);
-  document.querySelector('#login-form button[type="submit"]')
-          .addEventListener('click', e => handleLogin(e));
+  const loginSubmitBtn = document.querySelector('#login-form button[type="submit"]');
+  if (loginSubmitBtn) {
+    loginSubmitBtn.addEventListener('click', e => handleLogin(e));
+  } else {
+    console.warn("Botão de login não encontrado no DOM");
+  }
 });
