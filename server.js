@@ -79,7 +79,8 @@ app.post('/api/login', (req, res) => {
   if (!user) {
     return res.status(401).json({ error: 'Credenciais inválidas' });
   }
-  res.json({ message: 'Login bem-sucedido', userId: user.id });
+  // Retorna também o role do usuário
+  res.json({ message: 'Login bem-sucedido', userId: user.id, role: user.role });
 });
 
 // --- Rotas de Estoque ---
