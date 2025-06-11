@@ -101,12 +101,19 @@ app.post('/api/estoque', (req, res) => {
 });
 
 app.put('/api/estoque/:id', (req, res) => {
-  const idParam = req.params.id;
+  const rawId  = req.params.id;
   const estoque = readJSON(estoqueFile) || [];
-  const idx     = estoque.findIndex(item => item.id === idParam);
+
+  // Converte para número se for dígitos, senão usa string (UUID)
+  const idParam = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
+
+  console.log('Atualizando produto', idParam);  // debug
+
+  const idx = estoque.findIndex(item => item.id === idParam);
   if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
+
   const atual = estoque[idx];
   estoque[idx] = {
     ...atual,
@@ -119,6 +126,7 @@ app.put('/api/estoque/:id', (req, res) => {
     validade:   req.body.validade ?? atual.validade,
     dataAtualizacao: new Date().toISOString()
   };
+
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto atualizado com sucesso' });
 });
