@@ -22,6 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn         = document.getElementById('logout-btn');
   const userNameDisplay   = document.getElementById('user-name');
   const userMenu          = document.querySelector('.user-menu');
+  const approveUsersBtn   = document.getElementById('approve-users-btn');
+  const deleteUsersBtn    = document.getElementById('delete-users-btn');
+  const adminSection      = document.getElementById('admin-section');
+  const pendingUsersList  = document.getElementById('pending-users-list');
+  const usersList         = document.getElementById('users-list');
+  const closeAdminBtn     = document.getElementById('close-admin');
   const showAddProduct    = document.getElementById('show-add-product');
   const addProductSection = document.getElementById('add-product-section');
   const viewStockSection  = document.getElementById('view-stock-section');
@@ -55,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let seguirPunteroMouse = true;
   let currentUser        = null;
+  let userRole          = null;
   const anchoMitad = window.innerWidth / 2;
   const altoMitad  = window.innerHeight / 2;
 
@@ -198,10 +205,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       if (res.ok) {
         currentUser            = username;
+        userRole              = data.role;
         userNameDisplay.textContent = username;
         loginContainer.style.display = 'none';
         stockContainer.style.display = 'block';
         homeSection.style.display     = 'block';
+        if (userRole === 'admin') {
+          approveUsersBtn.style.display = 'block';
+          deleteUsersBtn.style.display  = 'block';
+        }
         initProfilePhoto();
       } else {
         alert(data.error || 'Erro no login');
@@ -243,12 +255,16 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUser                     = null;
     userNameDisplay.textContent     = 'Usuário';
     userMenu.style.display          = 'none';
+    approveUsersBtn.style.display   = 'none';
+    deleteUsersBtn.style.display    = 'none';
+    adminSection.style.display      = 'none';
     profileModal.style.display      = 'none';
     resetProfilePhoto();
     addProductSection.style.display = 'none';
     viewStockSection.style.display  = 'none';
     homeSection.style.display       = 'none';
     submenu.classList.remove('active');
+    userRole = null;
   }
 
   // --- Fluxo de Estoque com filtragem de nulls ---
@@ -465,6 +481,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+// ----- Gestão de usuários (admin) -----
+  async function loadPendingUsers() {
+    const res  = await fetch(`${BASE_URL}/api/users/pending?role=admin`);
+    const data = await res.json();
+    pendingUsersList.innerHTML = '';
+    data.forEach(u => {
+      const li = document.createElement('li');
+      li.textContent = u.username;
+      const btn = document.createElement('button');
+      btn.textContent = 'Aprovar';
+      btn.addEventListener('click', () => approveUser(u.id));
+      li.appendChild(btn);
+      pendingUsersList.appendChild(li);
+    });
+  }
+
+  async function loadUsers() {
+    const res  = await fetch(`${BASE_URL}/api/users?role=admin`);
+    const data = await res.json();
+    usersList.innerHTML = '';
+    data.forEach(u => {
+      const li = document.createElement('li');
+      li.textContent = `${u.username} (${u.role})`;
+      const btn = document.createElement('button');
+      btn.textContent = 'Excluir';
+      btn.addEventListener('click', () => deleteUser(u.id));
+      li.appendChild(btn);
+      usersList.appendChild(li);
+    });
+  }
+
+  async function approveUser(id) {
+    const res = await fetch(`${BASE_URL}/api/users/${id}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roleAtuante: 'admin' })
+    });
+    if (res.ok) loadPendingUsers();
+  }
+
+  async function deleteUser(id) {
+    const res = await fetch(`${BASE_URL}/api/users/${id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roleAtuante: 'admin' })
+    });
+    if (res.ok) loadUsers();
+  }
+
   function showRegisterForm() {
     loginForm.style.display    = 'none';
     registerForm.style.display = 'block';
@@ -482,6 +547,23 @@ document.addEventListener('DOMContentLoaded', () => {
   showLoginBtn.addEventListener('click', showLoginForm);
   logoutBtn.addEventListener('click', logout);
   stockForm.addEventListener('submit', addProduct);
+  if (approveUsersBtn) {
+    approveUsersBtn.addEventListener('click', () => {
+      adminSection.style.display = 'block';
+      loadPendingUsers();
+    });
+  }
+  if (deleteUsersBtn) {
+    deleteUsersBtn.addEventListener('click', () => {
+      adminSection.style.display = 'block';
+      loadUsers();
+    });
+  }
+  if (closeAdminBtn) {
+    closeAdminBtn.addEventListener('click', () => {
+      adminSection.style.display = 'none';
+    });
+  }
   document.querySelector('#login-form button[type="submit"]')
           .addEventListener('click', e => handleLogin(e));
 });
