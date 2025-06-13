@@ -146,11 +146,11 @@ app.put('/api/estoque/:id', (req, res) => {
   const estoque = readJSON(estoqueFile) || [];
 
   // Converte para número se for dígitos, senão usa string (UUID)
-  const idParam = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
+  const itemId = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
 
-  console.log('Atualizando produto', idParam);  // debug
+  console.log('Atualizando produto', itemId);  // debug
 
-  const idx = estoque.findIndex(item => item.id === idParam);
+  const idx = estoque.findIndex(item => item.id === itemId);
   if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
@@ -177,9 +177,9 @@ app.delete('/api/estoque/:id', (req, res) => {
   const estoque = readJSON(estoqueFile) || [];
 
   // Converte para número se for dígitos, senão utiliza string (UUID)
-  const idParam = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
+  const itemId = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
 
-  const idx = estoque.findIndex(item => item.id === idParam);
+  const idx = estoque.findIndex(item => item.id === itemId);
   if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
