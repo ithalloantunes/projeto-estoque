@@ -13,34 +13,34 @@
             <img src="img/idle/1.png" alt="monster" id="monster">
         </div>
         <div class="formulario">
-            <div id="login-form">
-                <h1>Login</h1>
-                <label for="input-usuario">Nome de Usuário (Login)</label>
-                <div class="input-container">
-                    <input type="text" id="input-usuario" placeholder="Digite seu usuário">
-                </div>
-                <label for="input-clave">Senha de Acesso</label>
-                <div class="input-container">
-                    <input type="password" id="input-clave" placeholder="Digite sua senha">
-                    <span id="toggle-password-login">👁️</span>
-                </div>
-                <button type="submit">Entrar</button>
-                <button id="show-register">Cadastrar</button>
-            </div>
-            <div id="register-form" style="display: none;">
-                <h1>Cadastro</h1>
-                <label for="register-username">Nome de Usuário (Login)</label>
-                <div class="input-container">
-                    <input type="text" id="register-username" placeholder="Digite seu usuário">
-                </div>
-                <label for="register-password">Senha de Acesso</label>
-                <div class="input-container">
-                    <input type="password" id="register-password" placeholder="Digite sua senha">
-                    <span id="toggle-password-register">👁️</span>
-                </div>
-                <button type="submit">Cadastrar</button>
-                <button id="show-login">Voltar ao Login</button>
-            </div>
+            <form id="login-form">
+    <h1>Login</h1>
+    <label for="input-usuario">Nome de Usuário (Login)</label>
+    <div class="input-container">
+        <input type="text" id="input-usuario" placeholder="Digite seu usuário">
+    </div>
+    <label for="input-clave">Senha de Acesso</label>
+    <div class="input-container">
+        <input type="password" id="input-clave" placeholder="Digite sua senha">
+        <span id="toggle-password-login">👁️</span>
+    </div>
+    <button type="submit">Entrar</button>
+    <button type="button" id="show-register">Cadastrar</button>
+</form>
+<form id="register-form" style="display: none;">
+    <h1>Cadastro</h1>
+    <label for="register-username">Nome de Usuário (Login)</label>
+    <div class="input-container">
+        <input type="text" id="register-username" placeholder="Digite seu usuário">
+    </div>
+    <label for="register-password">Senha de Acesso</label>
+    <div class="input-container">
+        <input type="password" id="register-password" placeholder="Digite sua senha">
+        <span id="toggle-password-register">👁️</span>
+    </div>
+    <button type="submit">Cadastrar</button>
+    <button type="button" id="show-login">Voltar ao Login</button>
+</form>
         </div>
     </div>
 
