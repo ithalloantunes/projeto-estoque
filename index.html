@@ -67,6 +67,8 @@
                     <img src="https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png" alt="Foto do Usuário" class="user-profile-pic" id="user-profile-pic">
                     <span id="user-name">Usuário</span>
                     <div class="user-menu" style="display: none;">
+                        <button id="approve-users-btn" style="display:none;">Aprovar Cadastros</button>
+                        <button id="delete-users-btn" style="display:none;">Excluir Usuários</button>
                         <button id="logout-btn">Sair</button>
                     </div>
                 </div>
@@ -119,6 +121,19 @@
         </div>
     </div>
 
+        <div id="admin-section" style="display:none;">
+        <h2>Gerenciar Usuários</h2>
+        <div>
+            <h3>Pendentes</h3>
+            <ul id="pending-users-list"></ul>
+        </div>
+        <div>
+            <h3>Cadastrados</h3>
+            <ul id="users-list"></ul>
+        </div>
+        <button id="close-admin">Fechar</button>
+    </div>
+    
     <!-- Modal de Foto de Perfil -->
     <div id="profile-modal" class="profile-modal" style="display: none;">
         <div class="profile-modal-content">
