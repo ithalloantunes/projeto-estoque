@@ -132,12 +132,17 @@ app.put('/api/estoque/:id', (req, res) => {
 });
 
 app.delete('/api/estoque/:id', (req, res) => {
-  const idParam = parseInt(req.params.id, 10);
+  const rawId   = req.params.id;
   const estoque = readJSON(estoqueFile) || [];
-  const idx     = estoque.findIndex(item => item.id === idParam);
+
+  // Converte para número se for dígitos, senão utiliza string (UUID)
+  const idParam = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
+
+  const idx = estoque.findIndex(item => item.id === idParam);
   if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
+
   estoque.splice(idx, 1);
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto excluído com sucesso!' });
