@@ -33,12 +33,9 @@ const writeJSON = (file, data) => {
   fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
 };
 
-// ROTA DE REGISTRO (apenas admin pode criar)
+// ROTA DE REGISTRO (usuário fica pendente até aprovação)
 app.post('/api/register', (req, res) => {
-  const { username, password, roleAtuante } = req.body;
-  if (roleAtuante !== 'admin') {
-    return res.status(403).json({ error: 'Somente administradores podem criar usuários' });
-  }
+  const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
   }
@@ -50,10 +47,11 @@ app.post('/api/register', (req, res) => {
     id: uuidv4(),
     username,
     password,
-    role: 'user'
+    role: 'user',
+    approved: false
   });
   writeJSON(usersFile, users);
-  res.json({ message: 'Cadastro realizado com sucesso' });
+  res.json({ message: 'Cadastro enviado para aprovação' });
 });
 
 // ROTA DE LOGIN (agora retorna role)
@@ -67,7 +65,50 @@ app.post('/api/login', (req, res) => {
   if (!user) {
     return res.status(401).json({ error: 'Credenciais inválidas' });
   }
+  if (!user.approved) {
+    return res.status(403).json({ error: 'Usuário pendente de aprovação' });
+  }
   res.json({ message: 'Login bem-sucedido', userId: user.id, role: user.role });
+});
+
+// --- Gestão de usuários ---
+app.get('/api/users/pending', (req, res) => {
+  if (req.query.role !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito' });
+  }
+  const users = readJSON(usersFile).filter(u => !u.approved);
+  res.json(users);
+});
+
+app.get('/api/users', (req, res) => {
+  if (req.query.role !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito' });
+  }
+  res.json(readJSON(usersFile));
+});
+
+app.post('/api/users/:id/approve', (req, res) => {
+  if (req.body.roleAtuante !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito' });
+  }
+  const users = readJSON(usersFile);
+  const idx   = users.findIndex(u => u.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
+  users[idx].approved = true;
+  writeJSON(usersFile, users);
+  res.json({ message: 'Usuário aprovado' });
+});
+
+app.delete('/api/users/:id', (req, res) => {
+  if (req.body.roleAtuante !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito' });
+  }
+  const users = readJSON(usersFile);
+  const idx   = users.findIndex(u => u.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
+  users.splice(idx, 1);
+  writeJSON(usersFile, users);
+  res.json({ message: 'Usuário excluído' });
 });
 
 // Rotas de estoque (mantidas iguais ao seu último estado)
@@ -105,11 +146,11 @@ app.put('/api/estoque/:id', (req, res) => {
   const estoque = readJSON(estoqueFile) || [];
 
   // Converte para número se for dígitos, senão usa string (UUID)
-  const idParam = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
+  const itemId = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
 
-  console.log('Atualizando produto', idParam);  // debug
+  console.log('Atualizando produto', itemId);  // debug
 
-  const idx = estoque.findIndex(item => item.id === idParam);
+  const idx = estoque.findIndex(item => item.id === itemId);
   if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
@@ -132,12 +173,17 @@ app.put('/api/estoque/:id', (req, res) => {
 });
 
 app.delete('/api/estoque/:id', (req, res) => {
-  const idParam = parseInt(req.params.id, 10);
+  const rawId   = req.params.id;
   const estoque = readJSON(estoqueFile) || [];
-  const idx     = estoque.findIndex(item => item.id === idParam);
+
+  // Converte para número se for dígitos, senão utiliza string (UUID)
+  const itemId = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
+
+  const idx = estoque.findIndex(item => item.id === itemId);
   if (idx === -1) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
+
   estoque.splice(idx, 1);
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto excluído com sucesso!' });
