@@ -540,30 +540,30 @@ document.addEventListener('DOMContentLoaded', () => {
     loginForm.style.display    = 'block';
   }
 
-  // Listeners finais
-  loginForm.addEventListener('submit', handleLogin);
-  registerForm.addEventListener('submit', handleRegister);
-  showRegisterBtn.addEventListener('click', showRegisterForm);
-  showLoginBtn.addEventListener('click', showLoginForm);
-  logoutBtn.addEventListener('click', logout);
-  stockForm.addEventListener('submit', addProduct);
-  if (approveUsersBtn) {
-    approveUsersBtn.addEventListener('click', () => {
-      adminSection.style.display = 'block';
-      loadPendingUsers();
-    });
-  }
-  if (deleteUsersBtn) {
-    deleteUsersBtn.addEventListener('click', () => {
-      adminSection.style.display = 'block';
-      loadUsers();
-    });
-  }
-  if (closeAdminBtn) {
-    closeAdminBtn.addEventListener('click', () => {
-      adminSection.style.display = 'none';
-    });
-  }
+// Listeners finais
+loginForm.addEventListener('submit', handleLogin);
+registerForm.addEventListener('submit', handleRegister);
+showRegisterBtn.addEventListener('click', showRegisterForm);
+showLoginBtn.addEventListener('click', showLoginForm);
+logoutBtn.addEventListener('click', logout);
+stockForm.addEventListener('submit', addProduct);
+if (approveUsersBtn) {
+  approveUsersBtn.addEventListener('click', () => {
+    adminSection.style.display = 'block';
+    loadPendingUsers();
+  });
+}
+if (deleteUsersBtn) {
+  deleteUsersBtn.addEventListener('click', () => {
+    adminSection.style.display = 'block';
+    loadUsers();
+  });
+}
+if (closeAdminBtn) {
+  closeAdminBtn.addEventListener('click', () => {
+    adminSection.style.display = 'none';
+  });
+}
   document.querySelector('#login-form button[type="submit"]')
           .addEventListener('click', e => handleLogin(e));
 });
