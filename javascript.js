@@ -194,6 +194,7 @@ if (window.Chart) {
     addProductSection.style.display  = 'none';
     viewStockSection.style.display   = 'none';
     movimentacoesSection.style.display = 'none';
+    relatoriosSection.style.display  = 'none';
     homeSection.style.display        = 'block';
     submenu.classList.remove('active');
   });
@@ -203,6 +204,7 @@ if (window.Chart) {
     addProductSection.style.display  = 'none';
     viewStockSection.style.display   = 'block';
     movimentacoesSection.style.display = 'none';
+    relatoriosSection.style.display  = 'none';
     homeSection.style.display        = 'none';
     loadStock();
   });
@@ -213,6 +215,7 @@ if (window.Chart) {
     submenu.classList.remove('active');
     homeSection.style.display        = 'none';
     movimentacoesSection.style.display = 'block';
+    relatoriosSection.style.display  = 'none';
     loadMovimentacoes();
   });
 
