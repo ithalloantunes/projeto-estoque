@@ -326,19 +326,19 @@ async function loadMovimentacoes() {
   }
 
   function renderMovimentacoes(data) {
-    movimentacoesTableBody.innerHTML = '';
-    data.forEach(m => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${new Date(m.data).toLocaleString()}</td>
-        <td>${m.usuario}</td>
-        <td>${m.produto}</td>
-        <td>${m.tipo}</td>
-        <td>${m.quantidade}</td>
-        <td>${m.motivo || ''}</td>`;
-      movimentacoesTableBody.appendChild(tr);
-    });
-  }
+  movimentacoesTableBody.innerHTML = '';
+  data.forEach(m => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${new Date(m.data).toLocaleString()}</td>
+      <td>${m.usuario}</td>
+      <td>${m.produto}</td>
+      <td>${m.tipo}</td>
+      <td>${m.quantidadeAnterior ?? ''}</td>
+      <td>${m.quantidade}</td>
+      <td>${m.motivo || ''}</td>`;
+    movimentacoesTableBody.appendChild(tr);
+  });
   
   function filterStock(data) {
     const clean = data.filter(item => item != null);
