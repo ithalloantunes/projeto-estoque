@@ -80,7 +80,7 @@ submenu.classList.remove('active');
 
 // Estilo cartoon para gráficos
 if (window.Chart) {
-  Chart.defaults.font.family = 'Inter, sans-serif';
+  Chart.defaults.font.family = 'Comic Sans MS, cursive';
   Chart.defaults.font.size = 16;
    initProfilePhoto();
     userProfilePic.addEventListener('click', e => {
@@ -410,14 +410,14 @@ function renderRelatorios(data) {
         {
           label: 'Entradas',
           data: entradas,
-          backgroundColor: 'var(--color-primary)',
+          backgroundColor: '#ffce56',
           borderColor: '#000',
           borderWidth: 3
         },
         {
           label: 'Saídas',
           data: saidas,
-          backgroundColor: 'var(--color-secondary)',
+          backgroundColor: '#ff6384',
           borderColor: '#000',
           borderWidth: 3
         }
@@ -441,8 +441,8 @@ function renderRelatorios(data) {
         {
           label: 'Movimentações',
           data: valores,
-          borderColor: 'var(--color-secondary)',
-          backgroundColor: 'var(--color-secondary)',
+          borderColor: '#36a2eb',
+          backgroundColor: '#36a2eb',
           borderWidth: 3,
           fill: false
         }
@@ -478,7 +478,7 @@ function renderRelatorios(data) {
       labels: ['Entradas', 'Saídas'],
       datasets: [{
         data: [totalEntradas, totalSaidas],
-        backgroundColor: ['var(--color-secondary)','var(--color-primary)'],
+        backgroundColor: ['#ffce56','#ff6384'],
         borderColor: '#000',
         borderWidth: 3
       }]
