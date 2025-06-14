@@ -135,12 +135,6 @@ app.get('/api/movimentacoes', (req, res) => {
   res.json(Array.isArray(logs) ? logs : []);
 });
 
-// Rota para obter o histórico de movimentações de estoque
-app.get('/api/movimentacoes', (req, res) => {
-  const logs = readJSON(movFile);
-  res.json(Array.isArray(logs) ? logs : []);
-});
-
 app.post('/api/estoque', (req, res) => {
   const { produto, tipo, lote, quantidade, validade, usuario } = req.body;
   if (!produto || quantidade === undefined) {
@@ -155,6 +149,12 @@ app.post('/api/estoque', (req, res) => {
     lote:    lote ? lote.trim() : '',
     quantidade: parseInt(quantidade, 10) || 0,
     validade:   validade || null,
+    dataCadastro: new Date().toISOString()
+  });
+  logMovimentacao({
+    id: uuidv4(),
+    produtoId: id,
+    produto: produto.trim(),
     tipo: 'adicao',
     quantidade: parseInt(quantidade, 10) || 0,
     quantidadeAnterior: 0,
