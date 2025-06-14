@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const stockContainer    = document.getElementById('stock-container');
   const stockForm         = document.getElementById('stock-form');
   const stockTableBody    = document.getElementById('stock-table-body');
+  const movimentacoesTableBody = document.getElementById('movimentacoes-table-body');
   const showRegisterBtn   = document.getElementById('show-register');
   const showLoginBtn      = document.getElementById('show-login');
   const logoutBtn         = document.getElementById('logout-btn');
@@ -31,11 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const showAddProduct    = document.getElementById('show-add-product');
   const addProductSection = document.getElementById('add-product-section');
   const viewStockSection  = document.getElementById('view-stock-section');
+  const movimentacoesSection = document.getElementById('movimentacoes-section');
   const homeSection       = document.getElementById('home-section');
   const filterInput       = document.getElementById('filter-input');
   const filterType        = document.getElementById('filter-type');
   const body              = document.querySelector('body');
   const estoqueMenu       = document.getElementById('estoque-menu');
+  const movimentacoesMenu = document.getElementById('movimentacoes-menu');
   const homeMenu          = document.getElementById('home-menu');
   const submenu           = document.querySelector('.submenu');
 
@@ -170,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
   homeMenu.addEventListener('click', () => {
     addProductSection.style.display  = 'none';
     viewStockSection.style.display   = 'none';
+    movimentacoesSection.style.display = 'none';
     homeSection.style.display        = 'block';
     submenu.classList.remove('active');
   });
@@ -178,14 +182,25 @@ document.addEventListener('DOMContentLoaded', () => {
     submenu.classList.toggle('active');
     addProductSection.style.display  = 'none';
     viewStockSection.style.display   = 'block';
+    movimentacoesSection.style.display = 'none';
     homeSection.style.display        = 'none';
     loadStock();
   });
 
+movimentacoesMenu.addEventListener('click', () => {
+    addProductSection.style.display  = 'none';
+    viewStockSection.style.display   = 'none';
+    submenu.classList.remove('active');
+    homeSection.style.display        = 'none';
+    movimentacoesSection.style.display = 'block';
+    loadMovimentacoes();
+  });
+  
   showAddProduct.addEventListener('click', e => {
     e.preventDefault();
     addProductSection.style.display  = 'block';
     viewStockSection.style.display   = 'none';
+    movimentacoesSection.style.display = 'none';
     homeSection.style.display        = 'none';
   });
 
@@ -296,6 +311,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+async function loadMovimentacoes() {
+    try {
+      const res = await fetch(`${BASE_URL}/api/movimentacoes`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      const data = await res.json();
+      renderMovimentacoes(data);
+    } catch (err) {
+      alert('Erro ao carregar movimentações: ' + err.message);
+    }
+  }
+
+  function renderMovimentacoes(data) {
+    movimentacoesTableBody.innerHTML = '';
+    data.forEach(m => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${new Date(m.data).toLocaleString()}</td>
+        <td>${m.usuario}</td>
+        <td>${m.produto}</td>
+        <td>${m.tipo}</td>
+        <td>${m.quantidade}</td>
+        <td>${m.motivo || ''}</td>`;
+      movimentacoesTableBody.appendChild(tr);
+    });
+  }
+  
   function filterStock(data) {
     const clean = data.filter(item => item != null);
     const q     = filterInput.value.toLowerCase();
@@ -371,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res  = await fetch(`${BASE_URL}/api/estoque`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ produto, tipo, lote, validade, quantidade }),
+        body: JSON.stringify({ produto, tipo, lote, validade, quantidade, usuario: currentUser }),
         credentials: 'include'
       });
       const data = await res.json();
@@ -425,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res  = await fetch(`${BASE_URL}/api/estoque/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProduct),
+        body: JSON.stringify({ ...updatedProduct, usuario: currentUser }),
         credentials: 'include'
       });
       const data = await res.json();
@@ -447,6 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-content">
         <h2>Confirmar Exclusão</h2>
         <p>Deseja realmente excluir o produto de ID <strong>${id}</strong>?</p>
+        <input type="text" id="delete-reason" placeholder="Motivo da exclusão">
         <button class="confirm-delete-btn">Confirmar</button>
         <button class="cancel-delete-btn">Cancelar</button>
       </div>
@@ -455,18 +500,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     modal.querySelector('.confirm-delete-btn')
       .addEventListener('click', async () => {
-        await performDelete(id);
+        const reason = modal.querySelector('#delete-reason').value.trim();
+        if (!reason) return alert('Informe o motivo da exclusão.');
+        await performDelete(id, reason);
         modal.remove();
       });
     modal.querySelector('.cancel-delete-btn')
       .addEventListener('click', () => modal.remove());
   }
 
-  async function performDelete(id) {
+  async function performDelete(id, motivo) {
     try {
       const res  = await fetch(`${BASE_URL}/api/estoque/${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motivo, usuario: currentUser }),
         credentials: 'include'
       });
       const data = await res.json();
