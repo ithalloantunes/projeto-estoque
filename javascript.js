@@ -284,7 +284,7 @@ movimentacoesMenu.addEventListener('click', () => {
 
   // --- Fluxo de Estoque com filtragem de nulls ---
   let estoqueData    = [];
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   async function loadStock(page = 1) {
     try {
