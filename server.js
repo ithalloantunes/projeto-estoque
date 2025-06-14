@@ -20,10 +20,12 @@ app.use(express.static(__dirname));
 const dataDir     = path.join(__dirname, 'data');
 const usersFile   = path.join(dataDir, 'users.json');
 const estoqueFile = path.join(dataDir, 'estoque.json');
+const movFile     = path.join(dataDir, 'movimentacoes.json');
 
 if (!fs.existsSync(dataDir))       fs.mkdirSync(dataDir, { recursive: true });
 if (!fs.existsSync(usersFile))     fs.writeFileSync(usersFile, '[]', 'utf8');
 if (!fs.existsSync(estoqueFile))   fs.writeFileSync(estoqueFile, '[]', 'utf8');
+if (!fs.existsSync(movFile))       fs.writeFileSync(movFile, '[]', 'utf8');
 
 const readJSON = file => {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -31,6 +33,12 @@ const readJSON = file => {
 };
 const writeJSON = (file, data) => {
   fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+};
+
+const logMovimentacao = mov => {
+  const logs = readJSON(movFile);
+  logs.push(mov);
+  writeJSON(movFile, logs);
 };
 
 // ROTA DE REGISTRO (usuário fica pendente até aprovação)
@@ -122,7 +130,7 @@ app.get('/api/estoque', (req, res) => {
 });
 
 app.post('/api/estoque', (req, res) => {
-  const { produto, tipo, lote, quantidade, validade } = req.body;
+  const { produto, tipo, lote, quantidade, validade, usuario } = req.body;
   if (!produto || quantidade === undefined) {
     return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
   }
@@ -137,12 +145,22 @@ app.post('/api/estoque', (req, res) => {
     validade:   validade || null,
     dataCadastro: new Date().toISOString()
   });
+  logMovimentacao({
+    id: uuidv4(),
+    produtoId: id,
+    produto: produto.trim(),
+    tipo: 'adicao',
+    quantidade: parseInt(quantidade, 10) || 0,
+    data: new Date().toISOString(),
+    usuario: usuario || 'desconhecido'
+  });
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto adicionado com sucesso', id });
 });
 
 app.put('/api/estoque/:id', (req, res) => {
   const rawId  = req.params.id;
+  const usuario = req.body.usuario;
   const estoque = readJSON(estoqueFile) || [];
 
   // Converte para número se for dígitos, senão usa string (UUID)
@@ -156,17 +174,30 @@ app.put('/api/estoque/:id', (req, res) => {
   }
 
   const atual = estoque[idx];
+  const novaQtd = Number.isInteger(+req.body.quantidade)
+                    ? parseInt(req.body.quantidade, 10)
+                    : atual.quantidade;
   estoque[idx] = {
     ...atual,
     produto:    req.body.produto?.trim()    || atual.produto,
     tipo:       req.body.tipo?.trim()       || atual.tipo,
     lote:       req.body.lote?.trim()       || atual.lote,
-    quantidade: Number.isInteger(+req.body.quantidade)
-                  ? parseInt(req.body.quantidade, 10)
-                  : atual.quantidade,
+    quantidade: novaQtd,
     validade:   req.body.validade ?? atual.validade,
     dataAtualizacao: new Date().toISOString()
   };
+  const diff = novaQtd - atual.quantidade;
+  if (diff !== 0) {
+    logMovimentacao({
+      id: uuidv4(),
+      produtoId: itemId,
+      produto: estoque[idx].produto,
+      tipo: diff > 0 ? 'entrada' : 'saida',
+      quantidade: diff,
+      data: new Date().toISOString(),
+      usuario: usuario || 'desconhecido'
+    });
+  }
 
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto atualizado com sucesso' });
@@ -174,6 +205,10 @@ app.put('/api/estoque/:id', (req, res) => {
 
 app.delete('/api/estoque/:id', (req, res) => {
   const rawId   = req.params.id;
+  const { motivo, usuario } = req.body;
+  if (!motivo) {
+    return res.status(400).json({ error: 'Motivo é obrigatório' });
+  }
   const estoque = readJSON(estoqueFile) || [];
 
   // Converte para número se for dígitos, senão utiliza string (UUID)
@@ -184,9 +219,23 @@ app.delete('/api/estoque/:id', (req, res) => {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
 
-  estoque.splice(idx, 1);
+  const removed = estoque.splice(idx, 1)[0];
   writeJSON(estoqueFile, estoque);
+  logMovimentacao({
+    id: uuidv4(),
+    produtoId: itemId,
+    produto: removed.produto,
+    tipo: 'exclusao',
+    quantidade: removed.quantidade,
+    motivo,
+    data: new Date().toISOString(),
+    usuario: usuario || 'desconhecido'
+  });
   res.json({ message: 'Produto excluído com sucesso!' });
+});
+
+app.get('/api/movimentacoes', (req, res) => {
+  res.json(readJSON(movFile));
 });
 
 app.get('*', (req, res) => {
