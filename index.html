@@ -61,6 +61,9 @@
         <li class="menu-item">
             <span id="movimentacoes-menu">Movimentações</span>
         </li>
+                <li class="menu-item">
+            <span id="relatorios-menu">Relatórios</span>
+        </li>
     </ul>
 </div>
 <div class="main-content">
@@ -140,6 +143,17 @@
 </table>
     </div>
 
+    <div id="relatorios-section" style="display: none;">
+                <h2>Relatórios</h2>
+                <div class="chart-container">
+                    <canvas id="por-produto-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="por-dia-chart"></canvas>
+                </div>
+                <button id="export-csv-btn">Exportar CSV</button>
+            </div>
+
         <div id="admin-section" style="display:none;">
         <h2>Gerenciar Usuários</h2>
         <div>
@@ -164,6 +178,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="javascript.js"></script>
 </body>
 </html>
