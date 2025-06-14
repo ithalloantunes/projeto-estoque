@@ -913,6 +913,15 @@ tbody tr.removing {
     box-shadow: 4px 4px 0 #000;
 }
 
+/* Gráficos de pizza em tamanho compacto */
+#pizza-produto-chart,
+#pizza-tipo-chart {
+    width: 250px;
+    height: 250px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
 #export-csv-btn {
     padding: 10px 20px;
     background-color: #6a2f77;
