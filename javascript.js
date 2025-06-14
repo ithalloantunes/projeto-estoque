@@ -5,6 +5,12 @@ const BASE_URL = 'https://projeto-estoque-o1x5.onrender.com';
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM carregado, inicializando interface');
 
+  let currentUser = null;
+  let userRole = null;
+  let seguirPunteroMouse = true;
+  const anchoMitad = window.innerWidth / 2;
+  const altoMitad  = window.innerHeight / 2;
+
   // Elementos gerais
   const monster           = document.getElementById('monster');
   const inputUsuario      = document.getElementById('input-usuario');
@@ -76,10 +82,7 @@ submenu.classList.remove('active');
 if (window.Chart) {
   Chart.defaults.font.family = 'Comic Sans MS, cursive';
   Chart.defaults.font.size = 16;
-    if (saved) {
-      userProfilePic.src = saved;
-      profileModalPic.src = saved;
-    }
+   initProfilePhoto();
     userProfilePic.addEventListener('click', e => {
       e.stopPropagation();
       profileModal.style.display = 'flex';
@@ -119,6 +122,18 @@ if (window.Chart) {
     }
   }
 
+  function initProfilePhoto() {
+    const saved = currentUser
+      ? localStorage.getItem(`profilePhoto_${currentUser}`)
+      : null;
+    if (saved) {
+      userProfilePic.src = saved;
+      profileModalPic.src = saved;
+    } else {
+      resetProfilePhoto();
+    }
+  }
+  
   // --- Monstro segue cursor (inalterado) ---
   body.addEventListener('mousemove', m => {
     if (!seguirPunteroMouse) return;
