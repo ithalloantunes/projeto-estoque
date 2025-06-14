@@ -195,18 +195,17 @@ app.post('/api/estoque', (req, res) => {
     dataAtualizacao: new Date().toISOString()
   };
   const diff = novaQtd - atual.quantidade;
-  if (diff !== 0) {
-    logMovimentacao({
-      id: uuidv4(),
-      produtoId: itemId,
-      produto: estoque[idx].produto,
-      tipo: diff > 0 ? 'entrada' : 'saida',
-      quantidade: diff,
-      quantidadeAnterior: atual.quantidade,
-      quantidadeAtual: novaQtd,
-      data: new Date().toISOString(),
-      usuario: usuario || 'desconhecido'
-    });
+  logMovimentacao({
+  id: uuidv4(),
+  produtoId: itemId,
+  produto: estoque[idx].produto,
+  tipo: diff === 0 ? 'edicao' : diff > 0 ? 'entrada' : 'saida',
+  quantidade: diff,
+  quantidadeAnterior: atual.quantidade,
+  quantidadeAtual: novaQtd,
+  data: new Date().toISOString(),
+  usuario: usuario || 'desconhecido'
+});
   }
 
   writeJSON(estoqueFile, estoque);
