@@ -879,3 +879,26 @@ tbody tr.removing {
 #admin-section button {
     margin-left: 10px;
 }
+
+/* Relatórios */
+#relatorios-section {
+    text-align: center;
+}
+
+.chart-container {
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+#export-csv-btn {
+    padding: 10px 20px;
+    background-color: #6a2f77;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#export-csv-btn:hover {
+    background-color: #824283;
+}
