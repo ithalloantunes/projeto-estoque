@@ -38,44 +38,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterType        = document.getElementById('filter-type');
   const body              = document.querySelector('body');
   const estoqueMenu       = document.getElementById('estoque-menu');
-  const movimentacoesMenu = document.getElementById('movimentacoes-menu');
-  const homeMenu          = document.getElementById('home-menu');
-  const submenu           = document.querySelector('.submenu');
-  const relatoriosMenu    = document.getElementById('relatorios-menu');
-  const relatoriosSection = document.getElementById('relatorios-section');
-  const exportCsvBtn      = document.getElementById('export-csv-btn');
-  const prodChartCanvas   = document.getElementById('por-produto-chart');
-  const diaChartCanvas    = document.getElementById('por-dia-chart');
+const movimentacoesMenu = document.getElementById('movimentacoes-menu');
+const homeMenu          = document.getElementById('home-menu');
+const submenu           = document.querySelector('.submenu');
+const relatoriosMenu    = document.getElementById('relatorios-menu');
+const relatoriosSection = document.getElementById('relatorios-section');
+const exportCsvBtn      = document.getElementById('export-csv-btn');
+const filtroInicio      = document.getElementById('filtro-inicio');
+const filtroFim         = document.getElementById('filtro-fim');
+const aplicarFiltroBtn  = document.getElementById('aplicar-filtro-btn');
+const prodChartCanvas   = document.getElementById('por-produto-chart');
+const diaChartCanvas    = document.getElementById('por-dia-chart');
+const pizzaProdCanvas   = document.getElementById('pizza-produto-chart');
+const pizzaTipoCanvas   = document.getElementById('pizza-tipo-chart');
 
-  // Elementos do modal de foto de perfil
-  const userProfilePic    = document.getElementById('user-profile-pic');
-  const profileModal      = document.getElementById('profile-modal');
-  const profileModalPic   = document.getElementById('profile-modal-pic');
-  const closeProfileModal = document.getElementById('close-profile-modal');
-  const changePhotoBtn    = document.getElementById('change-photo-btn');
-  const photoUpload       = document.getElementById('photo-upload');
+// Elementos do modal de foto de perfil
+const userProfilePic    = document.getElementById('user-profile-pic');
+const profileModal      = document.getElementById('profile-modal');
+const profileModalPic   = document.getElementById('profile-modal-pic');
+const closeProfileModal = document.getElementById('close-profile-modal');
+const changePhotoBtn    = document.getElementById('change-photo-btn');
+const photoUpload       = document.getElementById('photo-upload');
 
-  if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
-    console.error('Erro: Elementos do DOM não encontrados');
-    return;
-  }
+if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
+  console.error('Erro: Elementos do DOM não encontrados');
+  return;
+}
 
-  // Estado inicial
-  loginContainer.style.display   = 'flex';
-  stockContainer.style.display   = 'none';
-  loginForm.style.display        = 'block';
-  registerForm.style.display     = 'none';
-  submenu.classList.remove('active');
+// Estado inicial
+loginContainer.style.display   = 'flex';
+stockContainer.style.display   = 'none';
+loginForm.style.display        = 'block';
+registerForm.style.display     = 'none';
+submenu.classList.remove('active');
 
-  let seguirPunteroMouse = true;
-  let currentUser        = null;
-  let userRole          = null;
-  const anchoMitad = window.innerWidth / 2;
-  const altoMitad  = window.innerHeight / 2;
-
-  // --- Foto de perfil ---
-  function initProfilePhoto() {
-    const saved = localStorage.getItem(`profilePhoto_${currentUser}`);
+// Estilo cartoon para gráficos
+if (window.Chart) {
+  Chart.defaults.font.family = 'Comic Sans MS, cursive';
+  Chart.defaults.font.size = 16;
     if (saved) {
       userProfilePic.src = saved;
       profileModalPic.src = saved;
@@ -203,25 +203,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   relatoriosMenu.addEventListener('click', () => {
     addProductSection.style.display  = 'none';
-    viewStockSection.style.display   = 'none';
-    movimentacoesSection.style.display = 'none';
-    homeSection.style.display        = 'none';
-    relatoriosSection.style.display  = 'block';
-    submenu.classList.remove('active');
-    loadRelatorios();
-  });
-  
-  showAddProduct.addEventListener('click', e => {
-    e.preventDefault();
-    addProductSection.style.display  = 'block';
-    viewStockSection.style.display   = 'none';
-    movimentacoesSection.style.display = 'none';
-    homeSection.style.display        = 'none';
-  });
+    movimentacoesMenu.addEventListener('click', () => {
+  addProductSection.style.display  = 'none';
+  viewStockSection.style.display   = 'none';
+  submenu.classList.remove('active');
+  homeSection.style.display        = 'none';
+  movimentacoesSection.style.display = 'block';
+  loadMovimentacoes();
+});
 
-  // --- Autenticação ---
-  async function handleLogin(e) {
-    e.preventDefault();
+relatoriosMenu.addEventListener('click', () => {
+  addProductSection.style.display  = 'none';
+  viewStockSection.style.display   = 'none';
+  movimentacoesSection.style.display = 'none';
+  homeSection.style.display        = 'none';
+  relatoriosSection.style.display  = 'block';
+  submenu.classList.remove('active');
+  loadRelatorios(filtroInicio.value, filtroFim.value);
+});
     const username = inputUsuario.value;
     const password = inputClave.value;
     if (!username || !password) return alert('Preencha usuário e senha');
@@ -357,9 +356,12 @@ function renderMovimentacoes(data) {
   });
   }
 
-  async function loadRelatorios() {
+async function loadRelatorios(start, end) {
   try {
-    const res = await fetch(`${BASE_URL}/api/report/summary`, {
+    const params = new URLSearchParams();
+    if (start) params.append('start', start);
+    if (end)   params.append('end', end);
+    const res = await fetch(`${BASE_URL}/api/report/summary?${params.toString()}`, {
       credentials: 'include'
     });
     const data = await res.json();
@@ -371,6 +373,8 @@ function renderMovimentacoes(data) {
 
 let prodChart;
 let diaChart;
+let pizzaProdChart;
+let pizzaTipoChart;
 
 function renderRelatorios(data) {
   const prodLabels = Object.keys(data.porProduto);
@@ -383,11 +387,26 @@ function renderRelatorios(data) {
     data: {
       labels: prodLabels,
       datasets: [
-        { label: 'Entradas', data: entradas, backgroundColor: '#2ecc71' },
-        { label: 'Saídas', data: saidas, backgroundColor: '#e74c3c' }
+        {
+          label: 'Entradas',
+          data: entradas,
+          backgroundColor: '#ffce56',
+          borderColor: '#000',
+          borderWidth: 3
+        },
+        {
+          label: 'Saídas',
+          data: saidas,
+          backgroundColor: '#ff6384',
+          borderColor: '#000',
+          borderWidth: 3
+        }
       ]
     },
-    options: { responsive: true }
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { boxWidth: 20 } } }
+    }
   });
 
   const diaLabels = Object.keys(data.porDia).sort();
@@ -399,8 +418,50 @@ function renderRelatorios(data) {
     data: {
       labels: diaLabels,
       datasets: [
-        { label: 'Movimentações', data: valores, borderColor: '#824283', backgroundColor: '#824283', fill: false }
+        {
+          label: 'Movimentações',
+          data: valores,
+          borderColor: '#36a2eb',
+          backgroundColor: '#36a2eb',
+          borderWidth: 3,
+          fill: false
+        }
       ]
+    },
+    options: { responsive: true }
+  });
+
+  const totalPorProduto = prodLabels.map((p, i) => entradas[i] + saidas[i]);
+
+  if (pizzaProdChart) pizzaProdChart.destroy();
+  pizzaProdChart = new Chart(pizzaProdCanvas, {
+    type: 'pie',
+    data: {
+      labels: prodLabels,
+      datasets: [{
+        data: totalPorProduto,
+        backgroundColor: prodLabels.map(() => `hsl(${Math.random()*360},70%,60%)`),
+        borderColor: '#000',
+        borderWidth: 3
+      }]
+    },
+    options: { responsive: true }
+  });
+
+  const totalEntradas = entradas.reduce((a,b)=>a+b,0);
+  const totalSaidas   = saidas.reduce((a,b)=>a+b,0);
+
+  if (pizzaTipoChart) pizzaTipoChart.destroy();
+  pizzaTipoChart = new Chart(pizzaTipoCanvas, {
+    type: 'pie',
+    data: {
+      labels: ['Entradas', 'Saídas'],
+      datasets: [{
+        data: [totalEntradas, totalSaidas],
+        backgroundColor: ['#ffce56','#ff6384'],
+        borderColor: '#000',
+        borderWidth: 3
+      }]
     },
     options: { responsive: true }
   });
@@ -678,16 +739,19 @@ if (deleteUsersBtn) {
     loadUsers();
   });
 }
-  if (exportCsvBtn) {
+if (exportCsvBtn) {
   exportCsvBtn.addEventListener('click', () => {
     window.open(`${BASE_URL}/api/movimentacoes/csv`, '_blank');
+  });
+}
+if (aplicarFiltroBtn) {
+  aplicarFiltroBtn.addEventListener('click', () => {
+    const inicio = filtroInicio.value;
+    const fim    = filtroFim.value;
+    loadRelatorios(inicio, fim);
   });
 }
 if (closeAdminBtn) {
   closeAdminBtn.addEventListener('click', () => {
     adminSection.style.display = 'none';
   });
-}
-  document.querySelector('#login-form button[type="submit"]')
-          .addEventListener('click', e => handleLogin(e));
-});
