@@ -134,16 +134,16 @@ app.post('/api/estoque', (req, res) => {
   if (!produto || quantidade === undefined) {
     return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
   }
-  const estoque = readJSON(estoqueFile);
-  const id      = uuidv4();
-  estoque.push({
-    id,
-    produto: produto.trim(),
-    tipo:    tipo?.trim() || '',
-    lote:    lote?.trim() || '',
-    quantidade: parseInt(quantidade, 10) || 0,
-    validade:   validade || null,
-     dataCadastro: new Date().toISOString()
+const estoque = readJSON(estoqueFile);
+const id      = uuidv4();
+estoque.push({
+  id,
+  produto: produto.trim(),
+  tipo:    tipo ? tipo.trim() : '',
+  lote:    lote ? lote.trim() : '',
+  quantidade: parseInt(quantidade, 10) || 0,
+  validade:   validade || null,
+  dataCadastro: new Date().toISOString()
 });
 logMovimentacao({
   id: uuidv4(),
