@@ -317,15 +317,15 @@ async function loadMovimentacoes() {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
-      });
-      const data = await res.json();
-      renderMovimentacoes(data);
-    } catch (err) {
-      alert('Erro ao carregar movimentações: ' + err.message);
-    }
+       });
+    const data = await res.json();
+    renderMovimentacoes(data);
+  } catch (err) {
+    alert('Erro ao carregar movimentações: ' + err.message);
   }
+}
 
-  function renderMovimentacoes(data) {
+function renderMovimentacoes(data) {
   movimentacoesTableBody.innerHTML = '';
   data.forEach(m => {
     const tr = document.createElement('tr');
@@ -334,7 +334,7 @@ async function loadMovimentacoes() {
       <td>${m.usuario}</td>
       <td>${m.produto}</td>
       <td>${m.tipo}</td>
-      <td>${m.quantidadeAnterior ?? ''}</td>
+      <td>${m.quantidadeAnterior !== undefined ? m.quantidadeAnterior : ''}</td>
       <td>${m.quantidade}</td>
       <td>${m.motivo || ''}</td>`;
     movimentacoesTableBody.appendChild(tr);
