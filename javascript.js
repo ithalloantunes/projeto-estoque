@@ -209,6 +209,16 @@ if (window.Chart) {
     loadStock();
   });
 
+  showAddProduct.addEventListener('click', e => {
+    e.preventDefault();
+    addProductSection.style.display  = 'block';
+    viewStockSection.style.display   = 'none';
+    movimentacoesSection.style.display = 'none';
+    relatoriosSection.style.display  = 'none';
+    homeSection.style.display        = 'none';
+    submenu.classList.remove('active');
+  });
+
     movimentacoesMenu.addEventListener('click', () => {
     addProductSection.style.display  = 'none';
     viewStockSection.style.display   = 'none';
