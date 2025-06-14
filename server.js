@@ -157,8 +157,8 @@ app.post('/api/estoque', (req, res) => {
   });
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto adicionado com sucesso', id });
+  });
 
-app.put('/api/estoque/:id', (req, res) => {
   app.put('/api/estoque/:id', (req, res) => {
   const rawId  = req.params.id;
   const usuario = req.body.usuario;
