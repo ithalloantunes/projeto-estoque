@@ -338,6 +338,7 @@ function renderMovimentacoes(data) {
   <td>${m.quantidade}</td>
   <td>${m.quantidadeAtual !== undefined ? m.quantidadeAtual : ''}</td>
   <td>${m.motivo || ''}</td>`;
+    movimentacoesTableBody.appendChild(tr);
   });
   }
   
