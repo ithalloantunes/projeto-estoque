@@ -330,14 +330,14 @@ function renderMovimentacoes(data) {
   data.forEach(m => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${new Date(m.data).toLocaleString()}</td>
-      <td>${m.usuario}</td>
-      <td>${m.produto}</td>
-      <td>${m.tipo}</td>
-      <td>${m.quantidadeAnterior !== undefined ? m.quantidadeAnterior : ''}</td>
-      <td>${m.quantidade}</td>
-      <td>${m.motivo || ''}</td>`;
-    movimentacoesTableBody.appendChild(tr);
+  <td>${new Date(m.data).toLocaleString()}</td>
+  <td>${m.usuario}</td>
+  <td>${m.produto}</td>
+  <td>${m.tipo}</td>
+  <td>${m.quantidadeAnterior !== undefined ? m.quantidadeAnterior : ''}</td>
+  <td>${m.quantidade}</td>
+  <td>${m.quantidadeAtual !== undefined ? m.quantidadeAtual : ''}</td>
+  <td>${m.motivo || ''}</td>`;
   });
   }
   
