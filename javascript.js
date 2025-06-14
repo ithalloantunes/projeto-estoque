@@ -339,74 +339,74 @@ function renderMovimentacoes(data) {
       <td>${m.motivo || ''}</td>`;
     movimentacoesTableBody.appendChild(tr);
   });
+  }
   
   function filterStock(data) {
-    const clean = data.filter(item => item != null);
-    const q     = filterInput.value.toLowerCase();
-    const t     = filterType.value;
-    if (!q) return clean;
-    return clean.filter(item => {
-      if (t === 'produto') return item.produto.toLowerCase().includes(q);
-      if (t === 'tipo')    return item.tipo.toLowerCase().includes(q);
-      return (
-        item.produto.toLowerCase().includes(q) ||
-        item.tipo.toLowerCase().includes(q)
-      );
-    });
-  }
+  const clean = data.filter(item => item != null);
+  const q     = filterInput.value.toLowerCase();
+  const t     = filterType.value;
+  if (!q) return clean;
+  return clean.filter(item => {
+    if (t === 'produto') return item.produto.toLowerCase().includes(q);
+    if (t === 'tipo')    return item.tipo.toLowerCase().includes(q);
+    return (
+      item.produto.toLowerCase().includes(q) ||
+      item.tipo.toLowerCase().includes(q)
+    );
+  });
+}
 
   function renderStock(data, page) {
-    stockTableBody.innerHTML = '';
+  stockTableBody.innerHTML = '';
 
-    const clean     = data.filter(item => item != null);
-    const start     = (page - 1) * itemsPerPage;
-    const end       = start + itemsPerPage;
-    const pageItems = clean.slice(start, end);
+  const clean     = data.filter(item => item != null);
+  const start     = (page - 1) * itemsPerPage;
+  const end       = start + itemsPerPage;
+  const pageItems = clean.slice(start, end);
 
     for (const item of pageItems) {
-      const row = document.createElement('tr');
-      row.setAttribute('data-id', item.id);
-      row.innerHTML = `
-        <td>${item.produto}</td>
-        <td>${item.tipo}</td>
-        <td>${item.lote}</td>
-        <td>${item.validade || 'N/A'}</td>
-        <td>${item.quantidade}</td>
-        <td>
-          <button class="edit-btn"   data-id="${item.id}">Editar</button>
-          <button class="delete-btn">Excluir</button>
-        </td>
-      `;
-      stockTableBody.appendChild(row);
-    }
+    const row = document.createElement('tr');
+    row.setAttribute('data-id', item.id);
+    row.innerHTML = `
+      <td>${item.produto}</td>
+      <td>${item.tipo}</td>
+      <td>${item.lote}</td>
+      <td>${item.validade || 'N/A'}</td>
+      <td>${item.quantidade}</td>
+      <td>
+        <button class="edit-btn"   data-id="${item.id}">Editar</button>
+        <button class="delete-btn">Excluir</button>
+      </td>
+    `;
+    stockTableBody.appendChild(row);
+  }
 
     document.querySelectorAll('.edit-btn').forEach(btn => {
-      const id = btn.closest('tr').dataset.id;
-      btn.addEventListener('click', () => editProduct(id));
-    });
+    const id = btn.closest('tr').dataset.id;
+    btn.addEventListener('click', () => editProduct(id));
+  });
 
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-      const id = btn.closest('tr').dataset.id;
-      btn.addEventListener('click', () => showDeleteModal(id));
-    });
-  }  // <--- fecha renderStock
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    const id = btn.closest('tr').dataset.id;
+    btn.addEventListener('click', () => showDeleteModal(id));
+  });
+}  // <--- fecha renderStock
 
-  function setupPagination(totalItems, currentPage) {
-    const pageCount = Math.ceil(totalItems / itemsPerPage);
-    const pagination = document.getElementById('pagination');
-    pagination.innerHTML = '';
-    for (let i = 1; i <= pageCount; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      btn.className   = i === currentPage ? 'active' : '';
-      btn.addEventListener('click', () => loadStock(i));
-      pagination.appendChild(btn);
-    }
+function setupPagination(totalItems, currentPage) {
+  const pageCount = Math.ceil(totalItems / itemsPerPage);
+  const pagination = document.getElementById('pagination');
+  pagination.innerHTML = '';
+  for (let i = 1; i <= pageCount; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.className   = i === currentPage ? 'active' : '';
+    btn.addEventListener('click', () => loadStock(i));
+    pagination.appendChild(btn);
+  }
   }
 
   // fecha renderMovimentacoes
-  }
-
+  
   async function addProduct(e) {
     e.preventDefault();
     const produto    = document.getElementById('produto').value;
