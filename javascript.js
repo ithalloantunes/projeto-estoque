@@ -299,7 +299,7 @@ movimentacoesMenu.addEventListener('click', () => {
       // converte em array e remove null/undefined
       const raw = Array.isArray(data)
         ? data
-        : Object.entries(data).map(([id, item]) => ({ id, ...item }));
+        : Object.entries(data).map(([id, item]) => Object.assign({ id }, item));
       estoqueData = raw.filter(item => item != null);
 
       const filtered = filterStock(estoqueData);
@@ -404,6 +404,9 @@ function renderMovimentacoes(data) {
     }
   }
 
+  // fecha renderMovimentacoes
+  }
+
   async function addProduct(e) {
     e.preventDefault();
     const produto    = document.getElementById('produto').value;
@@ -469,7 +472,7 @@ function renderMovimentacoes(data) {
       const res  = await fetch(`${BASE_URL}/api/estoque/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...updatedProduct, usuario: currentUser }),
+        body: JSON.stringify(Object.assign({ usuario: currentUser }, updatedProduct)),
         credentials: 'include'
       });
       const data = await res.json();
