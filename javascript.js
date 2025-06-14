@@ -57,7 +57,6 @@ const prodChartCanvas   = document.getElementById('por-produto-chart');
 const diaChartCanvas    = document.getElementById('por-dia-chart');
 const pizzaProdCanvas   = document.getElementById('pizza-produto-chart');
 const pizzaTipoCanvas   = document.getElementById('pizza-tipo-chart');
-const estoqueAtualBody  = document.getElementById('estoque-atual-body');
 
 // Elementos do modal de foto de perfil
 const userProfilePic    = document.getElementById('user-profile-pic');
@@ -486,17 +485,7 @@ function renderRelatorios(data) {
     },
     options: { responsive: true }
   });
-
-  if (estoqueAtualBody) {
-    estoqueAtualBody.innerHTML = '';
-    const estoque = data.estoqueAtual || {};
-    for (const prod of Object.keys(estoque)) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${prod}</td><td>${estoque[prod]}</td>`;
-      estoqueAtualBody.appendChild(tr);
-    }
-  }
-  }
+}
   
   function filterStock(data) {
   const clean = data.filter(item => item != null);
