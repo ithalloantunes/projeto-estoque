@@ -54,7 +54,7 @@ const filtroInicio      = document.getElementById('filtro-inicio');
 const filtroFim         = document.getElementById('filtro-fim');
 const aplicarFiltroBtn  = document.getElementById('aplicar-filtro-btn');
 const prodChartCanvas   = document.getElementById('por-produto-chart');
-const diaChartCanvas    = document.getElementById('por-dia-chart');
+const estoqueChartCanvas    = document.getElementById('por-dia-chart');
 const pizzaProdCanvas   = document.getElementById('pizza-produto-chart');
 const pizzaTipoCanvas   = document.getElementById('pizza-tipo-chart');
 
@@ -381,25 +381,29 @@ async function loadRelatorios(start, end) {
     const params = new URLSearchParams();
     if (start) params.append('start', start);
     if (end)   params.append('end', end);
-    const res = await fetch(`${BASE_URL}/api/report/summary?${params.toString()}`, {
-      credentials: 'include'
-    });
-    const data = await res.json();
-    renderRelatorios(data);
+    const [resSum, resEst] = await Promise.all([
+      fetch(`${BASE_URL}/api/report/summary?${params.toString()}`, {
+        credentials: 'include'
+      }),
+      fetch(`${BASE_URL}/api/report/estoque`, { credentials: 'include' })
+    ]);
+    const summaryData = await resSum.json();
+    const estoqueData = await resEst.json();
+    renderRelatorios(summaryData, estoqueData);
   } catch (err) {
     alert('Erro ao carregar relatório: ' + err.message);
   }
 }
 
 let prodChart;
-let diaChart;
+let estoqueChart;
 let pizzaProdChart;
 let pizzaTipoChart;
 
-function renderRelatorios(data) {
-  const prodLabels = Object.keys(data.porProduto);
-  const entradas   = prodLabels.map(p => data.porProduto[p].entradas);
-  const saidas     = prodLabels.map(p => data.porProduto[p].saidas);
+function renderRelatorios(summaryData, estoqueData) {
+  const prodLabels = Object.keys(summaryData.porProduto);
+  const entradas   = prodLabels.map(p => summaryData.porProduto[p].entradas);
+  const saidas     = prodLabels.map(p => summaryData.porProduto[p].saidas);
 
   if (prodChart) prodChart.destroy();
   prodChart = new Chart(prodChartCanvas, {
@@ -429,22 +433,20 @@ function renderRelatorios(data) {
     }
   });
 
-  const diaLabels = Object.keys(data.porDia).sort();
-  const valores   = diaLabels.map(d => data.porDia[d]);
+  const estoqueLabels = Object.keys(estoqueData);
+  const estoqueValores = estoqueLabels.map(p => estoqueData[p]);
 
-  if (diaChart) diaChart.destroy();
-  diaChart = new Chart(diaChartCanvas, {
-    type: 'line',
+  if (estoqueChart) estoqueChart.destroy();
+  estoqueChart = new Chart(estoqueChartCanvas, {
+    type: 'bar',
     data: {
-      labels: diaLabels,
+      labels: estoqueLabels,
       datasets: [
         {
-          label: 'Movimentações',
-          data: valores,
+          label: 'Estoque Atual',
+          data: estoqueValores,
           borderColor: '#36a2eb',
-          backgroundColor: '#36a2eb',
-          borderWidth: 3,
-          fill: false
+          borderColor: '#000',
         }
       ]
     },
