@@ -426,6 +426,7 @@ function setupPagination(totalItems, currentPage) {
         alert('Produto adicionado com sucesso!');
         stockForm.reset();
         if (viewStockSection.style.display !== 'none') loadStock();
+        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes();
       } else {
         alert(data.error || 'Erro ao adicionar produto');
       }
@@ -479,6 +480,7 @@ function setupPagination(totalItems, currentPage) {
       if (res.ok) {
         alert('Produto atualizado com sucesso!');
         loadStock();
+        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes();
       } else {
         alert(data.error || 'Erro ao atualizar produto');
       }
@@ -524,6 +526,7 @@ function setupPagination(totalItems, currentPage) {
       if (res.ok) {
         alert('Produto excluído com sucesso!');
         loadStock();
+        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes();
       } else {
         alert(data.error || 'Erro ao excluir produto');
       }
