@@ -203,24 +203,16 @@ if (window.Chart) {
 
   relatoriosMenu.addEventListener('click', () => {
     addProductSection.style.display  = 'none';
-    movimentacoesMenu.addEventListener('click', () => {
-  addProductSection.style.display  = 'none';
-  viewStockSection.style.display   = 'none';
-  submenu.classList.remove('active');
-  homeSection.style.display        = 'none';
-  movimentacoesSection.style.display = 'block';
-  loadMovimentacoes();
-});
+    viewStockSection.style.display   = 'none';
+    movimentacoesSection.style.display = 'none';
+    homeSection.style.display        = 'none';
+    relatoriosSection.style.display  = 'block';
+    submenu.classList.remove('active');
+    loadRelatorios(filtroInicio.value, filtroFim.value);
+  });
 
-relatoriosMenu.addEventListener('click', () => {
-  addProductSection.style.display  = 'none';
-  viewStockSection.style.display   = 'none';
-  movimentacoesSection.style.display = 'none';
-  homeSection.style.display        = 'none';
-  relatoriosSection.style.display  = 'block';
-  submenu.classList.remove('active');
-  loadRelatorios(filtroInicio.value, filtroFim.value);
-});
+ async function handleLogin(e) {
+    e.preventDefault();
     const username = inputUsuario.value;
     const password = inputClave.value;
     if (!username || !password) return alert('Preencha usuário e senha');
@@ -233,8 +225,8 @@ relatoriosMenu.addEventListener('click', () => {
       });
       const data = await res.json();
       if (res.ok) {
-        currentUser            = username;
-        userRole              = data.role;
+        currentUser                = username;
+        userRole                   = data.role;
         userNameDisplay.textContent = username;
         loginContainer.style.display = 'none';
         stockContainer.style.display = 'block';
@@ -755,3 +747,6 @@ if (closeAdminBtn) {
   closeAdminBtn.addEventListener('click', () => {
     adminSection.style.display = 'none';
   });
+}
+
+});
