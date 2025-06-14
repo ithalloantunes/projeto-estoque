@@ -206,7 +206,6 @@ app.post('/api/estoque', (req, res) => {
   data: new Date().toISOString(),
   usuario: usuario || 'desconhecido'
 });
-  }
 
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto atualizado com sucesso' });
