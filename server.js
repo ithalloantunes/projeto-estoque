@@ -143,19 +143,19 @@ app.post('/api/estoque', (req, res) => {
     lote:    lote?.trim() || '',
     quantidade: parseInt(quantidade, 10) || 0,
     validade:   validade || null,
-    dataCadastro: new Date().toISOString()
-  });
-  logMovimentacao({
-    id: uuidv4(),
-    produtoId: id,
-    produto: produto.trim(),
-    tipo: 'adicao',
-    quantidade: parseInt(quantidade, 10) || 0,
-    data: new Date().toISOString(),
-    usuario: usuario || 'desconhecido'
-  });
-  writeJSON(estoqueFile, estoque);
-  res.json({ message: 'Produto adicionado com sucesso', id });
+     dataCadastro: new Date().toISOString()
+});
+logMovimentacao({
+  id: uuidv4(),
+  produtoId: id,
+  produto: produto.trim(),
+  tipo: 'adicao',
+  quantidade: parseInt(quantidade, 10) || 0,
+  quantidadeAnterior: 0,
+  data: new Date().toISOString(),
+  usuario: usuario || 'desconhecido'
+});
+writeJSON(estoqueFile, estoque);
 });
 
 app.put('/api/estoque/:id', (req, res) => {
@@ -184,21 +184,21 @@ app.put('/api/estoque/:id', (req, res) => {
     lote:       req.body.lote?.trim()       || atual.lote,
     quantidade: novaQtd,
     validade:   req.body.validade ?? atual.validade,
-    dataAtualizacao: new Date().toISOString()
-  };
-  const diff = novaQtd - atual.quantidade;
-  if (diff !== 0) {
-    logMovimentacao({
-      id: uuidv4(),
-      produtoId: itemId,
-      produto: estoque[idx].produto,
-      tipo: diff > 0 ? 'entrada' : 'saida',
-      quantidade: diff,
-      data: new Date().toISOString(),
-      usuario: usuario || 'desconhecido'
-    });
-  }
-
+    validade:   req.body.validade ?? atual.validade,
+  dataAtualizacao: new Date().toISOString()
+};
+const diff = novaQtd - atual.quantidade;
+if (diff !== 0) {
+  logMovimentacao({
+    id: uuidv4(),
+    produtoId: itemId,
+    produto: estoque[idx].produto,
+    tipo: diff > 0 ? 'entrada' : 'saida',
+    quantidade: diff,
+    quantidadeAnterior: atual.quantidade,
+    data: new Date().toISOString(),
+    usuario: usuario || 'desconhecido'
+  });
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto atualizado com sucesso' });
 });
@@ -221,19 +221,19 @@ app.delete('/api/estoque/:id', (req, res) => {
 
   const removed = estoque.splice(idx, 1)[0];
   writeJSON(estoqueFile, estoque);
-  logMovimentacao({
-    id: uuidv4(),
-    produtoId: itemId,
-    produto: removed.produto,
-    tipo: 'exclusao',
-    quantidade: removed.quantidade,
-    motivo,
-    data: new Date().toISOString(),
-    usuario: usuario || 'desconhecido'
-  });
-  res.json({ message: 'Produto excluído com sucesso!' });
+  const removed = estoque.splice(idx, 1)[0];
+writeJSON(estoqueFile, estoque);
+logMovimentacao({
+  id: uuidv4(),
+  produtoId: itemId,
+  produto: removed.produto,
+  tipo: 'exclusao',
+  quantidade: removed.quantidade,
+  quantidadeAnterior: removed.quantidade,
+  motivo,
+  data: new Date().toISOString(),
+  usuario: usuario || 'desconhecido'
 });
-
 app.get('/api/movimentacoes', (req, res) => {
   res.json(readJSON(movFile));
 });
