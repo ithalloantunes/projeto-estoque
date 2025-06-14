@@ -242,9 +242,6 @@ app.delete('/api/estoque/:id', (req, res) => {
     motivo,
     data: new Date().toISOString(),
     usuario: usuario || 'desconhecido'
-    motivo,
-    data: new Date().toISOString(),
-    usuario: usuario || 'desconhecido'
   });
   res.json({ message: 'Produto excluído com sucesso!' });
 });
