@@ -934,3 +934,102 @@ tbody tr.removing {
 #export-csv-btn:hover {
     background-color: #824283;
 }
+
+/* --- Novo estilo moderno para relatorios --- */
+#relatorios-section {
+    --font-base: 'Inter', sans-serif;
+    --color-bg: #F5F7FA;
+    --color-surface: #FFFFFF;
+    --color-primary: #4C6EF5;
+    --color-primary-light: #CDE2FF;
+    --color-secondary: #FFC107;
+    --color-text: #343A40;
+    --color-muted: #6C757D;
+    --radius: 8px;
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --shadow-light: 0 2px 8px rgba(0,0,0,0.05);
+    font-family: var(--font-base);
+    background: var(--color-bg);
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+#relatorios-section .topbar {
+    background: var(--color-surface);
+    padding: var(--space-2) var(--space-3);
+    box-shadow: var(--shadow-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#relatorios-section .content {
+    padding: var(--space-3);
+    flex: 1;
+    overflow-y: auto;
+}
+
+#relatorios-section .tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+}
+
+#relatorios-section .tools input,
+#relatorios-section .tools button {
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-muted);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+}
+
+#relatorios-section .tools button {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#relatorios-section .tools button:hover {
+    transform: translateY(-2px);
+}
+
+#relatorios-section .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+}
+
+#relatorios-section .card {
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-light);
+    padding: var(--space-3);
+    display: flex;
+    flex-direction: column;
+}
+
+#relatorios-section .card h3 {
+    font-size: 1.1rem;
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+}
+
+#relatorios-section #por-produto-chart,
+#relatorios-section #por-dia-chart {
+    width: 100% !important;
+    aspect-ratio: 16/9;
+}
+
+#relatorios-section #pizza-produto-chart,
+#relatorios-section #pizza-tipo-chart {
+    width: 100% !important;
+    aspect-ratio: 1/1;
+}
