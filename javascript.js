@@ -41,6 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const movimentacoesMenu = document.getElementById('movimentacoes-menu');
   const homeMenu          = document.getElementById('home-menu');
   const submenu           = document.querySelector('.submenu');
+  const relatoriosMenu    = document.getElementById('relatorios-menu');
+  const relatoriosSection = document.getElementById('relatorios-section');
+  const exportCsvBtn      = document.getElementById('export-csv-btn');
+  const prodChartCanvas   = document.getElementById('por-produto-chart');
+  const diaChartCanvas    = document.getElementById('por-dia-chart');
 
   // Elementos do modal de foto de perfil
   const userProfilePic    = document.getElementById('user-profile-pic');
@@ -187,13 +192,23 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStock();
   });
 
-movimentacoesMenu.addEventListener('click', () => {
+    movimentacoesMenu.addEventListener('click', () => {
     addProductSection.style.display  = 'none';
     viewStockSection.style.display   = 'none';
     submenu.classList.remove('active');
     homeSection.style.display        = 'none';
     movimentacoesSection.style.display = 'block';
     loadMovimentacoes();
+  });
+
+  relatoriosMenu.addEventListener('click', () => {
+    addProductSection.style.display  = 'none';
+    viewStockSection.style.display   = 'none';
+    movimentacoesSection.style.display = 'none';
+    homeSection.style.display        = 'none';
+    relatoriosSection.style.display  = 'block';
+    submenu.classList.remove('active');
+    loadRelatorios();
   });
   
   showAddProduct.addEventListener('click', e => {
@@ -341,6 +356,55 @@ function renderMovimentacoes(data) {
     movimentacoesTableBody.appendChild(tr);
   });
   }
+
+  async function loadRelatorios() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/report/summary`, {
+      credentials: 'include'
+    });
+    const data = await res.json();
+    renderRelatorios(data);
+  } catch (err) {
+    alert('Erro ao carregar relatório: ' + err.message);
+  }
+}
+
+let prodChart;
+let diaChart;
+
+function renderRelatorios(data) {
+  const prodLabels = Object.keys(data.porProduto);
+  const entradas   = prodLabels.map(p => data.porProduto[p].entradas);
+  const saidas     = prodLabels.map(p => data.porProduto[p].saidas);
+
+  if (prodChart) prodChart.destroy();
+  prodChart = new Chart(prodChartCanvas, {
+    type: 'bar',
+    data: {
+      labels: prodLabels,
+      datasets: [
+        { label: 'Entradas', data: entradas, backgroundColor: '#2ecc71' },
+        { label: 'Saídas', data: saidas, backgroundColor: '#e74c3c' }
+      ]
+    },
+    options: { responsive: true }
+  });
+
+  const diaLabels = Object.keys(data.porDia).sort();
+  const valores   = diaLabels.map(d => data.porDia[d]);
+
+  if (diaChart) diaChart.destroy();
+  diaChart = new Chart(diaChartCanvas, {
+    type: 'line',
+    data: {
+      labels: diaLabels,
+      datasets: [
+        { label: 'Movimentações', data: valores, borderColor: '#824283', backgroundColor: '#824283', fill: false }
+      ]
+    },
+    options: { responsive: true }
+  });
+}
   
   function filterStock(data) {
   const clean = data.filter(item => item != null);
@@ -612,6 +676,11 @@ if (deleteUsersBtn) {
   deleteUsersBtn.addEventListener('click', () => {
     adminSection.style.display = 'block';
     loadUsers();
+  });
+}
+  if (exportCsvBtn) {
+  exportCsvBtn.addEventListener('click', () => {
+    window.open(`${BASE_URL}/api/movimentacoes/csv`, '_blank');
   });
 }
 if (closeAdminBtn) {
