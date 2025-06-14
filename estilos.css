@@ -903,6 +903,16 @@ tbody tr.removing {
     border-radius: 12px;
     box-shadow: 4px 4px 0 #000;
 }
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.chart-container canvas {
+    background: #fffbe6;
+    border: 4px solid #333;
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 #000;
+}
 
 #export-csv-btn {
     padding: 10px 20px;
