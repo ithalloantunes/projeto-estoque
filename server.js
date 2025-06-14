@@ -263,6 +263,18 @@ app.get('/api/report/summary', (req, res) => {
   res.json({ porProduto: sumProd, porDia: sumDay });
 });
 
+// Rota de resumo do estoque atual
+app.get('/api/report/estoque', (req, res) => {
+  const estoque = readJSON(estoqueFile) || [];
+  const resumo = {};
+  for (const item of estoque) {
+    const prod = item.produto || 'desconhecido';
+    const qtd  = parseInt(item.quantidade, 10) || 0;
+    resumo[prod] = (resumo[prod] || 0) + qtd;
+  }
+  res.json(resumo);
+});
+
 // Rota para exportar movimentacoes em CSV
 app.get('/api/movimentacoes/csv', (req, res) => {
   const logs = readJSON(movFile) || [];
