@@ -134,31 +134,32 @@ app.post('/api/estoque', (req, res) => {
   if (!produto || quantidade === undefined) {
     return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
   }
-const estoque = readJSON(estoqueFile);
-const id      = uuidv4();
-estoque.push({
-  id,
-  produto: produto.trim(),
-  tipo:    tipo ? tipo.trim() : '',
-  lote:    lote ? lote.trim() : '',
-  quantidade: parseInt(quantidade, 10) || 0,
-  validade:   validade || null,
-  dataCadastro: new Date().toISOString()
-});
-logMovimentacao({
-  id: uuidv4(),
-  produtoId: id,
-  produto: produto.trim(),
-  tipo: 'adicao',
-  quantidade: parseInt(quantidade, 10) || 0,
-  quantidadeAnterior: 0,
-  data: new Date().toISOString(),
-  usuario: usuario || 'desconhecido'
-});
-writeJSON(estoqueFile, estoque);
-});
+  const estoque = readJSON(estoqueFile);
+  const id      = uuidv4();
+  estoque.push({
+    id,
+    produto: produto.trim(),
+    tipo:    tipo ? tipo.trim() : '',
+    lote:    lote ? lote.trim() : '',
+    quantidade: parseInt(quantidade, 10) || 0,
+    validade:   validade || null,
+    dataCadastro: new Date().toISOString()
+  });
+  logMovimentacao({
+    id: uuidv4(),
+    produtoId: id,
+    produto: produto.trim(),
+    tipo: 'adicao',
+    quantidade: parseInt(quantidade, 10) || 0,
+    quantidadeAnterior: 0,
+    data: new Date().toISOString(),
+    usuario: usuario || 'desconhecido'
+  });
+  writeJSON(estoqueFile, estoque);
+  res.json({ message: 'Produto adicionado com sucesso', id });
 
 app.put('/api/estoque/:id', (req, res) => {
+  app.put('/api/estoque/:id', (req, res) => {
   const rawId  = req.params.id;
   const usuario = req.body.usuario;
   const estoque = readJSON(estoqueFile) || [];
@@ -174,38 +175,37 @@ app.put('/api/estoque/:id', (req, res) => {
   }
 
   const atual = estoque[idx];
-const novaQtd = Number.isInteger(+req.body.quantidade)
-                  ? parseInt(req.body.quantidade, 10)
-                  : atual.quantidade;
-estoque[idx] = {
-  ...atual,
-  produto:    req.body.produto ? req.body.produto.trim() : atual.produto,
-  tipo:       req.body.tipo ? req.body.tipo.trim() : atual.tipo,
-  lote:       req.body.lote ? req.body.lote.trim() : atual.lote,
-  quantidade: novaQtd,
-  validade:   req.body.validade !== undefined ? req.body.validade : atual.validade,
-  dataAtualizacao: new Date().toISOString()
-};
-const diff = novaQtd - atual.quantidade;
-if (diff !== 0) {
-  logMovimentacao({
-    id: uuidv4(),
-    produtoId: itemId,
-    produto: estoque[idx].produto,
-    tipo: diff > 0 ? 'entrada' : 'saida',
-    quantidade: diff,
-    quantidadeAnterior: atual.quantidade,
-    data: new Date().toISOString(),
-    usuario: usuario || 'desconhecido'
-  });
+  const novaQtd = Number.isInteger(+req.body.quantidade)
+                    ? parseInt(req.body.quantidade, 10)
+                    : atual.quantidade;
+  estoque[idx] = {
+    ...atual,
+    produto:    req.body.produto ? req.body.produto.trim() : atual.produto,
+    tipo:       req.body.tipo ? req.body.tipo.trim() : atual.tipo,
+    lote:       req.body.lote ? req.body.lote.trim() : atual.lote,
+    quantidade: novaQtd,
+    validade:   req.body.validade !== undefined ? req.body.validade : atual.validade,
+    dataAtualizacao: new Date().toISOString()
+  };
+  const diff = novaQtd - atual.quantidade;
+  if (diff !== 0) {
+    logMovimentacao({
+      id: uuidv4(),
+      produtoId: itemId,
+      produto: estoque[idx].produto,
+      tipo: diff > 0 ? 'entrada' : 'saida',
+      quantidade: diff,
+      quantidadeAnterior: atual.quantidade,
+      data: new Date().toISOString(),
+      usuario: usuario || 'desconhecido'
+    });
+  }
+
   writeJSON(estoqueFile, estoque);
   res.json({ message: 'Produto atualizado com sucesso' });
 });
 
 app.delete('/api/estoque/:id', (req, res) => {
-  const rawId   = req.params.id;
-  const { motivo, usuario } = req.body;
-  app.delete('/api/estoque/:id', (req, res) => {
   const rawId   = req.params.id;
   const { motivo, usuario } = req.body;
   if (!motivo) {
