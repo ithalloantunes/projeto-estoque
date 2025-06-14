@@ -243,6 +243,59 @@ app.delete('/api/estoque/:id', (req, res) => {
   });
   res.json({ message: 'Produto excluído com sucesso!' });
 });
+
+// Rota de resumo de relatorio
+app.get('/api/report/summary', (req, res) => {
+  const logs = readJSON(movFile) || [];
+  const sumProd = {};
+  const sumDay = {};
+  for (const m of logs) {
+    const prod = m.produto || 'desconhecido';
+    if (!sumProd[prod]) sumProd[prod] = { entradas: 0, saidas: 0 };
+    const q = Math.abs(parseInt(m.quantidade, 10) || 0);
+    if (m.tipo === 'adicao' || m.tipo === 'entrada') sumProd[prod].entradas += q;
+    else if (m.tipo === 'saida' || m.tipo === 'exclusao') sumProd[prod].saidas += q;
+    if (m.data) {
+      const d = m.data.slice(0, 10);
+      sumDay[d] = (sumDay[d] || 0) + q;
+    }
+  }
+  res.json({ porProduto: sumProd, porDia: sumDay });
+});
+
+// Rota para exportar movimentacoes em CSV
+app.get('/api/movimentacoes/csv', (req, res) => {
+  const logs = readJSON(movFile) || [];
+  const header = [
+    'id',
+    'produtoId',
+    'produto',
+    'tipo',
+    'quantidade',
+    'quantidadeAnterior',
+    'quantidadeAtual',
+    'motivo',
+    'data',
+    'usuario'
+  ];
+  const rows = logs.map(m => [
+    m.id,
+    m.produtoId,
+    m.produto,
+    m.tipo,
+    m.quantidade,
+    m.quantidadeAnterior ?? '',
+    m.quantidadeAtual ?? '',
+    m.motivo ?? '',
+    m.data,
+    m.usuario
+  ].join(','));
+  const csv = `${header.join(',')}` + '\n' + rows.join('\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="movimentacoes.csv"');
+  res.send(csv);
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
