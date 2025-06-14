@@ -174,17 +174,16 @@ app.put('/api/estoque/:id', (req, res) => {
   }
 
   const atual = estoque[idx];
-  const novaQtd = Number.isInteger(+req.body.quantidade)
-                    ? parseInt(req.body.quantidade, 10)
-                    : atual.quantidade;
-  estoque[idx] = {
-    ...atual,
-    produto:    req.body.produto?.trim()    || atual.produto,
-    tipo:       req.body.tipo?.trim()       || atual.tipo,
-    lote:       req.body.lote?.trim()       || atual.lote,
-    quantidade: novaQtd,
-    validade:   req.body.validade ?? atual.validade,
-    validade:   req.body.validade ?? atual.validade,
+const novaQtd = Number.isInteger(+req.body.quantidade)
+                  ? parseInt(req.body.quantidade, 10)
+                  : atual.quantidade;
+estoque[idx] = {
+  ...atual,
+  produto:    req.body.produto ? req.body.produto.trim() : atual.produto,
+  tipo:       req.body.tipo ? req.body.tipo.trim() : atual.tipo,
+  lote:       req.body.lote ? req.body.lote.trim() : atual.lote,
+  quantidade: novaQtd,
+  validade:   req.body.validade !== undefined ? req.body.validade : atual.validade,
   dataAtualizacao: new Date().toISOString()
 };
 const diff = novaQtd - atual.quantidade;
@@ -206,6 +205,9 @@ if (diff !== 0) {
 app.delete('/api/estoque/:id', (req, res) => {
   const rawId   = req.params.id;
   const { motivo, usuario } = req.body;
+  app.delete('/api/estoque/:id', (req, res) => {
+  const rawId   = req.params.id;
+  const { motivo, usuario } = req.body;
   if (!motivo) {
     return res.status(400).json({ error: 'Motivo é obrigatório' });
   }
@@ -221,23 +223,19 @@ app.delete('/api/estoque/:id', (req, res) => {
 
   const removed = estoque.splice(idx, 1)[0];
   writeJSON(estoqueFile, estoque);
-  const removed = estoque.splice(idx, 1)[0];
-writeJSON(estoqueFile, estoque);
-logMovimentacao({
-  id: uuidv4(),
-  produtoId: itemId,
-  produto: removed.produto,
-  tipo: 'exclusao',
-  quantidade: removed.quantidade,
-  quantidadeAnterior: removed.quantidade,
-  motivo,
-  data: new Date().toISOString(),
-  usuario: usuario || 'desconhecido'
+  logMovimentacao({
+    id: uuidv4(),
+    produtoId: itemId,
+    produto: removed.produto,
+    tipo: 'exclusao',
+    quantidade: removed.quantidade,
+    quantidadeAnterior: removed.quantidade,
+    motivo,
+    data: new Date().toISOString(),
+    usuario: usuario || 'desconhecido'
+  });
+  res.json({ message: 'Produto excluído com sucesso!' });
 });
-app.get('/api/movimentacoes', (req, res) => {
-  res.json(readJSON(movFile));
-});
-
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
