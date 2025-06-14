@@ -323,7 +323,7 @@ input[type="number"] {
 header {
     text-align: center;
     margin-bottom: 20px;
-   position: sticky;
+   position: relative;
     top: 0;
     background: #fdf6ec;
     z-index: 100;
