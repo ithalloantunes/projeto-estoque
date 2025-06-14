@@ -155,15 +155,10 @@ app.post('/api/estoque', (req, res) => {
     lote:    lote ? lote.trim() : '',
     quantidade: parseInt(quantidade, 10) || 0,
     validade:   validade || null,
-    dataCadastro: new Date().toISOString()
-  });
-  logMovimentacao({
-    id: uuidv4(),
-    produtoId: id,
-    produto: produto.trim(),
     tipo: 'adicao',
     quantidade: parseInt(quantidade, 10) || 0,
     quantidadeAnterior: 0,
+    quantidadeAtual: parseInt(quantidade, 10) || 0,
     data: new Date().toISOString(),
     usuario: usuario || 'desconhecido'
   });
@@ -208,6 +203,7 @@ app.post('/api/estoque', (req, res) => {
       tipo: diff > 0 ? 'entrada' : 'saida',
       quantidade: diff,
       quantidadeAnterior: atual.quantidade,
+      quantidadeAtual: novaQtd,
       data: new Date().toISOString(),
       usuario: usuario || 'desconhecido'
     });
@@ -242,6 +238,10 @@ app.delete('/api/estoque/:id', (req, res) => {
     tipo: 'exclusao',
     quantidade: removed.quantidade,
     quantidadeAnterior: removed.quantidade,
+    quantidadeAtual: 0,
+    motivo,
+    data: new Date().toISOString(),
+    usuario: usuario || 'desconhecido'
     motivo,
     data: new Date().toISOString(),
     usuario: usuario || 'desconhecido'
