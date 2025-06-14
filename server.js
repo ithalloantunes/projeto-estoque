@@ -260,7 +260,13 @@ app.get('/api/report/summary', (req, res) => {
       sumDay[d] = (sumDay[d] || 0) + q;
     }
   }
-  res.json({ porProduto: sumProd, porDia: sumDay });
+  const estoque  = readJSON(estoqueFile) || [];
+  const estoqueAtual = {};
+  for (const item of estoque) {
+    const p = item.produto || 'desconhecido';
+    estoqueAtual[p] = (estoqueAtual[p] || 0) + (parseInt(item.quantidade, 10) || 0);
+  }
+  res.json({ porProduto: sumProd, porDia: sumDay, estoqueAtual });
 });
 
 // Rota para exportar movimentacoes em CSV
