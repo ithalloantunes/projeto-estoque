@@ -56,7 +56,8 @@ app.post('/api/register', (req, res) => {
     username,
     password,
     role: 'user',
-    approved: false
+    approved: false,
+    photo: null
   });
   writeJSON(usersFile, users);
   res.json({ message: 'Cadastro enviado para aprovação' });
@@ -76,7 +77,12 @@ app.post('/api/login', (req, res) => {
   if (!user.approved) {
     return res.status(403).json({ error: 'Usuário pendente de aprovação' });
   }
-  res.json({ message: 'Login bem-sucedido', userId: user.id, role: user.role });
+  res.json({
+    message: 'Login bem-sucedido',
+    userId: user.id,
+    role: user.role,
+    photo: user.photo || null
+  });
 });
 
 // --- Gestão de usuários ---
@@ -117,6 +123,23 @@ app.delete('/api/users/:id', (req, res) => {
   users.splice(idx, 1);
   writeJSON(usersFile, users);
   res.json({ message: 'Usuário excluído' });
+});
+
+app.put('/api/users/:id/photo', (req, res) => {
+  const { photo } = req.body;
+  const users = readJSON(usersFile);
+  const idx   = users.findIndex(u => u.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
+  users[idx].photo = photo || null;
+  writeJSON(usersFile, users);
+  res.json({ message: 'Foto atualizada' });
+});
+
+app.get('/api/users/:id/photo', (req, res) => {
+  const users = readJSON(usersFile);
+  const user  = users.find(u => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+  res.json({ photo: user.photo || null });
 });
 
 // Rotas de estoque (mantidas iguais ao seu último estado)
