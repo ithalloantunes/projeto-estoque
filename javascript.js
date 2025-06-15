@@ -190,17 +190,24 @@ if (window.Chart) {
     }
   });
 
-  homeMenu.addEventListener('click', () => {
+    function hideAllSections() {
     addProductSection.style.display  = 'none';
     viewStockSection.style.display   = 'none';
     movimentacoesSection.style.display = 'none';
     relatoriosSection.style.display  = 'none';
-    homeSection.style.display        = 'block';
+   homeSection.style.display        = 'none';
+  }
+
+  homeMenu.addEventListener('click', () => {
+    hideAllSections();
+    homeSection.style.display = 'block';
     submenu.classList.remove('active');
   });
 
   estoqueMenu.addEventListener('click', () => {
+    hideAllSections();
     submenu.classList.toggle('active');
+    viewStockSection.style.display = 'block';
     addProductSection.style.display  = 'none';
     viewStockSection.style.display   = 'block';
     movimentacoesSection.style.display = 'none';
@@ -209,13 +216,10 @@ if (window.Chart) {
     loadStock();
   });
 
-  showAddProduct.addEventListener('click', e => {
+    showAddProduct.addEventListener('click', e => {
     e.preventDefault();
-    addProductSection.style.display  = 'block';
-    viewStockSection.style.display   = 'none';
-    movimentacoesSection.style.display = 'none';
-    relatoriosSection.style.display  = 'none';
-    homeSection.style.display        = 'none';
+    hideAllSections();
+    addProductSection.style.display = 'block';
     submenu.classList.remove('active');
   });
 
@@ -229,12 +233,9 @@ if (window.Chart) {
     loadMovimentacoes();
   });
 
-  relatoriosMenu.addEventListener('click', () => {
-    addProductSection.style.display  = 'none';
-    viewStockSection.style.display   = 'none';
-    movimentacoesSection.style.display = 'none';
-    homeSection.style.display        = 'none';
-    relatoriosSection.style.display  = 'block';
+   relatoriosMenu.addEventListener('click', () => {
+    hideAllSections();
+    relatoriosSection.style.display = 'block';
     submenu.classList.remove('active');
     loadRelatorios(filtroInicio.value, filtroFim.value);
   });
