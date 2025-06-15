@@ -121,7 +121,7 @@ if (window.Chart) {
     profileModalPic.src = defaultPic.replace('40x40','200x200');
     if (currentUser) {
       localStorage.removeItem(`profilePhoto_${currentUser}`);
-      updateProfilePhotoOnServer(null);
+      
     }
   }
 
