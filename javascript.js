@@ -125,17 +125,38 @@ if (window.Chart) {
     }
   }
 
-  function initProfilePhoto() {
-    const saved = currentUser
-      ? localStorage.getItem(`profilePhoto_${currentUser}`)
-      : null;
-    if (saved) {
-      userProfilePic.src = saved;
-      profileModalPic.src = saved;
-    } else {
-      resetProfilePhoto();
+ async function initProfilePhoto() {
+      const saved = currentUser
+        ? localStorage.getItem(`profilePhoto_${currentUser}`)
+        : null;
+      if (saved) {
+        userProfilePic.src = saved;
+        profileModalPic.src = saved;
+      } else if (currentUserId) {
+        try {
+          const res = await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
+            credentials: 'include'
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.photo) {
+              userProfilePic.src = data.photo;
+              profileModalPic.src = data.photo;
+              if (currentUser) {
+                localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
+              }
+              return;
+            }
+          }
+        } catch (err) {
+          console.error('Erro ao buscar foto no servidor:', err);
+        }
+        resetProfilePhoto();
+      } else {
+        resetProfilePhoto();
+      }
     }
-  }
+  
 
   async function updateProfilePhotoOnServer(photo) {
     if (!currentUserId) return;
@@ -283,10 +304,10 @@ if (window.Chart) {
           deleteUsersBtn.style.display  = 'block';
         }
         if (data.photo) {
-          localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
-        }
-        initProfilePhoto();
-      } else {
+            localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
+          }
+          await initProfilePhoto();
+        } else {
         alert(data.error || 'Erro no login');
       }
     } catch (err) {
