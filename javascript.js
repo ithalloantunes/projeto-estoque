@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM carregado, inicializando interface');
 
   let currentUser = null;
+  let currentUserId = null;
   let userRole = null;
   let seguirPunteroMouse = true;
   const anchoMitad = window.innerWidth / 2;
@@ -107,6 +108,7 @@ if (window.Chart) {
         userProfilePic.src = reader.result;
         profileModalPic.src = reader.result;
         localStorage.setItem(`profilePhoto_${currentUser}`, reader.result);
+        updateProfilePhotoOnServer(reader.result);
         profileModal.style.display = 'none';
       };
       reader.readAsDataURL(file);
@@ -119,6 +121,7 @@ if (window.Chart) {
     profileModalPic.src = defaultPic.replace('40x40','200x200');
     if (currentUser) {
       localStorage.removeItem(`profilePhoto_${currentUser}`);
+      updateProfilePhotoOnServer(null);
     }
   }
 
@@ -131,6 +134,20 @@ if (window.Chart) {
       profileModalPic.src = saved;
     } else {
       resetProfilePhoto();
+    }
+  }
+
+  async function updateProfilePhotoOnServer(photo) {
+    if (!currentUserId) return;
+    try {
+      await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photo }),
+        credentials: 'include'
+      });
+    } catch (err) {
+      console.error('Erro ao salvar foto no servidor:', err);
     }
   }
   
@@ -255,6 +272,7 @@ if (window.Chart) {
       const data = await res.json();
       if (res.ok) {
         currentUser                = username;
+        currentUserId             = data.userId;
         userRole                   = data.role;
         userNameDisplay.textContent = username;
         loginContainer.style.display = 'none';
@@ -263,6 +281,9 @@ if (window.Chart) {
         if (userRole === 'admin') {
           approveUsersBtn.style.display = 'block';
           deleteUsersBtn.style.display  = 'block';
+        }
+        if (data.photo) {
+          localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
         }
         initProfilePhoto();
       } else {
@@ -303,6 +324,7 @@ if (window.Chart) {
     inputClave.value                = '';
     monster.src                     = 'img/idle/1.png';
     currentUser                     = null;
+    currentUserId                   = null;
     userNameDisplay.textContent     = 'Usuário';
     userMenu.style.display          = 'none';
     approveUsersBtn.style.display   = 'none';
