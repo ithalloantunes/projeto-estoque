@@ -504,6 +504,12 @@ function renderRelatorios(summaryData, estoqueData) {
   });
 }
 
+  function applyFilter(page = 1) {
+    const filtered = filterStock(estoqueData);
+    renderStock(filtered, page);
+    setupPagination(filtered.length, page);
+  }
+
   function renderStock(data, page) {
   stockTableBody.innerHTML = '';
 
@@ -749,7 +755,13 @@ showRegisterBtn.addEventListener('click', showRegisterForm);
 showLoginBtn.addEventListener('click', showLoginForm);
 logoutBtn.addEventListener('click', logout);
 stockForm.addEventListener('submit', addProduct);
-if (approveUsersBtn) {
+if (filterInput) {
+  filterInput.addEventListener('input', () => applyFilter(1));
+}
+if (filterType) {
+  filterType.addEventListener('change', () => applyFilter(1));
+}
+  if (approveUsersBtn) {
   approveUsersBtn.addEventListener('click', () => {
     adminSection.style.display = 'block';
     loadPendingUsers();
