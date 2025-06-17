@@ -154,8 +154,18 @@ app.get('/api/estoque', (req, res) => {
 
 // Rota para obter o histórico de movimentações de estoque
 app.get('/api/movimentacoes', (req, res) => {
-  const logs = readJSON(movFile);
-  res.json(Array.isArray(logs) ? logs : []);
+  const logs = readJSON(movFile) || [];
+  const { start, end } = req.query;
+  let filtered = logs;
+  if (start) {
+    const startDate = new Date(start);
+    filtered = filtered.filter(m => new Date(m.data) >= startDate);
+  }
+  if (end) {
+    const endDate = new Date(end);
+    filtered = filtered.filter(m => new Date(m.data) <= endDate);
+  }
+  res.json(filtered);
 });
 
 app.post('/api/estoque', (req, res) => {
