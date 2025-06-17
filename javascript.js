@@ -54,6 +54,9 @@ const exportCsvBtn      = document.getElementById('export-csv-btn');
 const filtroInicio      = document.getElementById('filtro-inicio');
 const filtroFim         = document.getElementById('filtro-fim');
 const aplicarFiltroBtn  = document.getElementById('aplicar-filtro-btn');
+const movInicio         = document.getElementById('mov-inicio');
+const movFim            = document.getElementById('mov-fim');
+const filtrarMovBtn     = document.getElementById('filtrar-mov-btn');
 const prodChartCanvas   = document.getElementById('por-produto-chart');
 const estoqueChartCanvas    = document.getElementById('por-dia-chart');
 const pizzaProdCanvas   = document.getElementById('pizza-produto-chart');
@@ -268,7 +271,7 @@ if (window.Chart) {
     homeSection.style.display        = 'none';
     movimentacoesSection.style.display = 'block';
     relatoriosSection.style.display  = 'none';
-    loadMovimentacoes();
+    loadMovimentacoes(movInicio.value, movFim.value);
   });
 
    relatoriosMenu.addEventListener('click', () => {
@@ -389,9 +392,12 @@ if (window.Chart) {
     }
   }
 
-async function loadMovimentacoes() {
+async function loadMovimentacoes(start, end) {
     try {
-      const res = await fetch(`${BASE_URL}/api/movimentacoes`, {
+      const params = new URLSearchParams();
+      if (start) params.append('start', start);
+      if (end)   params.append('end', end);
+      const res = await fetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
@@ -624,7 +630,7 @@ function setupPagination(totalItems, currentPage) {
         alert('Produto adicionado com sucesso!');
         stockForm.reset();
         if (viewStockSection.style.display !== 'none') loadStock();
-        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes();
+        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes(movInicio.value, movFim.value);
       } else {
         alert(data.error || 'Erro ao adicionar produto');
       }
@@ -678,7 +684,7 @@ function setupPagination(totalItems, currentPage) {
       if (res.ok) {
         alert('Produto atualizado com sucesso!');
         loadStock();
-        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes();
+        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes(movInicio.value, movFim.value);
       } else {
         alert(data.error || 'Erro ao atualizar produto');
       }
@@ -724,7 +730,7 @@ function setupPagination(totalItems, currentPage) {
       if (res.ok) {
         alert('Produto excluído com sucesso!');
         loadStock();
-        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes();
+        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes(movInicio.value, movFim.value);
       } else {
         alert(data.error || 'Erro ao excluir produto');
       }
@@ -820,6 +826,13 @@ if (deleteUsersBtn) {
 if (exportCsvBtn) {
   exportCsvBtn.addEventListener('click', () => {
     window.open(`${BASE_URL}/api/movimentacoes/csv`, '_blank');
+  });
+}
+  if (filtrarMovBtn) {
+  filtrarMovBtn.addEventListener('click', () => {
+    const inicio = movInicio.value;
+    const fim    = movFim.value;
+    loadMovimentacoes(inicio, fim);
   });
 }
 if (aplicarFiltroBtn) {
