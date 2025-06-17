@@ -892,6 +892,13 @@ tbody tr.removing {
     gap: 10px;
 }
 
+.filtro-movimentacoes {
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
 .charts-grid {
     display: flex;
     flex-wrap: wrap;
