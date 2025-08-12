@@ -14,7 +14,7 @@
     "inventory",
     "management"
   ],
-  "author": "ithallo",
+  "author": "ithallo, Saihago, Orlando, Vinicius",
   "license": "MIT",
   "dependencies": {
     "cookie-parser": "^1.4.6",
