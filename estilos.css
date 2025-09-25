@@ -1,117 +1,249 @@
-/* ===== ESTILOS DO LOGIN (BASEADO NO ARQUIVO ANTIGO) ===== */
+/* ===== NOVOS ESTILOS GERAIS ===== */
 
-body {
-    margin: 0;
-    font-family: 'Arial', sans-serif;
-    background: #fdf6ec;
-    color: #3c2a1e;
-    overflow-x: hidden;
+:root {
+    --primary: #6d28d9;
+    --primary-dark: #5b21b6;
+    --accent: #9333ea;
+    --surface: #ffffff;
+    --background: #fdf7f4;
+    --text: #111827;
+    --muted: #6b7280;
 }
 
 * {
     box-sizing: border-box;
 }
 
-.container {
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+a {
+    color: inherit;
+}
+
+button {
+    font-family: inherit;
+}
+
+/* ===== NOVA INTERFACE DE LOGIN ===== */
+
+#login-container {
     display: flex;
-    height: 100vh;
-    width: 100%;
-    flex-direction: row;
+    min-height: 100vh;
+    background: linear-gradient(135deg, rgba(109, 40, 217, 0.1), rgba(147, 51, 234, 0.12));
 }
 
-.imagem {
-    width: 50%;
-    background-color: #dfffd6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.login-illustration {
+    flex: 1;
+    background: linear-gradient(160deg, rgba(109, 40, 217, 0.85), rgba(147, 51, 234, 0.7));
+    color: #f9fafb;
+    display: none;
+    position: relative;
 }
 
-.imagem img {
-    max-width: 70%;
-    height: auto;
+.login-illustration::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.15), transparent 55%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1), transparent 45%);
+    pointer-events: none;
 }
 
-.formulario {
-    width: 50%;
-    background-color: #fff;
+.login-illustration .content {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 2rem;
-    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 3rem;
+    width: 100%;
+    height: 100%;
+    gap: 2rem;
 }
 
-h1 {
+.login-illustration h2 {
     font-size: 2.5rem;
-    color: #4c1a57;
+    font-weight: 700;
     margin: 0;
 }
 
-h2 {
-    font-size: 1.5rem;
-    color: #6a2f77;
-    margin: 1rem 0 2rem;
-}
-
-label {
+.login-illustration p {
+    max-width: 420px;
+    color: rgba(249, 250, 251, 0.75);
     font-size: 1rem;
-    color: #333;
-    margin-bottom: 0.5rem;
-    display: block;
+    line-height: 1.5;
 }
 
-.input-container {
-    margin-bottom: 1rem;
+.login-illustration img {
+    width: 320px;
+    max-width: 70%;
+    height: auto;
+}
+
+@media (min-width: 1024px) {
+    .login-illustration {
+        display: flex;
+    }
+}
+
+.login-form-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+}
+
+.login-card {
     width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    padding: 2.5rem 2rem;
+    border-radius: 1.25rem;
+    box-shadow: 0 25px 60px rgba(109, 40, 217, 0.15);
+}
+
+.login-card header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.login-card header h1 {
+    font-size: 2rem;
+    margin: 0;
+    color: var(--primary);
+}
+
+.login-card header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.login-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+}
+
+.login-input-wrapper {
     position: relative;
 }
 
-input[type="text"],
-input[type="password"],
-input[type="date"],
-input[type="number"] {
+.login-input-wrapper input {
     width: 100%;
-    padding: 0.8rem;
-    border: 2px solid #b388eb;
-    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    padding-right: 2.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid #d1d5db;
     font-size: 1rem;
+    background: #f9fafb;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-input-wrapper input:focus {
     outline: none;
-    box-sizing: border-box;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.15);
+    background: #fff;
 }
 
-#login-container button,
-#register-form button,
-#login-form button {
-    background-color: #4285f4;
-    color: white;
-    padding: 0.8rem 2rem;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    margin-top: 1rem;
-}
-
-#login-container button:hover,
-#register-form button:hover,
-#login-form button:hover {
-    background-color: #3367d6;
-}
-
-/* Ícone de visualizar senha */
-#toggle-password-login,
-#toggle-password-register {
+.password-toggle {
     position: absolute;
-    right: 12px;
+    right: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+    color: var(--muted);
     user-select: none;
+}
+
+.primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.95rem 1rem;
+    border-radius: 0.75rem;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primary-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 25px rgba(109, 40, 217, 0.25);
+    background: var(--primary-dark);
+}
+
+.auth-toggle {
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--muted);
+}
+
+.auth-toggle button {
+    border: none;
+    background: none;
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.login-card footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.login-card footer span {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* ===== COMPONENTES COMPARTILHADOS ===== */
+
+.input-container {
+    position: relative;
+    width: 100%;
+}
+
+#toggle-password-login,
+#toggle-password-register {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--muted);
 }
 
 /* ===== ESTILOS DO SISTEMA PRINCIPAL ===== */
