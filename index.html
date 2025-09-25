@@ -4,87 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AçaíStock</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#6D28D9',
-                        secondary: '#9333EA'
-                    },
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif']
-                    }
-                }
-            }
-        };
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
     <!-- Container de Login -->
-    <div id="login-container">
-        <div class="login-illustration">
-            <div class="content">
-                <img src="img/idle/1.png" alt="Mascote AçaíStock" id="monster">
-                <div>
-                    <h2>Gestão de Estoque Moderna</h2>
-                    <p>Controle entradas, saídas e relatórios em uma interface pensada para agilizar o dia a dia da sua loja de açaí.</p>
-                </div>
-            </div>
+    <div id="login-container" class="container">
+        <div class="imagem">
+            <img src="img/idle/1.png" alt="monster" id="monster">
         </div>
-        <div class="login-form-area">
-            <div class="login-card">
-                <header>
-                    <div class="flex items-center justify-center text-primary text-4xl mb-2">
-                        <span class="material-icons" aria-hidden="true">inventory_2</span>
-                    </div>
-                    <h1>AçaíStock</h1>
-                    <p>Acesse sua conta para continuar</p>
-                </header>
-                <form id="login-form" class="login-form">
-                    <label for="input-usuario">
-                        Nome de Usuário
-                        <div class="login-input-wrapper">
-                            <input type="text" id="input-usuario" placeholder="Digite seu usuário" autocomplete="username">
-                        </div>
-                    </label>
-                    <label for="input-clave">
-                        Senha de Acesso
-                        <div class="login-input-wrapper">
-                            <input type="password" id="input-clave" placeholder="Digite sua senha" autocomplete="current-password">
-                            <span class="material-icons password-toggle" id="toggle-password-login" aria-label="Mostrar senha">visibility</span>
-                        </div>
-                    </label>
-                    <button type="submit" class="primary-button">Entrar</button>
-                    <p class="auth-toggle">Não tem conta? <button type="button" id="show-register">Criar cadastro</button></p>
-                </form>
-                <form id="register-form" class="login-form" style="display: none;">
-                    <label for="register-username">
-                        Nome de Usuário
-                        <div class="login-input-wrapper">
-                            <input type="text" id="register-username" placeholder="Crie um usuário" autocomplete="off">
-                        </div>
-                    </label>
-                    <label for="register-password">
-                        Senha de Acesso
-                        <div class="login-input-wrapper">
-                            <input type="password" id="register-password" placeholder="Crie uma senha" autocomplete="new-password">
-                            <span class="material-icons password-toggle" id="toggle-password-register" aria-label="Mostrar senha">visibility</span>
-                        </div>
-                    </label>
-                    <button type="submit" class="primary-button">Cadastrar</button>
-                    <p class="auth-toggle">Já possui conta? <button type="button" id="show-login">Entrar</button></p>
-                </form>
-                <footer>
-                    <small>Powered by <span>AçaíStock</span></small>
-                </footer>
-            </div>
+        <div class="formulario">
+            <form id="login-form">
+    <h1>Login</h1>
+    <label for="input-usuario">Nome de Usuário (Login)</label>
+    <div class="input-container">
+        <input type="text" id="input-usuario" placeholder="Digite seu usuário">
+    </div>
+    <label for="input-clave">Senha de Acesso</label>
+    <div class="input-container">
+        <input type="password" id="input-clave" placeholder="Digite sua senha">
+        <span id="toggle-password-login">👁️</span>
+    </div>
+    <button type="submit">Entrar</button>
+    <button type="button" id="show-register">Cadastrar</button>
+</form>
+<form id="register-form" style="display: none;">
+    <h1>Cadastro</h1>
+    <label for="register-username">Nome de Usuário (Login)</label>
+    <div class="input-container">
+        <input type="text" id="register-username" placeholder="Digite seu usuário">
+    </div>
+    <label for="register-password">Senha de Acesso</label>
+    <div class="input-container">
+        <input type="password" id="register-password" placeholder="Digite sua senha">
+        <span id="toggle-password-register">👁️</span>
+    </div>
+    <button type="submit">Cadastrar</button>
+    <button type="button" id="show-login">Voltar ao Login</button>
+</form>
         </div>
     </div>
 
