@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const showLoginBtn      = document.getElementById('show-login');
   const logoutBtn         = document.getElementById('logout-btn');
   const userNameDisplay   = document.getElementById('user-name');
+  const userProfile       = document.querySelector('.user-profile');
   const userMenu          = document.querySelector('.user-menu');
   const approveUsersBtn   = document.getElementById('approve-users-btn');
   const deleteUsersBtn    = document.getElementById('delete-users-btn');
@@ -61,6 +62,9 @@ const prodChartCanvas   = document.getElementById('por-produto-chart');
 const estoqueChartCanvas    = document.getElementById('por-dia-chart');
 const pizzaProdCanvas   = document.getElementById('pizza-produto-chart');
 const pizzaTipoCanvas   = document.getElementById('pizza-tipo-chart');
+const quickAddBtn       = document.getElementById('quick-add');
+const quickMovesBtn     = document.getElementById('quick-moves');
+const quickReportBtn    = document.getElementById('quick-report');
 
 // Elementos do modal de foto de perfil
 const userProfilePic    = document.getElementById('user-profile-pic');
@@ -221,10 +225,19 @@ if (window.Chart) {
     });
   }
 
-  userNameDisplay.addEventListener('click', e => {
+  function toggleUserMenu(e) {
+    if (!userMenu) return;
     e.stopPropagation();
     userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
-  });
+  }
+
+  if (userNameDisplay) {
+    userNameDisplay.addEventListener('click', toggleUserMenu);
+  }
+
+  if (userProfile) {
+    userProfile.addEventListener('click', toggleUserMenu);
+  }
   document.addEventListener('click', e => {
     if (!e.target.closest('.user-profile')) {
       userMenu.style.display = 'none';
@@ -243,6 +256,7 @@ if (window.Chart) {
     hideAllSections();
     homeSection.style.display = 'block';
     submenu.classList.remove('active');
+    setActiveMenu(homeMenu);
   });
 
   estoqueMenu.addEventListener('click', () => {
@@ -254,6 +268,7 @@ if (window.Chart) {
     movimentacoesSection.style.display = 'none';
     relatoriosSection.style.display  = 'none';
     homeSection.style.display        = 'none';
+    setActiveMenu(estoqueMenu);
     loadStock();
   });
 
@@ -262,6 +277,7 @@ if (window.Chart) {
     hideAllSections();
     addProductSection.style.display = 'block';
     submenu.classList.remove('active');
+    setActiveMenu(estoqueMenu);
   });
 
     movimentacoesMenu.addEventListener('click', () => {
@@ -271,6 +287,7 @@ if (window.Chart) {
     homeSection.style.display        = 'none';
     movimentacoesSection.style.display = 'block';
     relatoriosSection.style.display  = 'none';
+    setActiveMenu(movimentacoesMenu);
     loadMovimentacoes(movInicio.value, movFim.value);
   });
 
@@ -278,8 +295,16 @@ if (window.Chart) {
     hideAllSections();
     relatoriosSection.style.display = 'block';
     submenu.classList.remove('active');
+    setActiveMenu(relatoriosMenu);
     loadRelatorios(filtroInicio.value, filtroFim.value);
   });
+
+  function setActiveMenu(activeElement) {
+    document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+    if (activeElement) {
+      activeElement.classList.add('active');
+    }
+  }
 
  async function handleLogin(e) {
     e.preventDefault();
@@ -302,6 +327,7 @@ if (window.Chart) {
         loginContainer.style.display = 'none';
         stockContainer.style.display = 'block';
         homeSection.style.display     = 'block';
+        setActiveMenu(homeMenu);
         if (userRole === 'admin') {
           approveUsersBtn.style.display = 'block';
           deleteUsersBtn.style.display  = 'block';
@@ -845,6 +871,30 @@ if (aplicarFiltroBtn) {
 if (closeAdminBtn) {
   closeAdminBtn.addEventListener('click', () => {
     adminSection.style.display = 'none';
+  });
+}
+if (quickAddBtn) {
+  quickAddBtn.addEventListener('click', () => {
+    hideAllSections();
+    addProductSection.style.display = 'block';
+    submenu.classList.remove('active');
+    setActiveMenu(estoqueMenu);
+  });
+}
+if (quickMovesBtn) {
+  quickMovesBtn.addEventListener('click', () => {
+    hideAllSections();
+    movimentacoesSection.style.display = 'block';
+    setActiveMenu(movimentacoesMenu);
+    loadMovimentacoes(movInicio.value, movFim.value);
+  });
+}
+if (quickReportBtn) {
+  quickReportBtn.addEventListener('click', () => {
+    hideAllSections();
+    relatoriosSection.style.display = 'block';
+    setActiveMenu(relatoriosMenu);
+    loadRelatorios(filtroInicio.value, filtroFim.value);
   });
 }
 

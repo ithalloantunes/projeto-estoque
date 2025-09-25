@@ -4,191 +4,534 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AçaíStock</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6D28D9',
+                        secondary: '#9333EA',
+                        success: '#16A34A',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        "background-light": '#FDF7F4',
+                        "surface-light": '#FFFFFF',
+                        "surface-muted": '#F3E8FF',
+                        "text-light": '#111827',
+                        "text-muted": '#6B7280'
+                    },
+                    fontFamily: {
+                        display: ['Poppins', 'sans-serif']
+                    },
+                    boxShadow: {
+                        smooth: '0 25px 60px -15px rgba(109, 40, 217, 0.35)'
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="estilos.css">
 </head>
-<body>
+<body class="bg-background-light font-display text-text-light antialiased">
     <!-- Container de Login -->
-    <div id="login-container" class="container">
-        <div class="imagem">
-            <img src="img/idle/1.png" alt="monster" id="monster">
+    <div id="login-container" class="login-layout">
+        <div class="login-illustration">
+            <div class="content">
+                <img src="img/idle/1.png" alt="Mascote AçaíStock" id="monster">
+                <div>
+                    <h2>Gestão de Estoque Moderna</h2>
+                    <p>Controle entradas, saídas e relatórios em uma interface pensada para agilizar o dia a dia da sua loja de açaí.</p>
+                </div>
+            </div>
         </div>
-        <div class="formulario">
-            <form id="login-form">
-    <h1>Login</h1>
-    <label for="input-usuario">Nome de Usuário (Login)</label>
-    <div class="input-container">
-        <input type="text" id="input-usuario" placeholder="Digite seu usuário">
-    </div>
-    <label for="input-clave">Senha de Acesso</label>
-    <div class="input-container">
-        <input type="password" id="input-clave" placeholder="Digite sua senha">
-        <span id="toggle-password-login">👁️</span>
-    </div>
-    <button type="submit">Entrar</button>
-    <button type="button" id="show-register">Cadastrar</button>
-</form>
-<form id="register-form" style="display: none;">
-    <h1>Cadastro</h1>
-    <label for="register-username">Nome de Usuário (Login)</label>
-    <div class="input-container">
-        <input type="text" id="register-username" placeholder="Digite seu usuário">
-    </div>
-    <label for="register-password">Senha de Acesso</label>
-    <div class="input-container">
-        <input type="password" id="register-password" placeholder="Digite sua senha">
-        <span id="toggle-password-register">👁️</span>
-    </div>
-    <button type="submit">Cadastrar</button>
-    <button type="button" id="show-login">Voltar ao Login</button>
-</form>
+        <div class="login-form-area">
+            <div class="login-card">
+                <header>
+                    <div class="flex items-center justify-center text-primary text-4xl mb-2">
+                        <span class="material-icons" aria-hidden="true">inventory_2</span>
+                    </div>
+                    <h1>AçaíStock</h1>
+                    <p>Acesse sua conta para continuar</p>
+                </header>
+                <form id="login-form" class="login-form">
+                    <label for="input-usuario">
+                        Nome de Usuário
+                        <div class="login-input-wrapper">
+                            <input type="text" id="input-usuario" placeholder="Digite seu usuário" autocomplete="username">
+                        </div>
+                    </label>
+                    <label for="input-clave">
+                        Senha de Acesso
+                        <div class="login-input-wrapper">
+                            <input type="password" id="input-clave" placeholder="Digite sua senha" autocomplete="current-password">
+                            <span class="material-icons password-toggle" id="toggle-password-login" aria-label="Mostrar senha">visibility</span>
+                        </div>
+                    </label>
+                    <button type="submit" class="primary-button">Entrar</button>
+                    <p class="auth-toggle">Não tem conta? <button type="button" id="show-register">Criar cadastro</button></p>
+                </form>
+                <form id="register-form" class="login-form" style="display: none;">
+                    <label for="register-username">
+                        Nome de Usuário
+                        <div class="login-input-wrapper">
+                            <input type="text" id="register-username" placeholder="Crie um usuário" autocomplete="off">
+                        </div>
+                    </label>
+                    <label for="register-password">
+                        Senha de Acesso
+                        <div class="login-input-wrapper">
+                            <input type="password" id="register-password" placeholder="Crie uma senha" autocomplete="new-password">
+                            <span class="material-icons password-toggle" id="toggle-password-register" aria-label="Mostrar senha">visibility</span>
+                        </div>
+                    </label>
+                    <button type="submit" class="primary-button">Cadastrar</button>
+                    <p class="auth-toggle">Já possui conta? <button type="button" id="show-login">Entrar</button></p>
+                </form>
+                <footer>
+                    <small>Powered by <span>AçaíStock</span></small>
+                </footer>
+            </div>
         </div>
     </div>
 
-    <!-- Container de Estoque -->
+    <!-- Container principal do sistema -->
     <div id="stock-container" style="display: none;">
-        <div class="sidebar">
-            <h2>Menu</h2>
-            <ul>
-                <li class="menu-item">
-            <span id="home-menu">Início</span>
-        </li>
-        <li class="menu-item">
-            <span id="estoque-menu">Estoque</span>
-            <ul class="submenu">
-                <li><a href="#" id="show-add-product">Adicionar Produto</a></li>
-            </ul>
-        </li>
-        <li class="menu-item">
-            <span id="movimentacoes-menu">Movimentações</span>
-        </li>
-                <li class="menu-item">
-            <span id="relatorios-menu">Relatórios</span>
-        </li>
-    </ul>
-</div>
-<div class="main-content">
-            <header>
-                <h1>AçaíStock</h1>
-                <div class="user-profile">
-                    <img src="https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png" alt="Foto do Usuário" class="user-profile-pic" id="user-profile-pic">
-                    <span id="user-name">Usuário</span>
-                    <div class="user-menu" style="display: none;">
-                        <button id="approve-users-btn" style="display:none;">Aprovar Cadastros</button>
-                        <button id="delete-users-btn" style="display:none;">Excluir Usuários</button>
-                        <button id="logout-btn">Sair</button>
+        <div class="app-shell">
+            <aside class="app-sidebar">
+                <div class="app-sidebar__header">
+                    <div class="sidebar-logo">
+                        <span class="material-icons text-3xl">icecream</span>
+                        <div>
+                            <p class="sidebar-logo__title">AçaíStock</p>
+                            <p class="sidebar-logo__subtitle">Estoque Inteligente</p>
+                        </div>
                     </div>
                 </div>
-            </header>
-            
-            <!-- Seção Home -->
-            <div id="home-section" class="home-section">
-                <div class="welcome-card">
-                    <h2>Bem-vindo ao Sistema do AçaíStock!</h2>
-                    <p>Gerencie seus produtos de forma eficiente e organizada. Use o menu lateral para navegar pelas funcionalidades do sistema.</p>
-                </div>
-            </div>
-            
-            <div id="add-product-section" style="display: none;">
-                <h2>Adicionar Novo Produto</h2>
-                <form id="stock-form">
-                    <input type="text" id="produto" placeholder="Produto" required>
-                    <input type="text" id="tipo" placeholder="Tipo">
-                    <input type="text" id="lote" placeholder="Lote">
-                    <input type="date" id="validade" placeholder="Validade">
-                    <input type="number" id="quantidade" placeholder="Quantidade" required>
-                    <button type="submit">Adicionar Produto</button>
-                </form>
-            </div>
-            <div id="view-stock-section" style="display: none;">
-                <h2>Estoque</h2>
-                <div class="filter-container">
-                    <input type="text" id="filter-input" placeholder="Filtrar por nome ou tipo">
-                    <select id="filter-type">
-                        <option value="all">Todos</option>
-                        <option value="produto">Nome</option>
-                        <option value="tipo">Tipo</option>
-                    </select>
-                </div>
-                <table id="stock-table">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Tipo</th>
-                            <th>Lote</th>
-                            <th>Validade</th>
-                            <th>Quantidade</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="stock-table-body"></tbody>
-                </table>
-                <div id="pagination"></div>
-            </div>
-            <div id="movimentacoes-section" style="display: none;">
-    <h2>Movimentações</h2>
-                <div class="filtro-movimentacoes">
-        <input type="date" id="mov-inicio">
-        <input type="date" id="mov-fim">
-        <button id="filtrar-mov-btn">Filtrar</button>
-    </div>
-    <table id="movimentacoes-table">
-        <thead>
-            <tr>
-                <th>Data</th>
-                <th>Usuário</th>
-                <th>Produto</th>
-                <th>Tipo</th>
-            <th>Qtd. Antes</th>
-            <th>Quantidade</th>
-            <th>Total Atual</th>
-            <th>Motivo</th>
-        </tr>
-    </thead>
-    <tbody id="movimentacoes-table-body"></tbody>
-</table>
-    </div>
+                <nav id="main-menu" class="app-sidebar__nav">
+                    <ul class="sidebar-menu">
+                        <li class="menu-item">
+                            <button id="home-menu" type="button" class="menu-link active">
+                                <span class="material-icons" aria-hidden="true">dashboard</span>
+                                <span>Início</span>
+                            </button>
+                        </li>
+                        <li class="menu-item">
+                            <button id="estoque-menu" type="button" class="menu-link">
+                                <span class="material-icons" aria-hidden="true">inventory_2</span>
+                                <span>Estoque</span>
+                            </button>
+                            <ul class="submenu">
+                                <li>
+                                    <a href="#" id="show-add-product" class="submenu-link">
+                                        <span class="material-icons" aria-hidden="true">add_circle_outline</span>
+                                        Adicionar Produto
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-item">
+                            <button id="movimentacoes-menu" type="button" class="menu-link">
+                                <span class="material-icons" aria-hidden="true">swap_horiz</span>
+                                <span>Movimentações</span>
+                            </button>
+                        </li>
+                        <li class="menu-item">
+                            <button id="relatorios-menu" type="button" class="menu-link">
+                                <span class="material-icons" aria-hidden="true">assessment</span>
+                                <span>Relatórios</span>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
 
-    <div id="relatorios-section" style="display: none;">
-                <h2>Relatórios</h2>
-                <div class="filtro-relatorios">
-                    <input type="date" id="filtro-inicio">
-                    <input type="date" id="filtro-fim">
-    <button id="aplicar-filtro-btn">Aplicar Filtro</button>
-</div>
-<div class="charts-grid">
-    <div class="chart-container">
-        <canvas id="por-produto-chart"></canvas>
-    </div>
-    <div class="chart-container">
-        <canvas id="por-dia-chart"></canvas>
-    </div>
-    <div class="chart-container">
-        <canvas id="pizza-produto-chart"></canvas>
-    </div>
-    <div class="chart-container">
-        <canvas id="pizza-tipo-chart"></canvas>
-    </div>
-<button id="export-csv-btn">Exportar CSV</button>
+            <div class="app-main">
+                <header class="app-header">
+                    <div>
+                        <h1 class="app-title">Painel de Controle</h1>
+                        <p class="app-subtitle">Acompanhe o desempenho do seu estoque em tempo real</p>
+                    </div>
+                    <div class="user-profile" role="button">
+                        <img src="https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png" alt="Foto do Usuário" class="user-profile-pic" id="user-profile-pic">
+                        <div class="user-profile__meta">
+                            <span id="user-name">Usuário</span>
+                            <span class="user-role">Gestor</span>
+                        </div>
+                        <span class="material-icons" aria-hidden="true">expand_more</span>
+                        <div class="user-menu" style="display: none;">
+                            <button id="approve-users-btn" type="button" style="display: none;">Aprovar Cadastros</button>
+                            <button id="delete-users-btn" type="button" style="display: none;">Excluir Usuários</button>
+                            <button id="logout-btn" type="button">Sair</button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Seção Home -->
+                <section id="home-section" class="app-section">
+                    <div class="grid gap-6 lg:grid-cols-3">
+                        <div class="section-card lg:col-span-2">
+                            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <h2 class="section-title">Bem-vindo ao sistema do AçaíStock!</h2>
+                                    <p class="section-description">Organize entradas, saídas e cadastros em poucos cliques. Utilize o menu lateral para navegar entre as funcionalidades.</p>
+                                </div>
+                                <div class="welcome-highlight">
+                                    <span class="material-icons" aria-hidden="true">auto_awesome</span>
+                                    <p>Interface renovada e otimizada</p>
+                                </div>
+                            </div>
+                            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <div class="metric-card">
+                                    <span class="metric-icon bg-primary/10 text-primary material-icons">inventory</span>
+                                    <div>
+                                        <p class="metric-label">Produtos gerenciados</p>
+                                        <p class="metric-value">+120</p>
+                                    </div>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-icon bg-secondary/10 text-secondary material-icons">swap_vert</span>
+                                    <div>
+                                        <p class="metric-label">Movimentações semanais</p>
+                                        <p class="metric-value">342</p>
+                                    </div>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-icon bg-success/10 text-success material-icons">trending_up</span>
+                                    <div>
+                                        <p class="metric-label">Eficiência operacional</p>
+                                        <p class="metric-value">98%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-card">
+                            <h3 class="section-title">Ações rápidas</h3>
+                            <div class="quick-actions">
+                                <button type="button" id="quick-add" class="quick-action-btn">
+                                    <span class="material-icons" aria-hidden="true">add_circle_outline</span>
+                                    Novo Produto
+                                </button>
+                                <button type="button" id="quick-moves" class="quick-action-btn secondary">
+                                    <span class="material-icons" aria-hidden="true">swap_horiz</span>
+                                    Ver Movimentações
+                                </button>
+                                <button type="button" id="quick-report" class="quick-action-btn muted">
+                                    <span class="material-icons" aria-hidden="true">assessment</span>
+                                    Relatórios
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                        <div class="section-card">
+                            <h3 class="section-title">Últimas movimentações</h3>
+                            <ul class="timeline">
+                                <li>
+                                    <span class="timeline-icon entrada">
+                                        <span class="material-icons" aria-hidden="true">arrow_downward</span>
+                                    </span>
+                                    <div>
+                                        <p class="timeline-title">Entrada registrada</p>
+                                        <p class="timeline-subtitle">50x Polpa de Açaí • há 20 minutos</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="timeline-icon saida">
+                                        <span class="material-icons" aria-hidden="true">arrow_upward</span>
+                                    </span>
+                                    <div>
+                                        <p class="timeline-title">Saída concluída</p>
+                                        <p class="timeline-subtitle">Pedido Delivery #1048 • há 1 hora</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="timeline-icon alerta">
+                                        <span class="material-icons" aria-hidden="true">warning</span>
+                                    </span>
+                                    <div>
+                                        <p class="timeline-title">Alerta de validade</p>
+                                        <p class="timeline-subtitle">Granola Crocante • vence em 5 dias</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section-card">
+                            <h3 class="section-title">Dicas de organização</h3>
+                            <ul class="tips-list">
+                                <li>
+                                    <span class="material-icons" aria-hidden="true">check_circle</span>
+                                    <div>
+                                        <p class="tip-title">Faça auditorias semanais</p>
+                                        <p class="tip-description">Revise o estoque para evitar perdas e ajustar entradas ou saídas incorretas.</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="material-icons" aria-hidden="true">bolt</span>
+                                    <div>
+                                        <p class="tip-title">Centralize informações</p>
+                                        <p class="tip-description">Utilize o histórico de movimentações para justificar alterações de quantidade.</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="material-icons" aria-hidden="true">lightbulb</span>
+                                    <div>
+                                        <p class="tip-title">Antecipe demandas</p>
+                                        <p class="tip-description">Use os relatórios para planejar compras em períodos de maior consumo.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Seção Adicionar Produto -->
+                <section id="add-product-section" class="app-section" style="display: none;">
+                    <div class="section-card">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h2 class="section-title">Adicionar novo produto</h2>
+                                <p class="section-description">Informe os detalhes do item para disponibilizá-lo no estoque.</p>
+                            </div>
+                            <div class="section-pill">
+                                <span class="material-icons" aria-hidden="true">inventory</span>
+                                Cadastro rápido
+                            </div>
+                        </div>
+                        <form id="stock-form" class="stock-form">
+                            <div class="form-grid">
+                                <label class="form-field">
+                                    <span>Produto</span>
+                                    <input type="text" id="produto" placeholder="Nome do produto" required>
+                                </label>
+                                <label class="form-field">
+                                    <span>Tipo</span>
+                                    <input type="text" id="tipo" placeholder="Categoria ou tipo">
+                                </label>
+                                <label class="form-field">
+                                    <span>Lote</span>
+                                    <input type="text" id="lote" placeholder="Identificação do lote">
+                                </label>
+                                <label class="form-field">
+                                    <span>Validade</span>
+                                    <input type="date" id="validade" placeholder="Data de validade">
+                                </label>
+                                <label class="form-field">
+                                    <span>Quantidade</span>
+                                    <input type="number" id="quantidade" placeholder="Quantidade" required>
+                                </label>
+                            </div>
+                            <div class="form-actions">
+                                <button type="reset" class="secondary-button">
+                                    <span class="material-icons" aria-hidden="true">refresh</span>
+                                    Limpar campos
+                                </button>
+                                <button type="submit" class="primary-button">
+                                    <span class="material-icons" aria-hidden="true">check_circle</span>
+                                    Adicionar produto
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Seção Estoque -->
+                <section id="view-stock-section" class="app-section" style="display: none;">
+                    <div class="section-card">
+                        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                                <h2 class="section-title">Produtos em estoque</h2>
+                                <p class="section-description">Faça buscas, filtre por categoria e gerencie entradas e saídas.</p>
+                            </div>
+                            <div class="badge-group">
+                                <span class="badge badge-primary">
+                                    <span class="material-icons" aria-hidden="true">inventory</span>
+                                    Controle centralizado
+                                </span>
+                                <span class="badge badge-muted">
+                                    Atualizado em tempo real
+                                </span>
+                            </div>
+                        </div>
+                        <div class="filter-bar">
+                            <div class="filter-input">
+                                <span class="material-icons" aria-hidden="true">search</span>
+                                <input type="text" id="filter-input" placeholder="Buscar por nome ou tipo">
+                            </div>
+                            <div class="filter-select">
+                                <label for="filter-type">Filtrar por</label>
+                                <select id="filter-type">
+                                    <option value="all">Todos</option>
+                                    <option value="produto">Nome</option>
+                                    <option value="tipo">Tipo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="stock-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Tipo</th>
+                                        <th>Lote</th>
+                                        <th>Validade</th>
+                                        <th>Quantidade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stock-table-body"></tbody>
+                            </table>
+                        </div>
+                        <div id="pagination" class="pagination"></div>
+                    </div>
+                </section>
+
+                <!-- Seção Movimentações -->
+                <section id="movimentacoes-section" class="app-section" style="display: none;">
+                    <div class="section-card">
+                        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h2 class="section-title">Movimentações</h2>
+                                <p class="section-description">Visualize entradas e saídas registradas por período.</p>
+                            </div>
+                            <div class="section-pill warning">
+                                <span class="material-icons" aria-hidden="true">history</span>
+                                Histórico completo
+                            </div>
+                        </div>
+                        <div class="filters-inline">
+                            <div class="date-filter">
+                                <label for="mov-inicio">De</label>
+                                <input type="date" id="mov-inicio">
+                            </div>
+                            <div class="date-filter">
+                                <label for="mov-fim">Até</label>
+                                <input type="date" id="mov-fim">
+                            </div>
+                            <button id="filtrar-mov-btn" type="button" class="primary-button">
+                                <span class="material-icons" aria-hidden="true">filter_list</span>
+                                Filtrar
+                            </button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="movimentacoes-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Usuário</th>
+                                        <th>Produto</th>
+                                        <th>Tipo</th>
+                                        <th>Qtd. Antes</th>
+                                        <th>Quantidade</th>
+                                        <th>Total Atual</th>
+                                        <th>Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="movimentacoes-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Seção Relatórios -->
+                <section id="relatorios-section" class="app-section" style="display: none;">
+                    <div class="section-card">
+                        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                                <h2 class="section-title">Relatórios e indicadores</h2>
+                                <p class="section-description">Analise o desempenho do estoque e identifique oportunidades.</p>
+                            </div>
+                            <div class="filters-inline">
+                                <div class="date-filter">
+                                    <label for="filtro-inicio">De</label>
+                                    <input type="date" id="filtro-inicio">
+                                </div>
+                                <div class="date-filter">
+                                    <label for="filtro-fim">Até</label>
+                                    <input type="date" id="filtro-fim">
+                                </div>
+                                <button id="aplicar-filtro-btn" type="button" class="secondary-button">
+                                    <span class="material-icons" aria-hidden="true">tune</span>
+                                    Aplicar filtro
+                                </button>
+                                <button id="export-csv-btn" type="button" class="primary-button">
+                                    <span class="material-icons" aria-hidden="true">file_download</span>
+                                    Exportar CSV
+                                </button>
+                            </div>
+                        </div>
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h3>Estoque por produto</h3>
+                                <canvas id="por-produto-chart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Movimentações por dia</h3>
+                                <canvas id="por-dia-chart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Distribuição por produto</h3>
+                                <canvas id="pizza-produto-chart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Distribuição por tipo</h3>
+                                <canvas id="pizza-tipo-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Administração de usuários -->
+                <section id="admin-section" class="app-section" style="display: none;">
+                    <div class="section-card">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h2 class="section-title">Gerenciar usuários</h2>
+                                <p class="section-description">Aprove cadastros pendentes, atualize permissões ou remova acessos.</p>
+                            </div>
+                            <button id="close-admin" type="button" class="secondary-button">
+                                <span class="material-icons" aria-hidden="true">close</span>
+                                Fechar painel
+                            </button>
+                        </div>
+                        <div class="grid gap-6 lg:grid-cols-2">
+                            <div>
+                                <h3 class="section-subtitle">Cadastros pendentes</h3>
+                                <ul id="pending-users-list" class="user-list"></ul>
+                            </div>
+                            <div>
+                                <h3 class="section-subtitle">Usuários ativos</h3>
+                                <ul id="users-list" class="user-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
-
-    <div id="admin-section" style="display: none;">
-        <h2>Administração de Usuários</h2>
-        <h3>Cadastros Pendentes</h3>
-        <ul id="pending-users-list"></ul>
-        <h3>Usuários Registrados</h3>
-        <ul id="users-list"></ul>
-        <button id="close-admin">Fechar</button>
     </div>
-    
+
     <!-- Modal de Foto de Perfil -->
     <div id="profile-modal" class="profile-modal" style="display: none;">
         <div class="profile-modal-content">
-            <button class="close-btn" id="close-profile-modal">&times;</button>
-            <img src="https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png" alt="Foto do Usuário" class="profile-modal-pic" id="profile-modal-pic">
-            <br>
-            <button class="change-photo-btn" id="change-photo-btn">Alterar Foto</button>
-            <input type="file" id="photo-upload" class="photo-upload" accept="image/*">
+            <button class="close-btn" id="close-profile-modal" type="button">
+                <span class="material-icons" aria-hidden="true">close</span>
+            </button>
+            <div class="profile-modal-body">
+                <img src="https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png" alt="Foto do Usuário" class="profile-modal-pic" id="profile-modal-pic">
+                <p class="profile-modal-title">Atualizar foto de perfil</p>
+                <p class="profile-modal-text">Escolha uma imagem no seu dispositivo para personalizar o seu avatar.</p>
+                <button class="change-photo-btn" id="change-photo-btn" type="button">
+                    <span class="material-icons" aria-hidden="true">photo_camera</span>
+                    Selecionar nova foto
+                </button>
+                <input type="file" id="photo-upload" class="photo-upload" accept="image/*">
+            </div>
         </div>
     </div>
 
