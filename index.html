@@ -1,1115 +1,198 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>AçaíStock - Versão Completa</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#6D28D9',
-                        secondary: '#9333ea',
-                        danger: '#EF4444',
-                        "background-light": "#FDF7F4",
-                        "background-dark": "#1F2937",
-                        "surface-light": "#FFFFFF",
-                        "surface-dark": "#374151",
-                        "text-light": "#111827",
-                        "text-dark": "#F9FAFB",
-                        "subtle-light": "#6B7280",
-                        "subtle-dark": "#D1D5DB"
-                    },
-                    fontFamily: {
-                        display: ["Poppins", "sans-serif"],
-                    },
-                    borderRadius: {
-                        'DEFAULT': '0.75rem',
-                        'lg': '1rem',
-                        'xl': '1.25rem',
-                    },
-                },
-            },
-        };
-    </script>
-    <style>
-        body {
-            background: radial-gradient(circle at 10% 20%, rgba(109, 40, 217, 0.18), transparent 45%),
-                        radial-gradient(circle at 90% 10%, rgba(124, 58, 237, 0.22), transparent 40%),
-                        linear-gradient(135deg, #050315 0%, #1e1b4b 45%, #4c1d95 100%);
-            position: relative;
-        }
-        .card-actions { opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: none; }
-        .group:hover .card-actions { opacity: 1; pointer-events: auto; }
-        .modal-overlay { transition: opacity 0.3s ease; }
-        .modal-content { transition: transform 0.3s ease; }
-        .loader { border-top-color: #6D28D9; animation: spin 1s linear infinite; }
-        .floating-shape {
-            filter: blur(70px);
-            opacity: 0.6;
-            mix-blend-mode: screen;
-        }
-        .glass-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.32);
-            backdrop-filter: blur(24px);
-        }
-        .dark .glass-card {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.65));
-            border-color: rgba(148, 163, 184, 0.25);
-        }
-        .nav-pill {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.85rem 1.1rem;
-            border-radius: 1.25rem;
-            color: rgba(255, 255, 255, 0.68);
-            transition: all 0.35s ease;
-            overflow: hidden;
-        }
-        .nav-pill::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 1.25rem;
-            background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0));
-            opacity: 0;
-            transition: opacity 0.35s ease;
-        }
-        .nav-pill.nav-pill-sub {
-            padding-left: 2.75rem;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        .nav-pill:hover {
-            color: #fff;
-            transform: translateX(6px);
-        }
-        .nav-pill:hover::after {
-            opacity: 1;
-        }
-        .nav-pill-active {
-            color: #fff;
-            background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04));
-            box-shadow: 0 20px 40px rgba(109, 40, 217, 0.35);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-        }
-        .nav-pill-active::after {
-            opacity: 1;
-        }
-        .nav-pill .material-icons {
-            font-size: 1.35rem;
-            transition: transform 0.35s ease;
-        }
-        .nav-pill:hover .material-icons,
-        .nav-pill-active .material-icons {
-            transform: scale(1.05);
-        }
-        .neon-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: 999px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08));
-            border: 1px solid rgba(255, 255, 255, 0.35);
-            box-shadow: 0 10px 25px rgba(109, 40, 217, 0.35);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            font-weight: 600;
-        }
-        .pill-button {
-            position: relative;
-            overflow: hidden;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            color: #fff;
-            transition: all 0.35s ease;
-        }
-        .pill-button::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(120deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
-            opacity: 0;
-            transition: opacity 0.35s ease;
-        }
-        .pill-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(109, 40, 217, 0.35);
-        }
-        .pill-button:hover::after {
-            opacity: 1;
-        }
-        .animate-pulse-slow {
-            animation: pulse-slow 14s ease-in-out infinite alternate;
-        }
-        @keyframes pulse-slow {
-            0% { transform: scale(1) translateY(0); opacity: 0.45; }
-            100% { transform: scale(1.12) translateY(12px); opacity: 0.7; }
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AçaíStock</title>
+    <link rel="stylesheet" href="estilos.css">
 </head>
-<body class="relative min-h-screen bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark antialiased overflow-hidden">
-    <div class="pointer-events-none absolute inset-0 overflow-hidden">
-        <div class="floating-shape absolute -top-48 -left-32 h-[28rem] w-[28rem] rounded-full bg-primary/60 animate-pulse-slow"></div>
-        <div class="floating-shape absolute top-1/2 -translate-y-1/2 right-[-10rem] h-[34rem] w-[34rem] rounded-full bg-secondary/50 animate-pulse-slow"></div>
-        <div class="floating-shape absolute bottom-[-12rem] left-1/2 -translate-x-1/2 h-[30rem] w-[30rem] rounded-full bg-blue-500/40 animate-pulse-slow"></div>
+<body>
+    <!-- Container de Login -->
+    <div id="login-container" class="container">
+        <div class="imagem">
+            <img src="img/idle/1.png" alt="monster" id="monster">
+        </div>
+        <div class="formulario">
+            <form id="login-form">
+    <h1>Login</h1>
+    <label for="input-usuario">Nome de Usuário (Login)</label>
+    <div class="input-container">
+        <input type="text" id="input-usuario" placeholder="Digite seu usuário">
     </div>
-    <div class="relative z-10 flex h-screen w-full">
-        <aside class="relative hidden w-72 flex-col overflow-hidden rounded-r-[2.5rem] border-r border-white/10 text-white shadow-[0_28px_65px_rgba(15,23,42,0.55)] sm:flex">
-            <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#0f0a2a] via-[#352062] to-[#6d28d9] opacity-95"></div>
-            <div class="pointer-events-none absolute inset-0 backdrop-blur-2xl"></div>
-            <div class="relative z-10 flex h-full flex-col px-8 pb-10 pt-12">
-                <div>
-                    <span class="neon-badge text-xs tracking-[0.4em] text-white/80">Gestão premium</span>
-                    <h1 class="mt-6 text-3xl font-bold">AçaíStock</h1>
-                    <p class="mt-3 text-sm text-white/70">Controle absoluto do estoque, com visual moderno e insights instantâneos.</p>
-                </div>
-                <nav id="main-menu" class="mt-10 flex-1 space-y-2">
-                    <a id="home-menu-item" data-page="home-page" class="nav-pill" href="#"><span class="material-icons">dashboard</span><span class="font-medium">Início</span></a>
-                    <a id="stock-menu-item" data-page="stock-page" class="nav-pill" href="#"><span class="material-icons">inventory_2</span><span class="font-medium">Estoque</span></a>
-                    <a id="add-product-link" class="nav-pill nav-pill-sub cursor-pointer" href="#"><span class="material-icons text-base">add_circle_outline</span><span class="font-medium">Adicionar produto</span></a>
-                    <a id="moves-menu-item" data-page="moves-page" class="nav-pill" href="#"><span class="material-icons">swap_horiz</span><span class="font-medium">Movimentações</span></a>
-                    <a id="reports-menu-item" data-page="reports-page" class="nav-pill" href="#"><span class="material-icons">assessment</span><span class="font-medium">Relatórios</span></a>
-                </nav>
-                <div class="mt-10 text-xs text-white/50">
-                    <p>© 2024 AçaíStock</p>
-                    <p class="mt-1 text-white/40">Experiência redesenhada para performance.</p>
-                </div>
-            </div>
-        </aside>
-
-        <div id="main-content" class="flex-1 flex flex-col overflow-hidden">
-            <div id="home-page" class="page-content flex-1 flex flex-col gap-6">
-                <header class="mx-8 mt-8 flex items-center justify-between rounded-3xl border border-white/10 px-8 py-6 shadow-lg glass-card">
-                    <div>
-                        <h2 class="text-3xl font-bold tracking-tight">Dashboard</h2>
-                        <p class="text-sm text-white/70 dark:text-subtle-dark">Bem-vindo de volta, IThallo! Mantenha o ritmo com as métricas em destaque.</p>
-                    </div>
-                    <div class="relative">
-                        <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                            <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=I" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover">
-                            <span class="font-medium hidden md:block">IThallo</span>
-                            <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
-                        </button>
-                        <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
-                            <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
-                            <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
-                            <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                            <a href="#" class="block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
-                        </div>
-                    </div>
-                </header>
-                <div class="flex-1 space-y-10 overflow-y-auto px-8 pb-10">
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <div class="glass-card rounded-3xl p-6 transition-transform duration-300 hover:-translate-y-1">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <p class="text-sm font-medium uppercase tracking-[0.2em] text-white/60 dark:text-subtle-dark">Itens em estoque</p>
-                                    <p id="home-kpi-total-stock" class="mt-3 text-4xl font-bold"></p>
-                                </div>
-                                <div class="rounded-2xl bg-primary/30 p-3 text-primary shadow-inner"><span class="material-icons">inventory_2</span></div>
-                            </div>
-                        </div>
-                        <div class="glass-card rounded-3xl p-6 transition-transform duration-300 hover:-translate-y-1">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <p class="text-sm font-medium uppercase tracking-[0.2em] text-white/60 dark:text-subtle-dark">Estoque baixo</p>
-                                    <p id="home-kpi-low-stock" class="mt-3 text-4xl font-bold"></p>
-                                </div>
-                                <div class="rounded-2xl bg-yellow-500/20 p-3 text-yellow-400 shadow-inner"><span class="material-icons">warning</span></div>
-                            </div>
-                        </div>
-                        <div class="glass-card rounded-3xl p-6 transition-transform duration-300 hover:-translate-y-1">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <p class="text-sm font-medium uppercase tracking-[0.2em] text-white/60 dark:text-subtle-dark">Movimentações</p>
-                                    <p id="home-kpi-moves" class="mt-3 text-4xl font-bold"></p>
-                                </div>
-                                <div class="rounded-2xl bg-blue-500/20 p-3 text-blue-400 shadow-inner"><span class="material-icons">swap_horiz</span></div>
-                            </div>
-                            <p class="mt-4 text-xs uppercase tracking-[0.3em] text-white/50">Hoje</p>
-                        </div>
-                        <div class="glass-card rounded-3xl p-6 transition-transform duration-300 hover:-translate-y-1">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <p class="text-sm font-medium uppercase tracking-[0.2em] text-white/60 dark:text-subtle-dark">Valor do estoque</p>
-                                    <p id="home-kpi-stock-value" class="mt-3 text-4xl font-bold"></p>
-                                </div>
-                                <div class="rounded-2xl bg-green-500/20 p-3 text-green-400 shadow-inner"><span class="material-icons">attach_money</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                        <div id="recent-activity" class="glass-card rounded-3xl p-8 shadow-lg lg:col-span-2">
-                            <div class="flex items-center justify-between">
-                                <h3 class="text-lg font-semibold">Atividade Recente</h3>
-                                <span class="text-xs uppercase tracking-[0.3em] text-white/50">Atualizado em tempo real</span>
-                            </div>
-                            <div id="recent-activity-list" class="mt-6 space-y-4"></div>
-                        </div>
-                        <div class="glass-card rounded-3xl p-8 shadow-lg">
-                            <h3 class="text-lg font-semibold">Ações Rápidas</h3>
-                            <p class="mt-2 text-sm text-white/60 dark:text-subtle-dark">Ganhe tempo com atalhos inteligentes.</p>
-                            <div class="mt-6 space-y-3">
-                                <button id="quick-add-product" class="pill-button w-full px-6 py-3 font-semibold shadow-lg"><span class="material-icons align-middle text-base">add_circle_outline</span><span class="ml-2 align-middle">Novo Produto</span></button>
-                                <button id="quick-export-report" class="pill-button w-full px-6 py-3 font-semibold shadow-lg"><span class="material-icons align-middle text-base">file_download</span><span class="ml-2 align-middle">Exportar Relatório</span></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="stock-page" class="page-content hidden flex-1 flex flex-col gap-6">
-                <header class="mx-8 mt-8 flex items-center justify-between rounded-3xl border border-white/10 px-8 py-6 shadow-lg glass-card">
-                    <div>
-                        <h1 class="text-3xl font-bold tracking-tight">Estoque</h1>
-                        <p class="text-sm text-white/70 dark:text-subtle-dark">Filtre, gerencie e visualize seus itens de forma intuitiva.</p>
-                    </div>
-                    <div class="relative">
-                        <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                            <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=I" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover">
-                            <span class="font-medium hidden md:block">IThallo</span>
-                            <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
-                        </button>
-                        <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
-                            <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
-                            <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
-                            <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                            <a href="#" class="block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
-                        </div>
-                    </div>
-                </header>
-                <div class="mx-8 mt-2 rounded-3xl border border-white/10 p-6 shadow-lg glass-card">
-                    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-                        <div class="relative flex-1 md:max-w-md">
-                            <span class="material-icons pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40">search</span>
-                            <input id="search-input" class="w-full rounded-2xl border border-white/20 bg-white/10 py-3 pl-12 pr-4 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:border-gray-700" placeholder="Buscar produtos..." type="text" />
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div id="filter-buttons" class="flex items-center gap-2">
-                                <button data-filter="all" class="filter-btn rounded-full border border-white/15 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/70 transition-colors">Todos</button>
-                                <button data-filter="low_stock" class="filter-btn rounded-full border border-white/15 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/70 transition-colors">Estoque Baixo</button>
-                                <button data-filter="expiring_soon" class="filter-btn rounded-full border border-white/15 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/70 transition-colors">Vencendo</button>
-                            </div>
-                            <button id="suggest-product-btn" class="pill-button flex items-center gap-2 px-6 py-3 text-sm font-semibold"><span class="material-icons text-base">auto_awesome</span><span>Sugerir</span></button>
-                            <div class="flex items-center gap-2 rounded-full border border-white/15 px-2 py-1">
-                                <button id="grid-view-btn" class="rounded-full px-3 py-2 text-white/70 transition-colors"><span class="material-icons text-base">grid_view</span></button>
-                                <button id="list-view-btn" class="rounded-full px-3 py-2 text-white/70 transition-colors"><span class="material-icons text-base">view_list</span></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="product-container" class="flex flex-1 flex-col overflow-y-auto px-8 pb-10">
-                    <div id="product-grid" class="flex-1 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"></div>
-                    <div id="pagination-controls" class="mt-10 flex items-center justify-center gap-2"></div>
-                </div>
-            </div>
-
-            <div id="reports-page" class="page-content hidden flex-1 flex flex-col gap-6">
-                <header class="mx-8 mt-8 flex items-center justify-between rounded-3xl border border-white/10 px-8 py-6 shadow-lg glass-card">
-                    <div>
-                        <h1 class="text-3xl font-bold tracking-tight">Relatórios</h1>
-                        <p class="text-sm text-white/70 dark:text-subtle-dark">Visualize a saúde do estoque com indicadores e gráficos dinâmicos.</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <button id="ai-analysis-btn" class="pill-button flex items-center gap-2 px-6 py-3 text-sm font-semibold">
-                            <span class="material-icons text-base">auto_awesome</span>
-                            <span>Analisar com IA</span>
-                        </button>
-                        <div class="relative">
-                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=I" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover">
-                                <span class="font-medium hidden md:block">IThallo</span>
-                                <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
-                            </button>
-                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
-                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
-                                <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
-                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                                <a href="#" class="block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-                <div class="flex-1 space-y-10 overflow-y-auto px-8 pb-10">
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        <div class="glass-card flex items-center justify-between rounded-3xl p-6 shadow-lg">
-                            <div class="rounded-2xl bg-green-500/20 p-3 text-green-400 shadow-inner"><span class="material-icons text-2xl">arrow_downward</span></div>
-                            <div class="text-right">
-                                <p class="text-xs uppercase tracking-[0.3em] text-white/60 dark:text-subtle-dark">Total de Entradas</p>
-                                <p id="kpi-inputs" class="mt-3 text-3xl font-bold"></p>
-                            </div>
-                        </div>
-                        <div class="glass-card flex items-center justify-between rounded-3xl p-6 shadow-lg">
-                            <div class="rounded-2xl bg-red-500/20 p-3 text-danger shadow-inner"><span class="material-icons text-2xl">arrow_upward</span></div>
-                            <div class="text-right">
-                                <p class="text-xs uppercase tracking-[0.3em] text-white/60 dark:text-subtle-dark">Total de Saídas</p>
-                                <p id="kpi-outputs" class="mt-3 text-3xl font-bold"></p>
-                            </div>
-                        </div>
-                        <div class="glass-card flex items-center justify-between rounded-3xl p-6 shadow-lg">
-                            <div class="rounded-2xl bg-primary/30 p-3 text-primary shadow-inner"><span class="material-icons text-2xl">inventory</span></div>
-                            <div class="text-right">
-                                <p class="text-xs uppercase tracking-[0.3em] text-white/60 dark:text-subtle-dark">Estoque Atual</p>
-                                <p id="kpi-total-stock" class="mt-3 text-3xl font-bold"></p>
-                            </div>
-                        </div>
-                        <div class="glass-card flex items-center justify-between rounded-3xl p-6 shadow-lg">
-                            <div class="rounded-2xl bg-yellow-500/20 p-3 text-yellow-400 shadow-inner"><span class="material-icons text-2xl">warning</span></div>
-                            <div class="text-right">
-                                <p class="text-xs uppercase tracking-[0.3em] text-white/60 dark:text-subtle-dark">Alertas (Venc.)</p>
-                                <p id="kpi-expiring" class="mt-3 text-3xl font-bold"></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                        <div class="glass-card h-96 rounded-3xl p-8 shadow-lg">
-                            <h3 class="mb-4 text-lg font-semibold">Estoque por Produto</h3>
-                            <canvas id="stock-by-product-chart"></canvas>
-                        </div>
-                        <div class="glass-card h-96 rounded-3xl p-8 shadow-lg">
-                            <h3 class="mb-4 text-lg font-semibold">Distribuição por Tipo</h3>
-                            <canvas id="stock-by-type-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="approve-page" class="page-content hidden flex-1 flex flex-col gap-6">
-                <header class="mx-8 mt-8 flex items-center justify-between rounded-3xl border border-white/10 px-8 py-6 shadow-lg glass-card">
-                    <div>
-                        <h1 class="text-3xl font-bold tracking-tight">Gerenciar Cadastros</h1>
-                        <p class="text-sm text-white/70 dark:text-subtle-dark">Acompanhe solicitações e mantenha o time alinhado.</p>
-                    </div>
-                    <div class="relative">
-                        <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                            <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=I" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover">
-                            <span class="font-medium hidden md:block">IThallo</span>
-                            <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
-                        </button>
-                        <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
-                            <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
-                            <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
-                            <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                            <a href="#" class="block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
-                        </div>
-                    </div>
-                </header>
-                <div class="flex-1 space-y-8 overflow-y-auto px-8 pb-10">
-                    <div class="glass-card rounded-3xl p-8 shadow-lg">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-semibold">Aguardando Aprovação</h2>
-                            <span class="text-xs uppercase tracking-[0.3em] text-white/50">Validar acessos</span>
-                        </div>
-                        <div id="pending-users-list" class="mt-6 space-y-3"></div>
-                    </div>
-                    <div class="glass-card rounded-3xl p-8 shadow-lg">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-semibold">Usuários Ativos</h2>
-                            <span class="text-xs uppercase tracking-[0.3em] text-white/50">Equipe em operação</span>
-                        </div>
-                        <div id="active-users-list" class="mt-6 space-y-3"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="moves-page" class="page-content hidden flex-1 flex flex-col gap-6">
-                <header class="mx-8 mt-8 flex items-center justify-between rounded-3xl border border-white/10 px-8 py-6 shadow-lg glass-card"><h1 class="text-3xl font-bold tracking-tight">Movimentações</h1></header>
-                <div class="flex flex-1 items-center justify-center px-8 pb-10">
-                    <div class="glass-card flex max-w-xl flex-col items-center rounded-3xl p-10 text-center shadow-lg">
-                        <span class="material-icons text-6xl text-white/60">construction</span>
-                        <h2 class="mt-6 text-2xl font-semibold">Página em construção</h2>
-                        <p class="mt-3 text-sm text-white/60 dark:text-subtle-dark">Estamos preparando um histórico completo de movimentações para você analisar com profundidade.</p>
-                    </div>
-                </div>
-            </div>
+    <label for="input-clave">Senha de Acesso</label>
+    <div class="input-container">
+        <input type="password" id="input-clave" placeholder="Digite sua senha">
+        <span id="toggle-password-login">👁️</span>
+    </div>
+    <button type="submit">Entrar</button>
+    <button type="button" id="show-register">Cadastrar</button>
+</form>
+<form id="register-form" style="display: none;">
+    <h1>Cadastro</h1>
+    <label for="register-username">Nome de Usuário (Login)</label>
+    <div class="input-container">
+        <input type="text" id="register-username" placeholder="Digite seu usuário">
+    </div>
+    <label for="register-password">Senha de Acesso</label>
+    <div class="input-container">
+        <input type="password" id="register-password" placeholder="Digite sua senha">
+        <span id="toggle-password-register">👁️</span>
+    </div>
+    <button type="submit">Cadastrar</button>
+    <button type="button" id="show-login">Voltar ao Login</button>
+</form>
         </div>
     </div>
 
-    <div id="profile-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 p-4">
-        <div class="glass-card w-full max-w-md rounded-3xl border border-white/10 shadow-2xl">
-            <header class="flex items-center justify-between border-b border-white/10 px-6 py-5">
-                <h2 class="flex items-center gap-2 text-xl font-bold"><span class="material-icons">person</span><span>Meu Perfil</span></h2>
-                <button data-close-modal="profile-modal" class="rounded-full p-2 text-white/70 transition hover:bg-white/10"><span class="material-icons">close</span></button>
+    <!-- Container de Estoque -->
+    <div id="stock-container" style="display: none;">
+        <div class="sidebar">
+            <h2>Menu</h2>
+            <ul>
+                <li class="menu-item">
+            <span id="home-menu">Início</span>
+        </li>
+        <li class="menu-item">
+            <span id="estoque-menu">Estoque</span>
+            <ul class="submenu">
+                <li><a href="#" id="show-add-product">Adicionar Produto</a></li>
+            </ul>
+        </li>
+        <li class="menu-item">
+            <span id="movimentacoes-menu">Movimentações</span>
+        </li>
+                <li class="menu-item">
+            <span id="relatorios-menu">Relatórios</span>
+        </li>
+    </ul>
+</div>
+<div class="main-content">
+            <header>
+                <h1>AçaíStock</h1>
+                <div class="user-profile">
+                    <img src="https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png" alt="Foto do Usuário" class="user-profile-pic" id="user-profile-pic">
+                    <span id="user-name">Usuário</span>
+                    <div class="user-menu" style="display: none;">
+                        <button id="approve-users-btn" style="display:none;">Aprovar Cadastros</button>
+                        <button id="delete-users-btn" style="display:none;">Excluir Usuários</button>
+                        <button id="logout-btn">Sair</button>
+                    </div>
+                </div>
             </header>
-            <main class="flex flex-col items-center space-y-4 px-6 py-6">
-                <img id="profile-modal-image" src="" alt="Foto de Perfil" class="h-32 w-32 rounded-full border-4 border-primary object-cover shadow-lg">
-                <label for="profile-image-upload" class="pill-button cursor-pointer px-6 py-2 text-sm font-semibold">Alterar Foto<input type="file" name="profile_image" id="profile-image-upload" class="hidden" accept="image/*"></label>
-            </main>
-            <footer class="flex justify-end gap-2 border-t border-white/10 px-6 py-4">
-                <button type="button" data-close-modal="profile-modal" class="rounded-full border border-white/20 px-4 py-2 text-sm text-white/70 transition hover:border-white/40">Fechar</button>
-                <button id="save-profile-btn" type="button" class="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5">Salvar</button>
-            </footer>
+            
+            <!-- Seção Home -->
+            <div id="home-section" class="home-section">
+                <div class="welcome-card">
+                    <h2>Bem-vindo ao Sistema do AçaíStock!</h2>
+                    <p>Gerencie seus produtos de forma eficiente e organizada. Use o menu lateral para navegar pelas funcionalidades do sistema.</p>
+                </div>
+            </div>
+            
+            <div id="add-product-section" style="display: none;">
+                <h2>Adicionar Novo Produto</h2>
+                <form id="stock-form">
+                    <input type="text" id="produto" placeholder="Produto" required>
+                    <input type="text" id="tipo" placeholder="Tipo">
+                    <input type="text" id="lote" placeholder="Lote">
+                    <input type="date" id="validade" placeholder="Validade">
+                    <input type="number" id="quantidade" placeholder="Quantidade" required>
+                    <button type="submit">Adicionar Produto</button>
+                </form>
+            </div>
+            <div id="view-stock-section" style="display: none;">
+                <h2>Estoque</h2>
+                <div class="filter-container">
+                    <input type="text" id="filter-input" placeholder="Filtrar por nome ou tipo">
+                    <select id="filter-type">
+                        <option value="all">Todos</option>
+                        <option value="produto">Nome</option>
+                        <option value="tipo">Tipo</option>
+                    </select>
+                </div>
+                <table id="stock-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Tipo</th>
+                            <th>Lote</th>
+                            <th>Validade</th>
+                            <th>Quantidade</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-table-body"></tbody>
+                </table>
+                <div id="pagination"></div>
+            </div>
+            <div id="movimentacoes-section" style="display: none;">
+    <h2>Movimentações</h2>
+                <div class="filtro-movimentacoes">
+        <input type="date" id="mov-inicio">
+        <input type="date" id="mov-fim">
+        <button id="filtrar-mov-btn">Filtrar</button>
+    </div>
+    <table id="movimentacoes-table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Usuário</th>
+                <th>Produto</th>
+                <th>Tipo</th>
+            <th>Qtd. Antes</th>
+            <th>Quantidade</th>
+            <th>Total Atual</th>
+            <th>Motivo</th>
+        </tr>
+    </thead>
+    <tbody id="movimentacoes-table-body"></tbody>
+</table>
+    </div>
+
+    <div id="relatorios-section" style="display: none;">
+                <h2>Relatórios</h2>
+                <div class="filtro-relatorios">
+                    <input type="date" id="filtro-inicio">
+                    <input type="date" id="filtro-fim">
+    <button id="aplicar-filtro-btn">Aplicar Filtro</button>
+</div>
+<div class="charts-grid">
+    <div class="chart-container">
+        <canvas id="por-produto-chart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="por-dia-chart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="pizza-produto-chart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="pizza-tipo-chart"></canvas>
+    </div>
+<button id="export-csv-btn">Exportar CSV</button>
+            </div>
+        </div>
+
+    <div id="admin-section" style="display: none;">
+        <h2>Administração de Usuários</h2>
+        <h3>Cadastros Pendentes</h3>
+        <ul id="pending-users-list"></ul>
+        <h3>Usuários Registrados</h3>
+        <ul id="users-list"></ul>
+        <button id="close-admin">Fechar</button>
+    </div>
+    
+    <!-- Modal de Foto de Perfil -->
+    <div id="profile-modal" class="profile-modal" style="display: none;">
+        <div class="profile-modal-content">
+            <button class="close-btn" id="close-profile-modal">&times;</button>
+            <img src="https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png" alt="Foto do Usuário" class="profile-modal-pic" id="profile-modal-pic">
+            <br>
+            <button class="change-photo-btn" id="change-photo-btn">Alterar Foto</button>
+            <input type="file" id="photo-upload" class="photo-upload" accept="image/*">
         </div>
     </div>
-    <div id="ai-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 p-4">
-        <div class="glass-card flex max-h-[90vh] w-full max-w-2xl flex-col rounded-3xl border border-white/10 shadow-2xl">
-            <header class="flex items-center justify-between border-b border-white/10 px-6 py-5">
-                <h2 id="ai-modal-title" class="flex items-center gap-2 text-xl font-bold"><span class="material-icons text-secondary">auto_awesome</span><span></span></h2>
-                <button data-close-modal="ai-modal" class="rounded-full p-2 text-white/70 transition hover:bg-white/10"><span class="material-icons">close</span></button>
-            </header>
-            <main id="ai-modal-body" class="overflow-y-auto px-6 py-6"></main>
-        </div>
-    </div>
-    <div id="add-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 p-4">
-        <div class="glass-card w-full max-w-lg rounded-3xl border border-white/10 shadow-2xl">
-            <header class="flex items-center justify-between border-b border-white/10 px-6 py-5">
-                <h2 class="flex items-center gap-2 text-xl font-bold"><span class="material-icons">add_circle</span><span>Adicionar</span></h2>
-                <button data-close-modal="add-modal" class="rounded-full p-2 text-white/70 transition hover:bg-white/10"><span class="material-icons">close</span></button>
-            </header>
-            <form id="add-form">
-                <main class="space-y-4 px-6 py-6">
-                    <label class="block text-sm font-medium">Imagem
-                        <input type="file" name="image" id="add-image" class="mt-2 w-full text-sm file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white/20 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-white/30">
-                        <img id="add-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-3 hidden h-24 w-24 rounded-lg object-cover shadow-md">
-                    </label>
-                    <label class="block text-sm font-medium">Tipo
-                        <select name="type" id="add-type" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                            <option>Açaí</option><option>Sorvete</option><option>Complemento</option><option>Bebida</option>
-                        </select>
-                    </label>
-                    <label class="block text-sm font-medium">Nome
-                        <input type="text" name="name" id="add-name" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                    </label>
-                    <label class="block text-sm font-medium">Lote
-                        <input type="text" name="lot" id="add-lot" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                    </label>
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <label class="block text-sm font-medium">Quantidade
-                            <input type="number" name="quantity" id="add-quantity" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                        </label>
-                        <label class="block text-sm font-medium">Validade
-                            <input type="date" name="expiryDate" id="add-expiryDate" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                        </label>
-                    </div>
-                </main>
-                <footer class="flex justify-end gap-2 border-t border-white/10 px-6 py-4">
-                    <button type="button" data-close-modal="add-modal" class="rounded-full border border-white/20 px-4 py-2 text-sm text-white/70 transition hover:border-white/40">Cancelar</button>
-                    <button type="submit" class="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5">Adicionar</button>
-                </footer>
-            </form>
-        </div>
-    </div>
-    <div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 p-4">
-        <div class="glass-card w-full max-w-lg rounded-3xl border border-white/10 shadow-2xl">
-            <header class="flex items-center justify-between border-b border-white/10 px-6 py-5">
-                <h2 class="flex items-center gap-2 text-xl font-bold"><span class="material-icons">edit</span><span>Editar</span></h2>
-                <button data-close-modal="edit-modal" class="rounded-full p-2 text-white/70 transition hover:bg-white/10"><span class="material-icons">close</span></button>
-            </header>
-            <form id="edit-form">
-                <main class="space-y-4 px-6 py-6">
-                    <input type="hidden" id="edit-id" name="id">
-                    <label class="block text-sm font-medium">Imagem
-                        <input type="file" name="image" id="edit-image" class="mt-2 w-full text-sm file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white/20 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-white/30">
-                        <img id="edit-image-preview" src="" alt="Preview" class="mt-3 h-24 w-24 rounded-lg object-cover shadow-md">
-                    </label>
-                    <label class="block text-sm font-medium">Tipo
-                        <select name="type" id="edit-type" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                            <option>Açaí</option><option>Sorvete</option><option>Complemento</option><option>Bebida</option>
-                        </select>
-                    </label>
-                    <label class="block text-sm font-medium">Nome
-                        <input type="text" name="name" id="edit-name" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                    </label>
-                    <label class="block text-sm font-medium">Lote
-                        <input type="text" name="lot" id="edit-lot" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                    </label>
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <label class="block text-sm font-medium">Quantidade
-                            <input type="number" name="quantity" id="edit-quantity" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                        </label>
-                        <label class="block text-sm font-medium">Validade
-                            <input type="date" name="expiryDate" id="edit-expiryDate" required class="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 p-3 text-sm text-white placeholder:text-white/50 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/40 dark:bg-background-dark dark:text-text-dark">
-                        </label>
-                    </div>
-                </main>
-                <footer class="flex justify-end gap-2 border-t border-white/10 px-6 py-4">
-                    <button type="button" data-close-modal="edit-modal" class="rounded-full border border-white/20 px-4 py-2 text-sm text-white/70 transition hover:border-white/40">Cancelar</button>
-                    <button type="submit" class="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5">Salvar</button>
-                </footer>
-            </form>
-        </div>
-    </div>
-    <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 p-4">
-        <div class="glass-card w-full max-w-md rounded-3xl border border-white/10 shadow-2xl">
-            <header class="flex items-center gap-3 border-b border-white/10 px-6 py-5">
-                <span class="material-icons text-2xl text-danger">warning</span>
-                <h2 class="text-xl font-bold">Confirmar Exclusão</h2>
-            </header>
-            <main class="px-6 py-6 pt-5">
-                <p>Excluir "<strong id="delete-product-name"></strong>"?</p>
-            </main>
-            <footer class="flex justify-end gap-2 border-t border-white/10 px-6 py-4">
-                <button type="button" data-close-modal="delete-modal" class="rounded-full border border-white/20 px-4 py-2 text-sm text-white/70 transition hover:border-white/40">Cancelar</button>
-                <button id="confirm-delete-btn" type="button" class="rounded-full bg-danger px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5">Excluir</button>
-            </footer>
-        </div>
-    </div>
-    <div id="loader" class="fixed inset-0 bg-black bg-opacity-30 z-[60] flex items-center justify-center hidden"><div class="loader h-16 w-16 rounded-full border-4 border-t-4 border-gray-200"></div></div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        let userProfile = {
-            name: 'IThallo',
-            avatar: 'https://placehold.co/100x100/6D28D9/FFFFFF?text=I'
-        };
-        let usersData = [
-            { id: 1, name: 'Ana Silva', email: 'ana.silva@email.com', avatar: 'https://placehold.co/40x40/f472b6/ffffff?text=A', status: 'pending' },
-            { id: 2, name: 'Carlos Souza', email: 'carlos.souza@email.com', avatar: 'https://placehold.co/40x40/38bdf8/ffffff?text=C', status: 'pending' },
-            { id: 3, name: 'Bruno Lima', email: 'bruno.lima@email.com', avatar: 'https://placehold.co/40x40/22c55e/ffffff?text=B', status: 'active' },
-            { id: 4, name: 'Daniela Costa', email: 'daniela.costa@email.com', avatar: 'https://placehold.co/40x40/eab308/ffffff?text=D', status: 'active' }
-        ];
-        let productData = [
-             { id: 1, type: 'Açaí', name: 'Açaí com Banana', lot: 'A-112', quantity: 43, expiryDate: '2025-09-09', image: 'https://placehold.co/400x300/C8B6FF/4B0082?text=Açaí+Banana', cost: 15.50 },
-             { id: 2, type: 'Açaí', name: 'Açaí com Morango', lot: 'A-113', quantity: 81, expiryDate: '2025-10-15', image: 'https://placehold.co/400x300/A2E3C4/004D40?text=Açaí+Morango', cost: 16.00 },
-             { id: 3, type: 'Açaí', name: 'Açaí Premium Natural', lot: 'A-114', quantity: 22, expiryDate: '2025-10-30', image: 'https://placehold.co/400x300/9FA8DA/1A237E?text=Açaí+Natural', cost: 14.00 },
-             { id: 4, type: 'Sorvete', name: 'Sorvete de Ninho', lot: 'S-305', quantity: 150, expiryDate: '2026-08-14', image: 'https://placehold.co/400x300/BCAAA4/3E2723?text=Sorvete+Ninho', cost: 12.00 },
-             { id: 5, type: 'Bebida', name: 'Suco de Laranja', lot: 'L-450', quantity: 60, expiryDate: '2025-09-28', image: 'https://placehold.co/400x300/FFAB91/BF360C?text=Suco+Laranja', cost: 5.00 },
-        ];
-        let movementsData = [
-            { type: 'input', quantity: 500, date: new Date() }, { type: 'input', quantity: 300, date: new Date() },
-            { type: 'output', quantity: 200, date: new Date() }, { type: 'output', quantity: 180, date: new Date() }
-        ];
-        let activityLog = [
-            { icon: 'add', color: 'green', title: 'Entrada: 50x Polpa de Açaí', subtitle: 'Usuário: IThallo', time: 'há 15 minutos' },
-            { icon: 'remove', color: 'red', title: 'Saída: 10x Granola 500g', subtitle: 'Pedido #1204', time: 'há 1 hora' },
-            { icon: 'edit', color: 'yellow', title: 'Produto "Leite em Pó" atualizado', subtitle: 'Estoque mínimo alterado', time: 'há 3 horas' },
-        ];
-        let currentProductId = null;
-        let stockByProductChart, stockByTypeChart;
-        let currentView = 'grid';
-        let currentlyDisplayedProducts = [];
-        let currentPage = 1;
-        const itemsPerPage = 8;
-        const mainMenu = document.getElementById('main-menu');
-        const mainContent = document.getElementById('main-content');
-        const addProductLink = document.getElementById('add-product-link');
-        const addForm = document.getElementById('add-form');
-        const editForm = document.getElementById('edit-form');
-        const productGrid = document.getElementById('product-grid');
-        const searchInput = document.getElementById('search-input');
-        const filterButtonsContainer = document.getElementById('filter-buttons');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-        const suggestProductBtn = document.getElementById('suggest-product-btn');
-        const aiAnalysisBtn = document.getElementById('ai-analysis-btn');
-        const quickAddBtn = document.getElementById('quick-add-product');
-        const quickExportBtn = document.getElementById('quick-export-report');
-        const saveProfileBtn = document.getElementById('save-profile-btn');
-        const gridViewBtn = document.getElementById('grid-view-btn');
-        const listViewBtn = document.getElementById('list-view-btn');
-
-        const switchPage = (pageId) => {
-            document.querySelectorAll('.page-content').forEach(page => page.classList.add('hidden'));
-            document.getElementById(pageId)?.classList.remove('hidden');
-            if(pageId === 'reports-page') updateReports();
-            if(pageId === 'home-page') updateHomePage();
-            if(pageId === 'approve-page') renderApprovalPage();
-        };
-        const openModal = (modalId) => document.getElementById(modalId)?.classList.remove('hidden');
-        const closeModal = (modalId) => document.getElementById(modalId)?.classList.add('hidden');
-        const showLoader = () => document.getElementById('loader').classList.remove('hidden');
-        const hideLoader = () => document.getElementById('loader').classList.add('hidden');
-        const setupImagePreview = (inputId, previewId) => {
-            const input = document.getElementById(inputId), preview = document.getElementById(previewId);
-            input.addEventListener('change', () => {
-                if (input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = e => { preview.src = e.target.result; preview.classList.remove('hidden'); }
-                    reader.readAsDataURL(input.files[0]);
-                }
-            });
-        };
-        const callGeminiAPI = async (prompt) => {
-             showLoader();
-             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
-                const response = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!text) throw new Error("Resposta da IA inválida.");
-                return text.replace(/\n/g, '<br>');
-             } catch (error) {
-                console.error("Gemini API call failed:", error);
-                return "Erro ao contatar a IA. Tente novamente.";
-             } finally {
-                hideLoader();
-             }
-        };
-
-        const openProfileModal = () => { document.getElementById('profile-modal-image').src = userProfile.avatar; openModal('profile-modal'); };
-        const handleProfileSave = () => {
-            const newAvatarSrc = document.getElementById('profile-modal-image').src;
-            userProfile.avatar = newAvatarSrc;
-            document.querySelectorAll('.user-avatar-img').forEach(img => { img.src = newAvatarSrc; });
-            closeModal('profile-modal');
-        };
-        const openAddModal = () => { addForm.reset(); document.getElementById('add-image-preview').classList.add('hidden'); openModal('add-modal'); }
-        const openEditModal = (id) => {
-            currentProductId = id;
-            const product = productData.find(p => p.id === id);
-            if (product) {
-                const preview = document.getElementById('edit-image-preview');
-                editForm.elements.id.value = product.id;
-                editForm.elements.type.value = product.type;
-                editForm.elements.name.value = product.name;
-                editForm.elements.lot.value = product.lot;
-                editForm.elements.quantity.value = product.quantity;
-                editForm.elements.expiryDate.value = product.expiryDate;
-                preview.src = product.image;
-                preview.classList.remove('hidden');
-                openModal('edit-modal');
-            }
-        };
-        const openDeleteModal = (id) => {
-            currentProductId = id;
-            const product = productData.find(p => p.id === id);
-            if(product) { document.getElementById('delete-product-name').textContent = product.name; openModal('delete-modal'); }
-        };
-        const handleAddSubmit = (e) => {
-            e.preventDefault();
-            const formData = new FormData(addForm);
-            const imageInput = document.getElementById('add-image');
-            const imageSrc = imageInput.files[0] ? document.getElementById('add-image-preview').src : `https://placehold.co/400x300/E2E8F0/4A5568?text=${encodeURIComponent(formData.get('name'))}`;
-            const newId = productData.length > 0 ? Math.max(...productData.map(p => p.id)) + 1 : 1;
-            const newProduct = {
-                id: newId, type: formData.get('type'), name: formData.get('name'), lot: formData.get('lot'),
-                quantity: parseInt(formData.get('quantity')), expiryDate: formData.get('expiryDate'),
-                image: imageSrc, cost: parseFloat(Math.random() * 10 + 5).toFixed(2)
-            };
-            productData.push(newProduct);
-            closeModal('add-modal');
-            applyFiltersAndPaginate();
-        };
-        const handleEditSubmit = (e) => {
-            e.preventDefault();
-            const formData = new FormData(editForm);
-            const productId = parseInt(formData.get('id'));
-            const imageSrc = document.getElementById('edit-image-preview').src;
-            const productIndex = productData.findIndex(p => p.id === productId);
-            if (productIndex > -1) {
-                productData[productIndex] = { ...productData[productIndex],
-                    type: formData.get('type'), name: formData.get('name'), lot: formData.get('lot'),
-                    quantity: parseInt(formData.get('quantity')), expiryDate: formData.get('expiryDate'),
-                    image: imageSrc,
-                };
-            }
-            closeModal('edit-modal');
-            applyFiltersAndPaginate();
-        };
-        const handleDeleteConfirm = () => { productData = productData.filter(p => p.id !== currentProductId); closeModal('delete-modal'); applyFiltersAndPaginate(); };
-
-        const exportProductsToCSV = () => {
-            if (!productData.length) return;
-            const headers = ['ID', 'Nome', 'Tipo', 'Lote', 'Validade', 'Quantidade', 'Custo'];
-            const rows = productData.map(product => [
-                product.id,
-                '"' + product.name.replace(/"/g, '""') + '"',
-                product.type,
-                product.lot,
-                new Date(product.expiryDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }),
-                product.quantity,
-                product.cost
-            ].join(';'));
-            const csvContent = [headers.join(';'), ...rows].join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `relatorio-estoque-${new Date().toISOString().slice(0, 10)}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        };
-
-        const renderProducts = (products) => {
-            if(!productGrid) return;
-            if (currentView === 'grid') {
-                productGrid.className = 'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5';
-            } else {
-                productGrid.className = 'flex flex-col gap-4';
-            }
-            productGrid.innerHTML = '';
-            products.forEach(product => {
-                const stockPercentage = Math.min((product.quantity / 150) * 100, 100);
-                let stockColor = 'bg-green-500';
-                if (stockPercentage < 50) stockColor = 'bg-yellow-500';
-                if (stockPercentage < 25) stockColor = 'bg-red-500';
-                const today = new Date(); today.setHours(0,0,0,0);
-                const expiry = new Date(product.expiryDate);
-                const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-                const isExpiringSoon = daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
-                const cardElement = document.createElement('div');
-                const expiryLabel = new Date(product.expiryDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-                if (currentView === 'grid') {
-                    cardElement.className = `group relative glass-card flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${isExpiringSoon ? 'ring-2 ring-yellow-400/60' : ''}`;
-                    cardElement.innerHTML = `
-                        <div class="absolute left-6 top-6 z-20 neon-badge text-[0.65rem]">${product.type}</div>
-                        ${isExpiringSoon ? `<div class="absolute right-6 top-6 z-20 rounded-full bg-yellow-400/20 px-3 py-1 text-xs font-semibold text-yellow-200 backdrop-blur">Vencendo</div>` : ''}
-                        <div class="relative h-48 w-full overflow-hidden">
-                            <img alt="${product.name}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" src="${product.image}" />
-                            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-                        </div>
-                        <div class="flex flex-grow flex-col px-6 pb-6 pt-5">
-                            <h3 class="text-lg font-semibold">${product.name}</h3>
-                            <div class="mt-5 flex items-center justify-between">
-                                <div>
-                                    <p class="text-[0.65rem] uppercase tracking-[0.3em] text-white/50">Quantidade</p>
-                                    <p class="mt-2 text-4xl font-bold text-primary">${product.quantity}</p>
-                                </div>
-                                <div class="flex flex-col items-end text-sm text-white/60">
-                                    <span class="flex items-center gap-2"><span class="material-icons text-base">calendar_today</span>${expiryLabel}</span>
-                                    <span class="mt-2 rounded-full border border-white/15 px-3 py-1 text-[0.65rem] uppercase tracking-[0.25em] text-white/50">Lote ${product.lot}</span>
-                                </div>
-                            </div>
-                            <div class="mt-auto pt-6">
-                                <div class="h-2.5 w-full rounded-full bg-white/10">
-                                    <div class="${stockColor} h-2.5 rounded-full" style="width: ${stockPercentage}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-actions absolute inset-0 flex items-center justify-center gap-3 bg-black/60 p-4 backdrop-blur-sm">
-                            <button class="generate-desc-btn rounded-2xl bg-secondary/90 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-secondary">Gerar</button>
-                            <button class="edit-btn rounded-2xl bg-blue-500/90 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-blue-500">Editar</button>
-                            <button class="delete-btn rounded-2xl bg-danger/90 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-danger">Excluir</button>
-                        </div>`;
-                } else {
-                    cardElement.className = `group relative glass-card flex items-center gap-6 rounded-3xl border border-white/10 p-6 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl`;
-                    cardElement.innerHTML = `
-                        <div class="relative h-24 w-24 overflow-hidden rounded-2xl">
-                            <img alt="${product.name}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="${product.image}" />
-                        </div>
-                        <div class="flex w-full items-center gap-6">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3">
-                                    <span class="neon-badge text-[0.65rem]">${product.type}</span>
-                                    ${isExpiringSoon ? `<span class="rounded-full bg-yellow-400/20 px-2 py-1 text-[0.65rem] font-semibold text-yellow-200">Vencendo</span>` : ''}
-                                </div>
-                                <p class="mt-3 text-lg font-semibold">${product.name}</p>
-                        <p class="text-sm text-white/60">Lote: ${product.lot}</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[0.65rem] uppercase tracking-[0.3em] text-white/50">Quantidade</p>
-                                <p class="mt-2 text-3xl font-bold text-primary">${product.quantity}</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[0.65rem] uppercase tracking-[0.3em] text-white/50">Validade</p>
-                                <p class="mt-2 flex items-center justify-center gap-2 text-sm text-white/70"><span class="material-icons text-base">calendar_today</span>${expiryLabel}</p>
-                            </div>
-                            <div class="flex-1">
-                                <div class="h-2 w-full rounded-full bg-white/10">
-                                    <div class="${stockColor} h-2 rounded-full" style="width: ${stockPercentage}%"></div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button class="generate-desc-btn rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white/35 hover:text-white" title="Gerar Descrição"><span class="material-icons text-base">auto_awesome</span></button>
-                                <button class="edit-btn rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white/35 hover:text-white" title="Editar"><span class="material-icons text-base">edit</span></button>
-                                <button class="delete-btn rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-danger/40 hover:text-white" title="Excluir"><span class="material-icons text-base">delete</span></button>
-                            </div>
-                        </div>`;
-                }
-                cardElement.querySelector('.edit-btn').addEventListener('click', () => openEditModal(product.id));
-                cardElement.querySelector('.delete-btn').addEventListener('click', () => openDeleteModal(product.id));
-                cardElement.querySelector('.generate-desc-btn').addEventListener('click', async () => {
-                    const desc = await callGeminiAPI(`Crie uma descrição de marketing curta e apetitosa para "${product.name}".`);
-                    document.getElementById('ai-modal-title').querySelector('span:last-child').textContent = `Marketing para ${product.name}`;
-                    document.getElementById('ai-modal-body').innerHTML = desc;
-                    openModal('ai-modal');
-                });
-                productGrid.appendChild(cardElement);
-            });
-        };
-        const applyFiltersAndPaginate = () => {
-            if(!filterButtonsContainer) return;
-            const searchTerm = searchInput.value.toLowerCase();
-            const activeFilter = filterButtonsContainer.querySelector('.bg-primary')?.dataset.filter || 'all';
-            let filteredProducts = productData.filter(p => p.name.toLowerCase().includes(searchTerm) || p.type.toLowerCase().includes(searchTerm));
-            if (activeFilter === 'low_stock') filteredProducts = filteredProducts.filter(p => p.quantity < 25);
-            if (activeFilter === 'expiring_soon') {
-                const today = new Date(); today.setHours(0,0,0,0);
-                filteredProducts = filteredProducts.filter(p => {
-                     const expiry = new Date(p.expiryDate);
-                     const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-                     return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
-                });
-            }
-            currentlyDisplayedProducts = filteredProducts;
-            currentPage = 1;
-            renderPaginatedView();
-        };
-
-        const renderPaginatedView = () => {
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const paginatedProducts = currentlyDisplayedProducts.slice(startIndex, endIndex);
-            renderProducts(paginatedProducts);
-            renderPaginationControls();
-        };
-
-        const renderPaginationControls = () => {
-            const paginationContainer = document.getElementById('pagination-controls');
-            if (!paginationContainer) return;
-            const pageCount = Math.ceil(currentlyDisplayedProducts.length / itemsPerPage);
-            paginationContainer.innerHTML = '';
-            if(pageCount <= 1) return;
-            for (let i = 1; i <= pageCount; i++) {
-                const button = document.createElement('button');
-                button.textContent = i;
-                button.className = `rounded-full border border-white/15 px-4 py-2 text-sm font-semibold transition-all ${i === currentPage ? 'bg-primary text-white shadow-lg' : 'text-white/60 hover:border-white/35 hover:text-white'}`;
-                button.onclick = () => {
-                    currentPage = i;
-                    renderPaginatedView();
-                };
-                paginationContainer.appendChild(button);
-            }
-        };
-        const updateHomePage = () => {
-            const totalStock = productData.reduce((sum, p) => sum + p.quantity, 0);
-            const lowStockCount = productData.filter(p => p.quantity < 25).length;
-            const todayMoves = movementsData.filter(m => m.date.toDateString() === new Date().toDateString()).length;
-            const stockValue = productData.reduce((sum, p) => sum + (p.quantity * p.cost), 0);
-            document.getElementById('home-kpi-total-stock').textContent = totalStock.toLocaleString('pt-BR');
-            document.getElementById('home-kpi-low-stock').textContent = lowStockCount;
-            document.getElementById('home-kpi-moves').textContent = todayMoves;
-            document.getElementById('home-kpi-stock-value').textContent = `R$ ${stockValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            const activityList = document.getElementById('recent-activity-list');
-            activityList.innerHTML = '';
-            const accentMap = {
-                green: { fg: '#34d399', bg: 'rgba(52,211,153,0.18)' },
-                red: { fg: '#f87171', bg: 'rgba(248,113,113,0.18)' },
-                yellow: { fg: '#facc15', bg: 'rgba(250,204,21,0.18)' }
-            };
-            activityLog.slice(0, 3).forEach(item => {
-                const accent = accentMap[item.color] || accentMap.green;
-                activityList.innerHTML += `
-                    <div class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-white/30">
-                        <div class="flex items-center gap-4">
-                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl" style="background:${accent.bg}; color:${accent.fg};">
-                                <span class="material-icons">${item.icon}</span>
-                            </div>
-                            <div>
-                                <p class="font-semibold">${item.title}</p>
-                                <p class="text-sm text-white/60">${item.subtitle}</p>
-                            </div>
-                        </div>
-                        <p class="text-xs uppercase tracking-[0.3em] text-white/50">${item.time}</p>
-                    </div>`;
-            });
-        };
-        const updateReports = () => {
-            const totalInputs = movementsData.filter(m => m.type === 'input').reduce((sum, m) => sum + m.quantity, 0);
-            const totalOutputs = movementsData.filter(m => m.type === 'output').reduce((sum, m) => sum + m.quantity, 0);
-            const totalStock = productData.reduce((sum, p) => sum + p.quantity, 0);
-            const today = new Date(); today.setHours(0,0,0,0);
-            const expiringCount = productData.filter(p => {
-                const expiry = new Date(p.expiryDate);
-                const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-                return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
-            }).length;
-            document.getElementById('kpi-inputs').textContent = totalInputs.toLocaleString('pt-BR');
-            document.getElementById('kpi-outputs').textContent = totalOutputs.toLocaleString('pt-BR');
-            document.getElementById('kpi-total-stock').textContent = `${totalStock} un.`;
-            document.getElementById('kpi-expiring').textContent = expiringCount;
-            updateCharts();
-        };
-        const updateCharts = () => {
-             const chartFont = { family: 'Poppins' };
-            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            const textColor = isDarkMode ? '#F9FAFB' : '#111827';
-             const labels = productData.map(p => p.name);
-             const data = productData.map(p => p.quantity);
-             const productChartCtx = document.getElementById('stock-by-product-chart');
-             if (productChartCtx) {
-                if(stockByProductChart) stockByProductChart.destroy();
-                const barGradient = productChartCtx.getContext('2d').createLinearGradient(0, 0, 0, productChartCtx.height);
-                barGradient.addColorStop(0, '#6D28D9');
-                barGradient.addColorStop(1, '#9333ea');
-                stockByProductChart = new Chart(productChartCtx, {
-                    type: 'bar',
-                    data: { labels, datasets: [{ label: 'Quantidade', data, backgroundColor: barGradient, borderRadius: 4 }] },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false }, tooltip: { bodyFont: chartFont, titleFont: chartFont, boxPadding: 8, cornerRadius: 4, backgroundColor: '#1F2937' } },
-                        scales: { y: { ticks: { color: textColor, font: chartFont }, grid: { color: gridColor, drawBorder: false } }, x: { ticks: { color: textColor, font: chartFont }, grid: { display: false } } }
-                    }
-                });
-             }
-             const typeCounts = productData.reduce((acc, p) => { acc[p.type] = (acc[p.type] || 0) + p.quantity; return acc; }, {});
-             const typeChartCtx = document.getElementById('stock-by-type-chart');
-             if(typeChartCtx) {
-                if(stockByTypeChart) stockByTypeChart.destroy();
-                stockByTypeChart = new Chart(typeChartCtx, {
-                    type: 'doughnut',
-                    data: { labels: Object.keys(typeCounts), datasets: [{ data: Object.values(typeCounts), backgroundColor: ['#6D28D9', '#9333ea', '#c084fc', '#e9d5ff'], borderColor: isDarkMode ? '#374151' : '#FFFFFF', borderWidth: 4 }] },
-                    options: {
-                        responsive: true, maintainAspectRatio: false, cutout: '70%',
-                        plugins: { legend: { position: 'bottom', labels: { color: textColor, font: chartFont, boxWidth: 12, padding: 20 } }, tooltip: { bodyFont: chartFont, titleFont: chartFont, boxPadding: 8, cornerRadius: 4, backgroundColor: '#1F2937' } }
-                    }
-                });
-             }
-        };
-        const renderApprovalPage = () => {
-            const pendingList = document.getElementById('pending-users-list');
-            const activeList = document.getElementById('active-users-list');
-            pendingList.innerHTML = '';
-            activeList.innerHTML = '';
-            const pendingUsers = usersData.filter(u => u.status === 'pending');
-            const activeUsers = usersData.filter(u => u.status === 'active');
-            if (pendingUsers.length === 0) {
-                pendingList.innerHTML = `<p class="py-4 text-center text-white/60">Nenhum usuário aguardando aprovação.</p>`;
-            } else {
-                pendingUsers.forEach(user => {
-                    const userEl = document.createElement('div');
-                    userEl.className = 'flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition hover:-translate-y-0.5 hover:border-white/35';
-                    userEl.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <img src="${user.avatar}" alt="${user.name}" class="w-10 h-10 rounded-full object-cover">
-                            <div><p class="font-semibold">${user.name}</p><p class="text-sm text-white/60">${user.email}</p></div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button data-user-id="${user.id}" class="approve-user-btn flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-green-300 transition hover:border-green-300/60 hover:text-green-200"><span class="material-icons">check_circle</span></button>
-                            <button data-user-id="${user.id}" class="decline-user-btn flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-danger transition hover:border-danger/60 hover:text-danger/80"><span class="material-icons">cancel</span></button>
-                        </div>`;
-                    pendingList.appendChild(userEl);
-                });
-            }
-            if (activeUsers.length === 0) {
-                activeList.innerHTML = `<p class="py-4 text-center text-white/60">Nenhum usuário ativo.</p>`;
-            } else {
-                activeUsers.forEach(user => {
-                    const userEl = document.createElement('div');
-                    userEl.className = 'flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition hover:-translate-y-0.5 hover:border-white/35';
-                    userEl.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <img src="${user.avatar}" alt="${user.name}" class="w-10 h-10 rounded-full object-cover">
-                            <div><p class="font-semibold">${user.name}</p><p class="text-sm text-white/60">${user.email}</p></div>
-                        </div>
-                        <button data-user-id="${user.id}" class="delete-user-btn flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-danger transition hover:border-danger/60 hover:text-danger/80"><span class="material-icons">delete</span></button>`;
-                    activeList.appendChild(userEl);
-                });
-            }
-            document.querySelectorAll('.approve-user-btn').forEach(btn => btn.addEventListener('click', () => approveUser(parseInt(btn.dataset.userId))));
-            document.querySelectorAll('.decline-user-btn').forEach(btn => btn.addEventListener('click', () => declineUser(parseInt(btn.dataset.userId))));
-            document.querySelectorAll('.delete-user-btn').forEach(btn => btn.addEventListener('click', () => deleteUser(parseInt(btn.dataset.userId))));
-        };
-        const approveUser = (userId) => { const user = usersData.find(u => u.id === userId); if (user) user.status = 'active'; renderApprovalPage(); };
-        const declineUser = (userId) => { usersData = usersData.filter(u => u.id !== userId); renderApprovalPage(); };
-        const deleteUser = (userId) => { usersData = usersData.filter(u => u.id !== userId); renderApprovalPage(); };
-
-        const setupEventListeners = () => {
-            document.querySelectorAll('.user-menu-button').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    const dropdown = button.nextElementSibling;
-                    document.querySelectorAll('.user-dropdown-menu').forEach(menu => { if (menu !== dropdown) menu.classList.add('hidden'); });
-                    dropdown.classList.toggle('hidden');
-                });
-            });
-            window.addEventListener('click', (e) => {
-                 document.querySelectorAll('.user-dropdown-menu').forEach(menu => {
-                    const button = menu.previousElementSibling;
-                    if (!button.contains(e.target) && !menu.contains(e.target)) { menu.classList.add('hidden'); }
-                 });
-            });
-            document.querySelectorAll('.profile-link').forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); openProfileModal(); }));
-            document.querySelectorAll('.approve-link').forEach(link => {
-                link.addEventListener('click', e => {
-                    e.preventDefault();
-                    switchPage(link.dataset.page);
-                    mainMenu.querySelectorAll('a').forEach(item => item.classList.remove('nav-pill-active'));
-                    addProductLink.style.display = 'none';
-                });
-            });
-            if(addProductLink) addProductLink.addEventListener('click', e => { e.preventDefault(); openAddModal(); });
-            if(quickAddBtn) quickAddBtn.addEventListener('click', openAddModal);
-            if(quickExportBtn) quickExportBtn.addEventListener('click', exportProductsToCSV);
-            if(saveProfileBtn) saveProfileBtn.addEventListener('click', handleProfileSave);
-            if(addForm) addForm.addEventListener('submit', handleAddSubmit);
-            if(editForm) editForm.addEventListener('submit', handleEditSubmit);
-            if(confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', handleDeleteConfirm);
-            if(searchInput) searchInput.addEventListener('input', applyFiltersAndPaginate);
-            mainMenu.addEventListener('click', (e) => {
-                const link = e.target.closest('a');
-                if (link && link.dataset.page) {
-                    e.preventDefault();
-                    mainMenu.querySelectorAll('a').forEach(item => item.classList.remove('nav-pill-active'));
-                    link.classList.add('nav-pill-active');
-                    addProductLink.style.display = link.id === 'stock-menu-item' ? 'flex' : 'none';
-                    switchPage(link.dataset.page);
-                }
-            });
-            document.querySelectorAll('[data-close-modal]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.closeModal)));
-            if (filterButtonsContainer) {
-                filterButtonsContainer.addEventListener('click', (e) => {
-                    const button = e.target.closest('button');
-                    if(button) {
-                        filterButtonsContainer.querySelector('.bg-primary')?.classList.remove('bg-primary', 'text-white', 'shadow-lg');
-                        button.classList.add('bg-primary', 'text-white', 'shadow-lg');
-                        applyFiltersAndPaginate();
-                    }
-                });
-            }
-            if(suggestProductBtn) {
-                suggestProductBtn.addEventListener('click', async () => {
-                    const existing = productData.map(p => p.name).join(', ');
-                    const suggestion = await callGeminiAPI(`Baseado em: ${existing}, sugira 3 novos sabores de açaí com nomes criativos.`);
-                    document.getElementById('ai-modal-title').querySelector('span:last-child').textContent = 'Sugestão de Produtos';
-                    document.getElementById('ai-modal-body').innerHTML = suggestion;
-                    openModal('ai-modal');
-                });
-            }
-            if (aiAnalysisBtn) {
-                aiAnalysisBtn.addEventListener('click', async () => {
-                    const summary = `Estoque total: ${document.getElementById('kpi-total-stock').textContent}, Itens vencendo: ${document.getElementById('kpi-expiring').textContent}, Entradas: ${document.getElementById('kpi-inputs').textContent}, Saídas: ${document.getElementById('kpi-outputs').textContent}.`;
-                    const analysis = await callGeminiAPI(`Sou dono de uma loja de açaí. Baseado neste resumo do meu estoque (${summary}), me dê um insight e uma sugestão para otimizar meu negócio.`);
-                    document.getElementById('ai-modal-title').querySelector('span:last-child').textContent = 'Análise de Relatório';
-                    document.getElementById('ai-modal-body').innerHTML = analysis;
-                    openModal('ai-modal');
-                });
-            }
-            if(gridViewBtn && listViewBtn){
-                gridViewBtn.addEventListener('click', () => {
-                    currentView = 'grid';
-                    gridViewBtn.classList.add('bg-primary', 'text-white', 'shadow-lg');
-                    listViewBtn.classList.remove('bg-primary', 'text-white', 'shadow-lg');
-                    applyFiltersAndPaginate();
-                });
-                listViewBtn.addEventListener('click', () => {
-                    currentView = 'list';
-                    listViewBtn.classList.add('bg-primary', 'text-white', 'shadow-lg');
-                    gridViewBtn.classList.remove('bg-primary', 'text-white', 'shadow-lg');
-                    applyFiltersAndPaginate();
-                });
-            }
-        };
-        setupImagePreview('add-image', 'add-image-preview');
-        setupImagePreview('edit-image', 'edit-image-preview');
-        setupImagePreview('profile-image-upload', 'profile-modal-image');
-        setupEventListeners();
-        document.querySelector('#home-menu-item').click();
-        if(filterButtonsContainer) {
-            filterButtonsContainer.querySelector('[data-filter="all"]').classList.add('bg-primary', 'text-white', 'shadow-lg');
-        }
-        if(gridViewBtn) {
-            gridViewBtn.classList.add('bg-primary', 'text-white', 'shadow-lg');
-        }
-        applyFiltersAndPaginate();
-    });
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="javascript.js"></script>
 </body>
 </html>
