@@ -145,10 +145,10 @@
             </aside>
 
             <!-- Main Content -->
-            <div id="main-content" class="flex-1 flex flex-col overflow-hidden">
+            <div id="main-content" class="flex-1 flex flex-col overflow-hidden min-h-0">
 
                 <!-- Home Page -->
-                <div id="home-page" class="page-content flex-1 flex flex-col">
+                <div id="home-page" class="page-content flex-1 flex flex-col min-h-0">
                     <header class="flex items-center justify-between p-6 bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-gray-700">
                         <div>
                             <h2 class="text-2xl font-bold">Dashboard</h2>
@@ -230,7 +230,7 @@
                 </div>
 
                 <!-- Stock Page -->
-                <div id="stock-page" class="page-content flex-1 flex flex-col hidden">
+                <div id="stock-page" class="page-content flex-1 flex flex-col hidden min-h-0">
                     <header class="flex justify-between items-center p-6 bg-surface-light dark:bg-surface-dark border-b dark:border-gray-700">
                         <h1 class="text-2xl font-bold">Estoque</h1>
                         <div class="relative">
@@ -247,7 +247,7 @@
                             </div>
                         </div>
                     </header>
-                    <div class="p-6 bg-surface-light dark:bg-surface-dark">
+                    <div class="flex-1 p-6 bg-surface-light dark:bg-surface-dark overflow-y-auto">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 gap-4">
                             <div class="relative flex-1 md:max-w-md">
                                 <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
@@ -276,7 +276,7 @@
                 </div>
 
                 <!-- Reports Page -->
-                <div id="reports-page" class="page-content hidden flex-1 flex flex-col">
+                <div id="reports-page" class="page-content hidden flex-1 flex flex-col min-h-0">
                     <header class="flex justify-between items-center p-6 bg-surface-light dark:bg-surface-dark border-b dark:border-gray-700">
                         <h1 class="text-2xl font-bold">Relatórios</h1>
                         <div class="relative">
@@ -346,7 +346,7 @@
                 </div>
 
                 <!-- Approve Page -->
-                <div id="approve-page" class="page-content hidden flex-1 flex flex-col">
+                <div id="approve-page" class="page-content hidden flex-1 flex flex-col min-h-0">
                     <header class="flex justify-between items-center p-6 bg-surface-light dark:bg-surface-dark border-b dark:border-gray-700">
                         <h1 class="text-2xl font-bold">Gerenciar Cadastros</h1>
                         <div class="relative">
@@ -376,7 +376,7 @@
                 </div>
 
                 <!-- Moves Page -->
-                <div id="moves-page" class="page-content hidden flex-1 flex flex-col">
+                <div id="moves-page" class="page-content hidden flex-1 flex flex-col min-h-0">
                     <header class="flex justify-between items-center p-6 bg-surface-light dark:bg-surface-dark border-b dark:border-gray-700">
                         <h1 class="text-2xl font-bold">Movimentações</h1>
                     </header>
