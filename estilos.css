@@ -899,6 +899,17 @@ tbody tr.removing {
     gap: 10px;
 }
 
+/* Ajustes específicos da página de estoque moderna */
+#product-container {
+    display: flex;
+    flex-direction: column;
+}
+
+#product-grid {
+    align-content: flex-start;
+    align-items: flex-start;
+}
+
 .charts-grid {
     display: flex;
     flex-wrap: wrap;
