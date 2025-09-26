@@ -1,4 +1,6 @@
-const BASE_URL = 'https://projeto-estoque-o1x5.onrender.com';
+const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+const isLocalEnvironment = /127\.0\.0\.1|localhost/.test(currentOrigin);
+const BASE_URL = isLocalEnvironment ? '' : 'https://projeto-estoque-o1x5.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Estado global
@@ -38,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const quickExportBtn = document.getElementById('quick-export-report');
   const searchInput = document.getElementById('search-input');
   const filterButtonsContainer = document.getElementById('filter-buttons');
+  const clearFiltersBtn = document.getElementById('clear-filters-btn');
   const gridViewBtn = document.getElementById('grid-view-btn');
   const listViewBtn = document.getElementById('list-view-btn');
   const productGrid = document.getElementById('product-grid');
@@ -386,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Renderizações ---------------------------------------------------------------
   const applyFilters = () => {
-    const searchTerm = (searchInput?.value || '').toLowerCase();
+    const searchTerm = (searchInput?.value || '').trim().toLowerCase();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     filteredProducts = estoqueData.filter(product => {
@@ -413,10 +416,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const renderStock = () => {
     if (!productGrid) return;
+    const totalPages = Math.max(Math.ceil(filteredProducts.length / itemsPerPage), 1);
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
     productGrid.innerHTML = '';
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const pageItems = filteredProducts.slice(startIndex, endIndex);
+
+    if (pageItems.length === 0) {
+      productGrid.innerHTML = '<p class="col-span-full text-center text-subtle-light dark:text-subtle-dark">Nenhum produto encontrado.</p>';
+      renderPaginationControls(totalPages);
+      return;
+    }
     pageItems.forEach(product => {
       const quantity = Number(product.quantidade) || 0;
       const placeholder = generatePlaceholderImage(product.produto);
@@ -509,23 +522,38 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => openDeleteModal(btn.dataset.id, btn.dataset.name));
     });
 
-    renderPaginationControls();
+    renderPaginationControls(totalPages);
   };
 
-  const renderPaginationControls = () => {
+  const renderPaginationControls = totalPagesParam => {
     if (!paginationContainer) return;
+    const totalPages = totalPagesParam ?? Math.max(Math.ceil(filteredProducts.length / itemsPerPage), 1);
     paginationContainer.innerHTML = '';
-    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+    if (totalPages <= 1) {
+      paginationContainer.classList.add('hidden');
+      return;
+    }
+    paginationContainer.classList.remove('hidden');
     for (let page = 1; page <= totalPages; page++) {
       const button = document.createElement('button');
       button.textContent = page;
       button.className = `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${page === currentPage ? 'bg-primary text-white' : 'bg-surface-light dark:bg-surface-dark hover:bg-gray-200 dark:hover:bg-gray-700'}`;
+      if (page === currentPage) {
+        button.disabled = true;
+      }
       button.addEventListener('click', () => {
         currentPage = page;
         renderStock();
       });
       paginationContainer.appendChild(button);
     }
+  };
+
+  const setActiveFilterButton = filter => {
+    if (!filterButtonsContainer) return;
+    filterButtonsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
+    const target = filterButtonsContainer.querySelector(`[data-filter="${filter}"]`);
+    target?.classList.add('bg-primary', 'text-white');
   };
 
   const renderMovimentacoes = () => {
@@ -1036,12 +1064,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const button = event.target.closest('button[data-filter]');
       if (!button) return;
       activeFilter = button.dataset.filter;
-      filterButtonsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
-      button.classList.add('bg-primary', 'text-white');
+      if (activeFilter === 'all' && searchInput) {
+        searchInput.value = '';
+      }
+      setActiveFilterButton(activeFilter);
       applyFilters();
     });
-    const defaultFilter = filterButtonsContainer.querySelector('[data-filter="all"]');
-    defaultFilter?.classList.add('bg-primary', 'text-white');
+    setActiveFilterButton('all');
+  }
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      activeFilter = 'all';
+      currentPage = 1;
+      setActiveFilterButton('all');
+      applyFilters();
+    });
   }
   if (gridViewBtn) gridViewBtn.addEventListener('click', () => {
     currentView = 'grid';
