@@ -445,98 +445,110 @@
         </div>
     </div>
 
-    <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-lg">
-            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <span class="material-icons">add_circle</span>
-                    <span>Adicionar Produto</span>
+    <div id="add-modal" class="product-modal__overlay fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="product-modal">
+            <header class="product-modal__header">
+                <h2 class="product-modal__title">
+                    <span class="material-icons product-modal__icon">add_circle</span>
+                    <span>Adicionar produto</span>
                 </h2>
-                <button data-close-modal="add-modal" class="p-2 rounded-full">
+                <button data-close-modal="add-modal" class="product-modal__close" aria-label="Fechar modal de adição">
                     <span class="material-icons">close</span>
                 </button>
             </header>
             <form id="add-form">
-                <main class="p-6 space-y-4">
-                    <label class="block text-sm font-medium">Imagem
-                        <input type="file" name="image" id="add-image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-violet-50 file:text-primary hover:file:bg-violet-100">
-                        <img id="add-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden">
+                <main class="product-modal__body">
+                    <label class="product-modal__field">
+                        <span class="product-modal__label">Imagem</span>
+                        <input type="file" name="image" id="add-image" class="product-modal__control product-modal__control--file">
+                        <img id="add-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Pré-visualização da imagem" class="product-modal__preview hidden">
                     </label>
-                    <label class="block text-sm font-medium">Tipo
-                        <select name="type" id="add-type" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    <label class="product-modal__field">
+                        <span class="product-modal__label">Tipo</span>
+                        <select name="type" id="add-type" required class="product-modal__control">
                             <option value="Açaí">Açaí</option>
                             <option value="Sorvete">Sorvete</option>
                             <option value="Complemento">Complemento</option>
                             <option value="Bebida">Bebida</option>
                         </select>
                     </label>
-                    <label class="block text-sm font-medium">Nome
-                        <input type="text" name="name" id="add-name" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    <label class="product-modal__field">
+                        <span class="product-modal__label">Nome</span>
+                        <input type="text" name="name" id="add-name" required class="product-modal__control">
                     </label>
-                    <label class="block text-sm font-medium">Lote
-                        <input type="text" name="lot" id="add-lot" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    <label class="product-modal__field">
+                        <span class="product-modal__label">Lote</span>
+                        <input type="text" name="lot" id="add-lot" required class="product-modal__control">
                     </label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <label class="block text-sm font-medium">Quantidade
-                            <input type="number" name="quantity" id="add-quantity" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" min="0">
+                    <div class="product-modal__field-grid">
+                        <label class="product-modal__field">
+                            <span class="product-modal__label">Quantidade</span>
+                            <input type="number" name="quantity" id="add-quantity" required class="product-modal__control" min="0">
                         </label>
-                        <label class="block text-sm font-medium">Validade
-                            <input type="date" name="expiryDate" id="add-expiryDate" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                        <label class="product-modal__field">
+                            <span class="product-modal__label">Validade</span>
+                            <input type="date" name="expiryDate" id="add-expiryDate" class="product-modal__control">
                         </label>
                     </div>
                 </main>
-                <footer class="flex justify-end p-4 bg-gray-50 dark:bg-gray-800 space-x-2">
-                    <button type="button" data-close-modal="add-modal" class="px-4 py-2 rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Adicionar</button>
+                <footer class="product-modal__footer">
+                    <button type="button" data-close-modal="add-modal" class="product-modal__btn product-modal__btn--ghost">Cancelar</button>
+                    <button type="submit" class="product-modal__btn product-modal__btn--primary">Adicionar</button>
                 </footer>
             </form>
         </div>
     </div>
 
-    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-lg">
-            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <span class="material-icons">edit</span>
-                    <span>Editar Produto</span>
+    <div id="edit-modal" class="product-modal__overlay fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="product-modal">
+            <header class="product-modal__header">
+                <h2 class="product-modal__title">
+                    <span class="material-icons product-modal__icon">edit</span>
+                    <span>Editar produto</span>
                 </h2>
-                <button data-close-modal="edit-modal" class="p-2 rounded-full">
+                <button data-close-modal="edit-modal" class="product-modal__close" aria-label="Fechar modal de edição">
                     <span class="material-icons">close</span>
                 </button>
             </header>
             <form id="edit-form">
-                <main class="p-6 space-y-4">
+                <main class="product-modal__body">
                     <input type="hidden" id="edit-id" name="id">
-                    <label class="block text-sm font-medium">Imagem
-                        <input type="file" name="image" id="edit-image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-violet-50 file:text-primary hover:file:bg-violet-100">
-                        <img id="edit-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden">
+                    <label class="product-modal__field">
+                        <span class="product-modal__label">Imagem</span>
+                        <input type="file" name="image" id="edit-image" class="product-modal__control product-modal__control--file">
+                        <img id="edit-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Pré-visualização da imagem" class="product-modal__preview hidden">
                     </label>
-                    <label class="block text-sm font-medium">Tipo
-                        <select name="type" id="edit-type" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    <label class="product-modal__field">
+                        <span class="product-modal__label">Tipo</span>
+                        <select name="type" id="edit-type" required class="product-modal__control">
                             <option value="Açaí">Açaí</option>
                             <option value="Sorvete">Sorvete</option>
                             <option value="Complemento">Complemento</option>
                             <option value="Bebida">Bebida</option>
                         </select>
                     </label>
-                    <label class="block text-sm font-medium">Nome
-                        <input type="text" name="name" id="edit-name" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    <label class="product-modal__field">
+                        <span class="product-modal__label">Nome</span>
+                        <input type="text" name="name" id="edit-name" required class="product-modal__control">
                     </label>
-                    <label class="block text-sm font-medium">Lote
-                        <input type="text" name="lot" id="edit-lot" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    <label class="product-modal__field">
+                        <span class="product-modal__label">Lote</span>
+                        <input type="text" name="lot" id="edit-lot" required class="product-modal__control">
                     </label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <label class="block text-sm font-medium">Quantidade
-                            <input type="number" name="quantity" id="edit-quantity" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" min="0">
+                    <div class="product-modal__field-grid">
+                        <label class="product-modal__field">
+                            <span class="product-modal__label">Quantidade</span>
+                            <input type="number" name="quantity" id="edit-quantity" required class="product-modal__control" min="0">
                         </label>
-                        <label class="block text-sm font-medium">Validade
-                            <input type="date" name="expiryDate" id="edit-expiryDate" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                        <label class="product-modal__field">
+                            <span class="product-modal__label">Validade</span>
+                            <input type="date" name="expiryDate" id="edit-expiryDate" class="product-modal__control">
                         </label>
                     </div>
                 </main>
-                <footer class="flex justify-end p-4 bg-gray-50 dark:bg-gray-800 space-x-2">
-                    <button type="button" data-close-modal="edit-modal" class="px-4 py-2 rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Salvar</button>
+                <footer class="product-modal__footer">
+                    <button type="button" data-close-modal="edit-modal" class="product-modal__btn product-modal__btn--ghost">Cancelar</button>
+                    <button type="submit" class="product-modal__btn product-modal__btn--primary">Salvar</button>
                 </footer>
             </form>
         </div>

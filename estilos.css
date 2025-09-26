@@ -464,6 +464,214 @@ header h1 {
     background-color: #bbb;
 }
 
+/* ===== MODAIS DE FORMULÁRIO (ADICIONAR/EDITAR) ===== */
+
+.product-modal__overlay {
+    --product-modal-gap: clamp(32px, 6vh, 72px);
+    padding: var(--product-modal-gap);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-modal {
+    width: min(100%, 420px);
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - var(--product-modal-gap, 48px) * 2);
+    overflow-y: auto;
+}
+
+.product-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.product-modal__title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.product-modal__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: #ede9fe;
+    color: #6d28d9;
+    font-size: 24px;
+}
+
+.product-modal__close {
+    border: none;
+    background: transparent;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5563;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.product-modal__close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.product-modal__body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+    background: #ffffff;
+}
+
+.product-modal__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.product-modal__label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.product-modal__control {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #f9fafb;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+    color: #111827;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.product-modal__control:focus {
+    outline: none;
+    border-color: #6d28d9;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.18);
+}
+
+.product-modal__control--file {
+    padding: 0.55rem 0.9rem;
+    background: #ffffff;
+    border-style: dashed;
+    border-color: rgba(109, 40, 217, 0.3);
+}
+
+.product-modal__control--file::file-selector-button {
+    border: none;
+    border-radius: 999px;
+    background: #6d28d9;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.55rem 1.4rem;
+    margin-right: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.product-modal__control--file::file-selector-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(109, 40, 217, 0.25);
+    background: #7c3aed;
+}
+
+.product-modal__preview {
+    width: 88px;
+    height: 88px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 2px solid rgba(148, 163, 184, 0.5);
+}
+
+.product-modal__field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.product-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 18px 24px 24px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.product-modal__btn {
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.7rem 1.4rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.product-modal__btn--ghost {
+    background: transparent;
+    color: #4b5563;
+}
+
+.product-modal__btn--ghost:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.product-modal__btn--primary {
+    background: #6d28d9;
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(109, 40, 217, 0.3);
+}
+
+.product-modal__btn--primary:hover {
+    background: #7c3aed;
+    box-shadow: 0 16px 28px rgba(109, 40, 217, 0.35);
+}
+
+@media (max-width: 540px) {
+    .product-modal {
+        width: min(100%, 360px);
+        border-radius: 18px;
+    }
+
+    .product-modal__body {
+        padding: 20px;
+    }
+
+    .product-modal__footer {
+        padding: 18px 20px 22px;
+    }
+
+    .product-modal__field-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ===== MELHORIAS DA INTERFACE DA TABELA ===== */
 
 /* Container da tabela com sombra e bordas arredondadas */
