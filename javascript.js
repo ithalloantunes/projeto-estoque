@@ -1,167 +1,201 @@
-// javascript.js
-
 const BASE_URL = 'https://projeto-estoque-o1x5.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM carregado, inicializando interface');
-
+  // Estado global
   let currentUser = null;
   let currentUserId = null;
   let userRole = null;
-  let seguirPunteroMouse = true;
-  const anchoMitad = window.innerWidth / 2;
-  const altoMitad  = window.innerHeight / 2;
+  let estoqueData = [];
+  let filteredProducts = [];
+  let movementsData = [];
+  let currentPage = 1;
+  const itemsPerPage = 8;
+  let currentView = 'grid';
+  let activeFilter = 'all';
+  let stockByProductChart = null;
+  let stockByTypeChart = null;
+  const productImages = new Map();
+  const loader = document.getElementById('loader');
 
-  // Elementos gerais
-  const monster           = document.getElementById('monster');
-  const inputUsuario      = document.getElementById('input-usuario');
-  const inputClave        = document.getElementById('input-clave');
-  const togglePasswordLogin    = document.getElementById('toggle-password-login');
+  // Elementos de login
+  const loginContainer = document.getElementById('login-container');
+  const appContainer = document.getElementById('app-container');
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const showRegisterBtn = document.getElementById('show-register');
+  const showLoginBtn = document.getElementById('show-login');
+  const inputUsuario = document.getElementById('input-usuario');
+  const inputClave = document.getElementById('input-clave');
+  const togglePasswordLogin = document.getElementById('toggle-password-login');
   const togglePasswordRegister = document.getElementById('toggle-password-register');
-  const loginForm         = document.getElementById('login-form');
-  const registerForm      = document.getElementById('register-form');
-  const loginContainer    = document.getElementById('login-container');
-  const stockContainer    = document.getElementById('stock-container');
-  const stockForm         = document.getElementById('stock-form');
-  const stockTableBody    = document.getElementById('stock-table-body');
+  const monster = document.getElementById('monster');
+
+  // Elementos gerais da aplicação
+  const mainMenu = document.getElementById('main-menu');
+  const pageContents = document.querySelectorAll('.page-content');
+  const addProductLink = document.getElementById('add-product-link');
+  const quickAddBtn = document.getElementById('quick-add-product');
+  const quickExportBtn = document.getElementById('quick-export-report');
+  const searchInput = document.getElementById('search-input');
+  const filterButtonsContainer = document.getElementById('filter-buttons');
+  const gridViewBtn = document.getElementById('grid-view-btn');
+  const listViewBtn = document.getElementById('list-view-btn');
+  const productGrid = document.getElementById('product-grid');
+  const paginationContainer = document.getElementById('pagination-controls');
+  const addForm = document.getElementById('add-form');
+  const editForm = document.getElementById('edit-form');
+  const deleteModal = document.getElementById('delete-modal');
+  const deleteProductName = document.getElementById('delete-product-name');
+  const deleteReasonInput = document.getElementById('delete-reason');
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  const saveProfileBtn = document.getElementById('save-profile-btn');
+  const profileImageUpload = document.getElementById('profile-image-upload');
+  const profileModalImage = document.getElementById('profile-modal-image');
+  const profileModal = document.getElementById('profile-modal');
+  const profileLinks = document.querySelectorAll('.profile-link');
+  const logoutLinks = document.querySelectorAll('.logout-link');
+  const approveLinks = document.querySelectorAll('.approve-link');
+  const homeGreeting = document.getElementById('home-greeting');
+  const homeUserName = document.getElementById('home-user-name');
+  const recentActivityList = document.getElementById('recent-activity-list');
+
+  const movInicio = document.getElementById('mov-inicio');
+  const movFim = document.getElementById('mov-fim');
+  const filtrarMovBtn = document.getElementById('filtrar-mov-btn');
   const movimentacoesTableBody = document.getElementById('movimentacoes-table-body');
-  const showRegisterBtn   = document.getElementById('show-register');
-  const showLoginBtn      = document.getElementById('show-login');
-  const logoutBtn         = document.getElementById('logout-btn');
-  const userNameDisplay   = document.getElementById('user-name');
-  const userMenu          = document.querySelector('.user-menu');
-  const approveUsersBtn   = document.getElementById('approve-users-btn');
-  const deleteUsersBtn    = document.getElementById('delete-users-btn');
-  const adminSection      = document.getElementById('admin-section');
-  const pendingUsersList  = document.getElementById('pending-users-list');
-  const usersList         = document.getElementById('users-list');
-  const closeAdminBtn     = document.getElementById('close-admin');
-  const showAddProduct    = document.getElementById('show-add-product');
-  const addProductSection = document.getElementById('add-product-section');
-  const viewStockSection  = document.getElementById('view-stock-section');
-  const movimentacoesSection = document.getElementById('movimentacoes-section');
-  const homeSection       = document.getElementById('home-section');
-  const filterInput       = document.getElementById('filter-input');
-  const filterType        = document.getElementById('filter-type');
-  const body              = document.querySelector('body');
-  const estoqueMenu       = document.getElementById('estoque-menu');
-const movimentacoesMenu = document.getElementById('movimentacoes-menu');
-const homeMenu          = document.getElementById('home-menu');
-const submenu           = document.querySelector('.submenu');
-const relatoriosMenu    = document.getElementById('relatorios-menu');
-const relatoriosSection = document.getElementById('relatorios-section');
-const exportCsvBtn      = document.getElementById('export-csv-btn');
-const filtroInicio      = document.getElementById('filtro-inicio');
-const filtroFim         = document.getElementById('filtro-fim');
-const aplicarFiltroBtn  = document.getElementById('aplicar-filtro-btn');
-const movInicio         = document.getElementById('mov-inicio');
-const movFim            = document.getElementById('mov-fim');
-const filtrarMovBtn     = document.getElementById('filtrar-mov-btn');
-const prodChartCanvas   = document.getElementById('por-produto-chart');
-const estoqueChartCanvas    = document.getElementById('por-dia-chart');
-const pizzaProdCanvas   = document.getElementById('pizza-produto-chart');
-const pizzaTipoCanvas   = document.getElementById('pizza-tipo-chart');
 
-// Elementos do modal de foto de perfil
-const userProfilePic    = document.getElementById('user-profile-pic');
-const profileModal      = document.getElementById('profile-modal');
-const profileModalPic   = document.getElementById('profile-modal-pic');
-const closeProfileModal = document.getElementById('close-profile-modal');
-const changePhotoBtn    = document.getElementById('change-photo-btn');
-const photoUpload       = document.getElementById('photo-upload');
+  const pendingUsersList = document.getElementById('pending-users-list');
+  const activeUsersList = document.getElementById('active-users-list');
 
-if (!loginForm || !registerForm || !loginContainer || !stockContainer) {
-  console.error('Erro: Elementos do DOM não encontrados');
-  return;
-}
+  // Referências dos KPIs
+  const homeKpiTotalStock = document.getElementById('home-kpi-total-stock');
+  const homeKpiLowStock = document.getElementById('home-kpi-low-stock');
+  const homeKpiMoves = document.getElementById('home-kpi-moves');
+  const homeKpiStockValue = document.getElementById('home-kpi-stock-value');
+  const reportsKpiInputs = document.getElementById('kpi-inputs');
+  const reportsKpiOutputs = document.getElementById('kpi-outputs');
+  const reportsKpiTotalStock = document.getElementById('kpi-total-stock');
+  const reportsKpiExpiring = document.getElementById('kpi-expiring');
 
-// Estado inicial
-loginContainer.style.display   = 'flex';
-stockContainer.style.display   = 'none';
-loginForm.style.display        = 'block';
-registerForm.style.display     = 'none';
-submenu.classList.remove('active');
+  const stockByProductCanvas = document.getElementById('stock-by-product-chart');
+  const stockByTypeCanvas = document.getElementById('stock-by-type-chart');
 
-// Estilo cartoon para gráficos
-if (window.Chart) {
-  Chart.defaults.font.family = 'Comic Sans MS, cursive';
-  Chart.defaults.font.size = 16;
-   initProfilePhoto();
-    userProfilePic.addEventListener('click', e => {
-      e.stopPropagation();
-      profileModal.style.display = 'flex';
-      profileModalPic.src = userProfilePic.src;
+  // Avatar do usuário (existem várias instâncias na interface)
+  const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
+
+  let currentProductId = null;
+
+  // Utilitários -----------------------------------------------------------------
+  const showLoader = () => loader?.classList.remove('hidden');
+  const hideLoader = () => loader?.classList.add('hidden');
+
+  const openModal = modalId => {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove('hidden');
+    }
+  };
+
+  const closeModal = modalId => {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  };
+
+  const formatDate = value => {
+    if (!value) return 'N/A';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  const getStoredProductImage = id => {
+    if (!id) return null;
+    if (productImages.has(id)) {
+      return productImages.get(id);
+    }
+    const stored = localStorage.getItem(`productImage_${id}`);
+    if (stored) {
+      productImages.set(id, stored);
+      return stored;
+    }
+    return null;
+  };
+
+  const storeProductImage = (id, dataUrl) => {
+    if (!id || !dataUrl) return;
+    productImages.set(id, dataUrl);
+    try {
+      localStorage.setItem(`productImage_${id}`, dataUrl);
+    } catch (err) {
+      console.warn('Não foi possível armazenar imagem localmente:', err);
+    }
+  };
+
+  const generatePlaceholderImage = (name = 'Produto') =>
+    `https://placehold.co/400x300/E2E8F0/4A5568?text=${encodeURIComponent(name.substring(0, 20))}`;
+
+  const updateAllUserNames = name => {
+    document.querySelectorAll('#home-user-name, header .user-menu-button span.font-medium').forEach(el => {
+      if (el) el.textContent = name;
     });
-    closeProfileModal.addEventListener('click', () => {
-      profileModal.style.display = 'none';
-    });
-    changePhotoBtn.addEventListener('click', () => photoUpload.click());
-    photoUpload.addEventListener('change', () => {
-      const file = photoUpload.files[0];
-      if (!file || !file.type.startsWith('image/')) {
-        alert('Selecione um arquivo de imagem.');
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Imagem deve ser menor que 5MB.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        userProfilePic.src = reader.result;
-        profileModalPic.src = reader.result;
-        localStorage.setItem(`profilePhoto_${currentUser}`, reader.result);
-        updateProfilePhotoOnServer(reader.result);
-        profileModal.style.display = 'none';
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+  };
 
-  function resetProfilePhoto() {
-    const defaultPic = 'https://i.ibb.co/bg3wvFK0/585e4beacb11b227491c3399.png';
-    userProfilePic.src = defaultPic;
-    profileModalPic.src = defaultPic.replace('40x40','200x200');
+  const updateAllAvatars = src => {
+    userAvatarImgs.forEach(img => {
+      img.src = src;
+    });
+  };
+
+  // Login -----------------------------------------------------------------------
+  const anchoMitad = window.innerWidth / 2;
+  const altoMitad = window.innerHeight / 2;
+  let seguirPunteroMouse = true;
+
+  const resetProfilePhoto = () => {
+    const defaultPic = 'https://placehold.co/100x100/6D28D9/FFFFFF?text=U';
+    updateAllAvatars(defaultPic);
+    profileModalImage.src = defaultPic;
     if (currentUser) {
       localStorage.removeItem(`profilePhoto_${currentUser}`);
-      
     }
-  }
+  };
 
- async function initProfilePhoto() {
-      const saved = currentUser
-        ? localStorage.getItem(`profilePhoto_${currentUser}`)
-        : null;
-      if (saved) {
-        userProfilePic.src = saved;
-        profileModalPic.src = saved;
-      } else if (currentUserId) {
-        try {
-          const res = await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
-            credentials: 'include'
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.photo) {
-              userProfilePic.src = data.photo;
-              profileModalPic.src = data.photo;
-              if (currentUser) {
-                localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
-              }
-              return;
-            }
+  const initProfilePhoto = async () => {
+    const defaultPic = 'https://placehold.co/100x100/6D28D9/FFFFFF?text=U';
+    if (!currentUserId) {
+      updateAllAvatars(defaultPic);
+      profileModalImage.src = defaultPic;
+      return;
+    }
+    const saved = currentUser ? localStorage.getItem(`profilePhoto_${currentUser}`) : null;
+    if (saved) {
+      updateAllAvatars(saved);
+      profileModalImage.src = saved;
+      return;
+    }
+    try {
+      const res = await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.photo) {
+          updateAllAvatars(data.photo);
+          profileModalImage.src = data.photo;
+          if (currentUser) {
+            localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
           }
-        } catch (err) {
-          console.error('Erro ao buscar foto no servidor:', err);
+          return;
         }
-        resetProfilePhoto();
-      } else {
-        resetProfilePhoto();
       }
+    } catch (err) {
+      console.error('Erro ao buscar foto de perfil:', err);
     }
-  
+    updateAllAvatars(defaultPic);
+    profileModalImage.src = defaultPic;
+  };
 
-  async function updateProfilePhotoOnServer(photo) {
+  const updateProfilePhotoOnServer = async photo => {
     if (!currentUserId) return;
     try {
       await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
@@ -171,681 +205,940 @@ if (window.Chart) {
         credentials: 'include'
       });
     } catch (err) {
-      console.error('Erro ao salvar foto no servidor:', err);
+      console.error('Erro ao atualizar foto no servidor:', err);
     }
-  }
-  
-  // --- Monstro segue cursor (inalterado) ---
-  body.addEventListener('mousemove', m => {
-    if (!seguirPunteroMouse) return;
-    if (m.clientX < anchoMitad && m.clientY < altoMitad)      monster.src = "img/idle/2.png";
-    else if (m.clientX < anchoMitad && m.clientY > altoMitad) monster.src = "img/idle/3.png";
-    else if (m.clientX > anchoMitad && m.clientY < altoMitad) monster.src = "img/idle/5.png";
-    else                                                      monster.src = "img/idle/4.png";
-  });
-  inputUsuario.addEventListener('focus', () => seguirPunteroMouse = false);
-  inputUsuario.addEventListener('blur',  () => seguirPunteroMouse = true);
-  inputClave.addEventListener('focus', () => {
-    seguirPunteroMouse = false;
-    let cont = 1;
-    const covering = setInterval(() => {
-      monster.src = `img/cover/${cont}.png`;
-      if (cont++ === 8) clearInterval(covering);
-    }, 60);
-  });
-  inputClave.addEventListener('blur', () => {
-    seguirPunteroMouse = true;
-    let cont = 8;
-    const uncovering = setInterval(() => {
-      monster.src = `img/cover/${--cont}.png`;
-      if (cont === 1) clearInterval(uncovering);
-    }, 60);
-  });
-  if (togglePasswordLogin) {
-    togglePasswordLogin.addEventListener('click', () => {
-      const pwd = document.getElementById('input-clave');
-      if (pwd.type === 'password') {
-        pwd.type = 'text';
-        monster.src = 'img/idle/1.png';
-        seguirPunteroMouse = false;
-      } else {
-        pwd.type = 'password';
-        seguirPunteroMouse = true;
-      }
-    });
-  }
-  if (togglePasswordRegister) {
-    togglePasswordRegister.addEventListener('click', () => {
-      const pwd = document.getElementById('register-password');
-      pwd.type = pwd.type === 'password' ? 'text' : 'password';
-    });
-  }
+  };
 
-  userNameDisplay.addEventListener('click', e => {
-    e.stopPropagation();
-    userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
-  });
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.user-profile')) {
-      userMenu.style.display = 'none';
+  const showLoginForm = () => {
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+  };
+
+  const showRegisterForm = () => {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+  };
+
+  const handleLogin = async event => {
+    event.preventDefault();
+    const username = inputUsuario.value.trim();
+    const password = inputClave.value.trim();
+    if (!username || !password) {
+      alert('Preencha usuário e senha.');
+      return;
     }
-  });
-
-    function hideAllSections() {
-    addProductSection.style.display  = 'none';
-    viewStockSection.style.display   = 'none';
-    movimentacoesSection.style.display = 'none';
-    relatoriosSection.style.display  = 'none';
-   homeSection.style.display        = 'none';
-  }
-
-  homeMenu.addEventListener('click', () => {
-    hideAllSections();
-    homeSection.style.display = 'block';
-    submenu.classList.remove('active');
-  });
-
-  estoqueMenu.addEventListener('click', () => {
-    hideAllSections();
-    submenu.classList.toggle('active');
-    viewStockSection.style.display = 'block';
-    addProductSection.style.display  = 'none';
-    viewStockSection.style.display   = 'block';
-    movimentacoesSection.style.display = 'none';
-    relatoriosSection.style.display  = 'none';
-    homeSection.style.display        = 'none';
-    loadStock();
-  });
-
-    showAddProduct.addEventListener('click', e => {
-    e.preventDefault();
-    hideAllSections();
-    addProductSection.style.display = 'block';
-    submenu.classList.remove('active');
-  });
-
-    movimentacoesMenu.addEventListener('click', () => {
-    addProductSection.style.display  = 'none';
-    viewStockSection.style.display   = 'none';
-    submenu.classList.remove('active');
-    homeSection.style.display        = 'none';
-    movimentacoesSection.style.display = 'block';
-    relatoriosSection.style.display  = 'none';
-    loadMovimentacoes(movInicio.value, movFim.value);
-  });
-
-   relatoriosMenu.addEventListener('click', () => {
-    hideAllSections();
-    relatoriosSection.style.display = 'block';
-    submenu.classList.remove('active');
-    loadRelatorios(filtroInicio.value, filtroFim.value);
-  });
-
- async function handleLogin(e) {
-    e.preventDefault();
-    const username = inputUsuario.value;
-    const password = inputClave.value;
-    if (!username || !password) return alert('Preencha usuário e senha');
     try {
-      const res  = await fetch(`${BASE_URL}/api/login`, {
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
         credentials: 'include'
       });
       const data = await res.json();
-      if (res.ok) {
-        currentUser                = username;
-        currentUserId             = data.userId;
-        userRole                   = data.role;
-        userNameDisplay.textContent = username;
-        loginContainer.style.display = 'none';
-        stockContainer.style.display = 'block';
-        homeSection.style.display     = 'block';
-        if (userRole === 'admin') {
-          approveUsersBtn.style.display = 'block';
-          deleteUsersBtn.style.display  = 'block';
-        }
-        if (data.photo) {
-            localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
-          }
-          await initProfilePhoto();
-        } else {
-        alert(data.error || 'Erro no login');
+      if (!res.ok) {
+        alert(data.error || 'Erro no login.');
+        return;
       }
+      currentUser = username;
+      currentUserId = data.userId;
+      userRole = data.role;
+      homeGreeting.textContent = `Bem-vindo de volta, ${username}!`;
+      updateAllUserNames(username);
+      loginContainer.classList.add('hidden');
+      loginContainer.style.display = 'none';
+      appContainer.classList.remove('hidden');
+      document.getElementById('home-menu-item')?.click();
+      if (data.photo) {
+        localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
+      }
+      await initProfilePhoto();
+      toggleAdminFeatures(userRole === 'admin');
+      await refreshAllData();
     } catch (err) {
       alert('Erro no servidor: ' + err.message);
+    } finally {
+      hideLoader();
     }
-  }
+  };
 
-  async function handleRegister(e) {
-    e.preventDefault();
-    const username = document.getElementById('register-username').value;
-    const password = document.getElementById('register-password').value;
-    if (!username || !password) return alert('Preencha usuário e senha');
+  const handleRegister = async event => {
+    event.preventDefault();
+    const username = document.getElementById('register-username').value.trim();
+    const password = document.getElementById('register-password').value.trim();
+    if (!username || !password) {
+      alert('Preencha usuário e senha.');
+      return;
+    }
     try {
-      const res  = await fetch(`${BASE_URL}/api/register`, {
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
       const data = await res.json();
       if (res.ok) {
-        alert(data.message);
+        alert(data.message || 'Cadastro realizado com sucesso!');
         showLoginForm();
       } else {
-        alert(data.error || 'Erro no cadastro');
+        alert(data.error || 'Erro no cadastro.');
       }
     } catch (err) {
       alert('Erro no servidor: ' + err.message);
+    } finally {
+      hideLoader();
     }
-  }
+  };
 
-  function logout() {
-    loginContainer.style.display    = 'flex';
-    stockContainer.style.display    = 'none';
-    inputUsuario.value              = '';
-    inputClave.value                = '';
-    monster.src                     = 'img/idle/1.png';
-    currentUser                     = null;
-    currentUserId                   = null;
-    userNameDisplay.textContent     = 'Usuário';
-    userMenu.style.display          = 'none';
-    approveUsersBtn.style.display   = 'none';
-    deleteUsersBtn.style.display    = 'none';
-    adminSection.style.display      = 'none';
-    profileModal.style.display      = 'none';
-    resetProfilePhoto();
-    addProductSection.style.display = 'none';
-    viewStockSection.style.display  = 'none';
-    homeSection.style.display       = 'none';
-    submenu.classList.remove('active');
+  const logout = () => {
+    currentUser = null;
+    currentUserId = null;
     userRole = null;
-  }
+    estoqueData = [];
+    filteredProducts = [];
+    movementsData = [];
+    currentPage = 1;
+    loginContainer.style.display = 'flex';
+    loginContainer.classList.remove('hidden');
+    appContainer.classList.add('hidden');
+    inputUsuario.value = '';
+    inputClave.value = '';
+    profileModal.classList.add('hidden');
+    resetProfilePhoto();
+    toggleAdminFeatures(false);
+  };
 
-  // --- Fluxo de Estoque com filtragem de nulls ---
-  let estoqueData    = [];
-  const itemsPerPage = 10;
+  const toggleAdminFeatures = isAdmin => {
+    approveLinks.forEach(link => {
+      if (isAdmin) {
+        link.classList.remove('hidden');
+      } else {
+        link.classList.add('hidden');
+      }
+    });
+  };
 
-  async function loadStock(page = 1) {
+  // Dados -----------------------------------------------------------------------
+  const refreshAllData = async () => {
+    await Promise.all([loadStock(), loadMovimentacoes(), loadReports()]);
+    updateHomePage();
+  };
+
+  const loadStock = async () => {
     try {
-      const res  = await fetch(`${BASE_URL}/api/estoque`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-      });
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/estoque`, { credentials: 'include' });
       const data = await res.json();
-      console.log('Estoque carregado:', data);
-
-      // converte em array e remove null/undefined
       const raw = Array.isArray(data)
         ? data
-        : Object.entries(data).map(([id, item]) => Object.assign({ id }, item));
-      estoqueData = raw.filter(item => item != null);
-
-      const filtered = filterStock(estoqueData);
-      renderStock(filtered, page);
-      setupPagination(filtered.length, page);
+        : Object.entries(data || {}).map(([id, item]) => ({ id, ...item }));
+      estoqueData = raw.filter(item => item);
+      filteredProducts = [...estoqueData];
+      currentPage = 1;
+      renderStock();
     } catch (err) {
-      console.error('Erro ao carregar estoque:', err.message);
+      console.error('Erro ao carregar estoque:', err);
       alert('Erro ao carregar estoque: ' + err.message);
+    } finally {
+      hideLoader();
     }
-  }
+  };
 
-async function loadMovimentacoes(start, end) {
+  const loadMovimentacoes = async (start, end) => {
     try {
       const params = new URLSearchParams();
       if (start) params.append('start', start);
-      if (end)   params.append('end', end);
-      const res = await fetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-       });
-    const data = await res.json();
-    renderMovimentacoes(data);
-  } catch (err) {
-    alert('Erro ao carregar movimentações: ' + err.message);
-  }
-}
-
-function renderMovimentacoes(data) {
-  movimentacoesTableBody.innerHTML = '';
-  data.forEach(m => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-  <td>${new Date(m.data).toLocaleString()}</td>
-  <td>${m.usuario}</td>
-  <td>${m.produto}</td>
-  <td>${m.tipo}</td>
-  <td>${m.quantidadeAnterior !== undefined ? m.quantidadeAnterior : ''}</td>
-  <td>${m.quantidade}</td>
-  <td>${m.quantidadeAtual !== undefined ? m.quantidadeAtual : ''}</td>
-  <td>${m.motivo || ''}</td>`;
-    movimentacoesTableBody.appendChild(tr);
-  });
-  }
-
-async function loadRelatorios(start, end) {
-  try {
-    const params = new URLSearchParams();
-    if (start) params.append('start', start);
-    if (end)   params.append('end', end);
-    const [resSum, resEst] = await Promise.all([
-      fetch(`${BASE_URL}/api/report/summary?${params.toString()}`, {
-        credentials: 'include'
-      }),
-      fetch(`${BASE_URL}/api/report/estoque`, { credentials: 'include' })
-    ]);
-    const summaryData = await resSum.json();
-    const estoqueData = await resEst.json();
-    renderRelatorios(summaryData, estoqueData);
-  } catch (err) {
-    alert('Erro ao carregar relatório: ' + err.message);
-  }
-}
-
-let prodChart;
-let estoqueChart;
-let pizzaProdChart;
-let pizzaTipoChart;
-
-function renderRelatorios(summaryData, estoqueData) {
-  const prodLabels = Object.keys(summaryData.porProduto);
-  const entradas   = prodLabels.map(p => summaryData.porProduto[p].entradas);
-  const saidas     = prodLabels.map(p => summaryData.porProduto[p].saidas);
-
-  if (prodChart) prodChart.destroy();
-  prodChart = new Chart(prodChartCanvas, {
-    type: 'bar',
-    data: {
-      labels: prodLabels,
-      datasets: [
-        {
-          label: 'Entradas',
-          data: entradas,
-          backgroundColor: '#ffce56',
-          borderColor: '#000',
-          borderWidth: 3
-        },
-        {
-          label: 'Saídas',
-          data: saidas,
-          backgroundColor: '#ff6384',
-          borderColor: '#000',
-          borderWidth: 3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { labels: { boxWidth: 20 } } }
+      if (end) params.append('end', end);
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`, { credentials: 'include' });
+      const data = await res.json();
+      movementsData = Array.isArray(data) ? data : [];
+      renderMovimentacoes();
+    } catch (err) {
+      console.error('Erro ao carregar movimentações:', err);
+      alert('Erro ao carregar movimentações: ' + err.message);
+    } finally {
+      hideLoader();
     }
-  });
+  };
 
-  const estoqueLabels = Object.keys(estoqueData);
-  const estoqueValores = estoqueLabels.map(p => estoqueData[p]);
-
-  if (estoqueChart) estoqueChart.destroy();
-  estoqueChart = new Chart(estoqueChartCanvas, {
-    type: 'bar',
-    data: {
-      labels: estoqueLabels,
-      datasets: [
-        {
-          label: 'Estoque Atual',
-          data: estoqueValores,
-          borderColor: '#36a2eb',
-          borderColor: '#000',
-        }
-      ]
-    },
-    options: { responsive: true }
-  });
-
-  const totalPorProduto = prodLabels.map((p, i) => entradas[i] + saidas[i]);
-
-  if (pizzaProdChart) pizzaProdChart.destroy();
-  pizzaProdChart = new Chart(pizzaProdCanvas, {
-    type: 'pie',
-    data: {
-      labels: prodLabels,
-      datasets: [{
-        data: totalPorProduto,
-        backgroundColor: prodLabels.map(() => `hsl(${Math.random()*360},70%,60%)`),
-        borderColor: '#000',
-        borderWidth: 3
-      }]
-    },
-    options: { responsive: true }
-  });
-
-  const totalEntradas = entradas.reduce((a,b)=>a+b,0);
-  const totalSaidas   = saidas.reduce((a,b)=>a+b,0);
-
-  if (pizzaTipoChart) pizzaTipoChart.destroy();
-  pizzaTipoChart = new Chart(pizzaTipoCanvas, {
-    type: 'pie',
-    data: {
-      labels: ['Entradas', 'Saídas'],
-      datasets: [{
-        data: [totalEntradas, totalSaidas],
-        backgroundColor: ['#ffce56','#ff6384'],
-        borderColor: '#000',
-        borderWidth: 3
-      }]
-    },
-    options: { responsive: true }
-  });
-}
-  
-  function filterStock(data) {
-  const clean = data.filter(item => item != null);
-  const q     = filterInput.value.toLowerCase();
-  const t     = filterType.value;
-  if (!q) return clean;
-  return clean.filter(item => {
-    if (t === 'produto') return item.produto.toLowerCase().includes(q);
-    if (t === 'tipo')    return item.tipo.toLowerCase().includes(q);
-    return (
-      item.produto.toLowerCase().includes(q) ||
-      item.tipo.toLowerCase().includes(q)
-    );
-  });
-}
-
-  function applyFilter(page = 1) {
-    const filtered = filterStock(estoqueData);
-    renderStock(filtered, page);
-    setupPagination(filtered.length, page);
-  }
-
-  function renderStock(data, page) {
-  stockTableBody.innerHTML = '';
-
-  const clean     = data.filter(item => item != null);
-  const start     = (page - 1) * itemsPerPage;
-  const end       = start + itemsPerPage;
-  const pageItems = clean.slice(start, end);
-
-    for (const item of pageItems) {
-    const row = document.createElement('tr');
-    row.setAttribute('data-id', item.id);
-    row.innerHTML = `
-      <td>${item.produto}</td>
-      <td>${item.tipo}</td>
-      <td>${item.lote}</td>
-      <td>${item.validade || 'N/A'}</td>
-      <td>${item.quantidade}</td>
-      <td>
-        <button class="edit-btn"   data-id="${item.id}">Editar</button>
-        <button class="delete-btn">Excluir</button>
-      </td>
-    `;
-    stockTableBody.appendChild(row);
-  }
-
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-    const id = btn.closest('tr').dataset.id;
-    btn.addEventListener('click', () => editProduct(id));
-  });
-
-  document.querySelectorAll('.delete-btn').forEach(btn => {
-    const id = btn.closest('tr').dataset.id;
-    btn.addEventListener('click', () => showDeleteModal(id));
-  });
-}  // <--- fecha renderStock
-
-function setupPagination(totalItems, currentPage) {
-  const pageCount = Math.ceil(totalItems / itemsPerPage);
-  const pagination = document.getElementById('pagination');
-  pagination.innerHTML = '';
-  for (let i = 1; i <= pageCount; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.className   = i === currentPage ? 'active' : '';
-    btn.addEventListener('click', () => loadStock(i));
-    pagination.appendChild(btn);
-  }
-  }
-
-  // fecha renderMovimentacoes
-  
-  async function addProduct(e) {
-    e.preventDefault();
-    const produto    = document.getElementById('produto').value;
-    const tipo       = document.getElementById('tipo').value;
-    const lote       = document.getElementById('lote').value;
-    const validade   = document.getElementById('validade').value;
-    const quantidade = document.getElementById('quantidade').value;
+  const loadReports = async (start, end) => {
     try {
-      const res  = await fetch(`${BASE_URL}/api/estoque`, {
+      const params = new URLSearchParams();
+      if (start) params.append('start', start);
+      if (end) params.append('end', end);
+      showLoader();
+      const [resSummary, resStock] = await Promise.all([
+        fetch(`${BASE_URL}/api/report/summary?${params.toString()}`, { credentials: 'include' }),
+        fetch(`${BASE_URL}/api/report/estoque`, { credentials: 'include' })
+      ]);
+      const summaryData = await resSummary.json();
+      const stockData = await resStock.json();
+      renderReports(summaryData, stockData);
+    } catch (err) {
+      console.error('Erro ao carregar relatórios:', err);
+      alert('Erro ao carregar relatórios: ' + err.message);
+    } finally {
+      hideLoader();
+    }
+  };
+
+  // Renderizações ---------------------------------------------------------------
+  const applyFilters = () => {
+    const searchTerm = (searchInput?.value || '').toLowerCase();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    filteredProducts = estoqueData.filter(product => {
+      const matchesSearch =
+        product.produto?.toLowerCase().includes(searchTerm) ||
+        product.tipo?.toLowerCase().includes(searchTerm);
+      if (!matchesSearch) return false;
+      if (activeFilter === 'low_stock') {
+        return Number(product.quantidade) < 25;
+      }
+      if (activeFilter === 'expiring_soon') {
+        if (!product.validade) return false;
+        const expiry = new Date(product.validade);
+        if (Number.isNaN(expiry.getTime())) return false;
+        expiry.setHours(0, 0, 0, 0);
+        const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+        return diff <= 30 && diff >= 0;
+      }
+      return true;
+    });
+    currentPage = 1;
+    renderStock();
+  };
+
+  const renderStock = () => {
+    if (!productGrid) return;
+    productGrid.innerHTML = '';
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageItems = filteredProducts.slice(startIndex, endIndex);
+    pageItems.forEach(product => {
+      const quantity = Number(product.quantidade) || 0;
+      const placeholder = generatePlaceholderImage(product.produto);
+      const storedImage = getStoredProductImage(product.id) || placeholder;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let expiryBadge = '';
+      if (product.validade) {
+        const expiry = new Date(product.validade);
+        expiry.setHours(0, 0, 0, 0);
+        const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+        if (!Number.isNaN(diff) && diff <= 30 && diff >= 0) {
+          expiryBadge = `<div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 z-10" title="Vencendo em breve"><span class="material-icons">warning</span></div>`;
+        }
+      }
+      const stockPercentage = Math.min(Math.round((quantity / 150) * 100), 100);
+      let stockColor = 'bg-green-500';
+      if (stockPercentage < 50) stockColor = 'bg-yellow-500';
+      if (stockPercentage < 25) stockColor = 'bg-danger';
+
+      const commonContent = `
+        <div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">${product.tipo || '-'}</div>
+        ${expiryBadge}
+        <img alt="${product.produto}" class="w-full ${currentView === 'grid' ? 'h-40' : 'h-full'} object-cover" src="${storedImage}" />
+        <div class="p-4 ${currentView === 'grid' ? 'flex-grow flex flex-col' : 'flex-1 ml-4 grid grid-cols-5 items-center gap-4'}">
+          ${currentView === 'grid'
+            ? `
+              <h3 class="font-bold">${product.produto}</h3>
+              <div class="mt-2 flex items-center justify-between">
+                <span class="text-3xl font-bold text-primary">${quantity}</span>
+                <div class="flex items-center text-sm text-subtle-light dark:text-subtle-dark">
+                  <span class="material-icons text-base mr-1">calendar_today</span>
+                  <span>${formatDate(product.validade)}</span>
+                </div>
+              </div>
+              <div class="mt-auto pt-4">
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="${stockColor} h-2 rounded-full" style="width: ${stockPercentage}%"></div>
+                </div>
+              </div>
+            `
+            : `
+              <div>
+                <p class="font-bold">${product.produto}</p>
+                <p class="text-sm text-subtle-light dark:text-subtle-dark">Lote: ${product.lote || '-'}</p>
+              </div>
+              <div class="text-center">
+                <span class="text-2xl font-bold text-primary">${quantity}</span>
+                <p class="text-xs text-subtle-light dark:text-subtle-dark">Unidades</p>
+              </div>
+              <div class="text-center">
+                <div class="flex items-center justify-center text-sm text-subtle-light dark:text-subtle-dark">
+                  <span class="material-icons text-base mr-1">calendar_today</span>
+                  <span>${formatDate(product.validade)}</span>
+                </div>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="${stockColor} h-2 rounded-full" style="width: ${stockPercentage}%"></div>
+              </div>
+              <div class="flex justify-end items-center gap-2">
+                <button class="edit-btn bg-blue-500 text-white p-2 rounded-lg" data-id="${product.id}"><span class="material-icons">edit</span></button>
+                <button class="delete-btn bg-danger text-white p-2 rounded-lg" data-id="${product.id}" data-name="${product.produto}"><span class="material-icons">delete</span></button>
+              </div>
+            `}
+        </div>`;
+
+      if (currentView === 'grid') {
+        const card = document.createElement('div');
+        card.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm overflow-hidden transition-transform duration-300 hover:-translate-y-1 flex flex-col';
+        card.innerHTML = `${commonContent}
+          <div class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center space-x-2 card-actions p-2">
+            <button class="edit-btn bg-blue-500 text-white p-2 rounded-lg flex-1" data-id="${product.id}"><span class="material-icons">edit</span></button>
+            <button class="delete-btn bg-danger text-white p-2 rounded-lg flex-1" data-id="${product.id}" data-name="${product.produto}"><span class="material-icons">delete</span></button>
+          </div>`;
+        productGrid.appendChild(card);
+      } else {
+        const row = document.createElement('div');
+        row.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm flex items-center p-4 transition-shadow hover:shadow-md';
+        row.innerHTML = `
+          <img alt="${product.produto}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0" src="${storedImage}" />
+          ${commonContent}`;
+        productGrid.appendChild(row);
+      }
+    });
+
+    productGrid.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => openEditModal(btn.dataset.id));
+    });
+    productGrid.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', () => openDeleteModal(btn.dataset.id, btn.dataset.name));
+    });
+
+    renderPaginationControls();
+  };
+
+  const renderPaginationControls = () => {
+    if (!paginationContainer) return;
+    paginationContainer.innerHTML = '';
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+    for (let page = 1; page <= totalPages; page++) {
+      const button = document.createElement('button');
+      button.textContent = page;
+      button.className = `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${page === currentPage ? 'bg-primary text-white' : 'bg-surface-light dark:bg-surface-dark hover:bg-gray-200 dark:hover:bg-gray-700'}`;
+      button.addEventListener('click', () => {
+        currentPage = page;
+        renderStock();
+      });
+      paginationContainer.appendChild(button);
+    }
+  };
+
+  const renderMovimentacoes = () => {
+    if (!movimentacoesTableBody) return;
+    movimentacoesTableBody.innerHTML = '';
+    movementsData.forEach(move => {
+      const tr = document.createElement('tr');
+      tr.className = 'bg-white dark:bg-surface-dark';
+      tr.innerHTML = `
+        <td class="px-4 py-2">${move.data ? new Date(move.data).toLocaleString('pt-BR') : '-'}</td>
+        <td class="px-4 py-2">${move.usuario || '-'}</td>
+        <td class="px-4 py-2">${move.produto || '-'}</td>
+        <td class="px-4 py-2">${move.tipo || '-'}</td>
+        <td class="px-4 py-2">${move.quantidadeAnterior ?? ''}</td>
+        <td class="px-4 py-2">${move.quantidade ?? ''}</td>
+        <td class="px-4 py-2">${move.quantidadeAtual ?? ''}</td>
+        <td class="px-4 py-2">${move.motivo || ''}</td>`;
+      movimentacoesTableBody.appendChild(tr);
+    });
+  };
+
+  const renderReports = (summaryData, estoqueResumo) => {
+    const porProduto = summaryData?.porProduto || {};
+    const labels = Object.keys(porProduto);
+    const entradas = labels.map(label => Number(porProduto[label]?.entradas) || 0);
+    const saidas = labels.map(label => Number(porProduto[label]?.saidas) || 0);
+    const totalEntradas = entradas.reduce((sum, value) => sum + value, 0);
+    const totalSaidas = saidas.reduce((sum, value) => sum + value, 0);
+
+    reportsKpiInputs.textContent = totalEntradas.toLocaleString('pt-BR');
+    reportsKpiOutputs.textContent = totalSaidas.toLocaleString('pt-BR');
+    const estoqueAtual = estoqueData.reduce((sum, item) => sum + (Number(item.quantidade) || 0), 0);
+    reportsKpiTotalStock.textContent = `${estoqueAtual.toLocaleString('pt-BR')} un.`;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiring = estoqueData.filter(item => {
+      if (!item.validade) return false;
+      const expiry = new Date(item.validade);
+      expiry.setHours(0, 0, 0, 0);
+      const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+      return diff <= 30 && diff >= 0;
+    }).length;
+    reportsKpiExpiring.textContent = expiring;
+
+    if (stockByProductChart) stockByProductChart.destroy();
+    stockByProductChart = new Chart(stockByProductCanvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Quantidade',
+          data: labels.map(label => Number(estoqueResumo?.[label]) || 0),
+          backgroundColor: ['#6D28D9', '#7C3AED', '#8B5CF6', '#C4B5FD', '#DDD6FE'],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#6B7280' }, grid: { display: false } },
+          y: { ticks: { color: '#6B7280' }, grid: { color: 'rgba(107,114,128,0.2)' } }
+        }
+      }
+    });
+
+    const typeCounts = {};
+    estoqueData.forEach(item => {
+      const key = item.tipo || 'Outros';
+      typeCounts[key] = (typeCounts[key] || 0) + (Number(item.quantidade) || 0);
+    });
+
+    if (stockByTypeChart) stockByTypeChart.destroy();
+    stockByTypeChart = new Chart(stockByTypeCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(typeCounts),
+        datasets: [{
+          data: Object.values(typeCounts),
+          backgroundColor: ['#6D28D9', '#9333EA', '#C084FC', '#E9D5FF', '#A855F7'],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  };
+
+  const updateHomePage = () => {
+    const totalStock = estoqueData.reduce((sum, item) => sum + (Number(item.quantidade) || 0), 0);
+    const lowStockCount = estoqueData.filter(item => Number(item.quantidade) < 25).length;
+    const today = new Date();
+    const movesToday = movementsData.filter(move => {
+      if (!move.data) return false;
+      const moveDate = new Date(move.data);
+      return moveDate.toDateString() === today.toDateString();
+    }).length;
+
+    let stockValue = estoqueData.reduce((sum, item) => {
+      const valor = Number(item.valor_total || item.valorTotal || item.valor || 0);
+      if (!Number.isNaN(valor) && valor > 0) return sum + valor;
+      const preco = Number(item.preco || item.custo || 0);
+      if (!Number.isNaN(preco) && preco > 0) return sum + preco * (Number(item.quantidade) || 0);
+      return sum;
+    }, 0);
+
+    homeKpiTotalStock.textContent = totalStock.toLocaleString('pt-BR');
+    homeKpiLowStock.textContent = lowStockCount.toString();
+    homeKpiMoves.textContent = movesToday.toString();
+    homeKpiStockValue.textContent = stockValue > 0
+      ? `R$ ${stockValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : 'R$ 0,00';
+
+    if (recentActivityList) {
+      recentActivityList.innerHTML = '';
+      const recentMoves = [...movementsData]
+        .sort((a, b) => new Date(b.data) - new Date(a.data))
+        .slice(0, 5);
+      if (recentMoves.length === 0) {
+        recentActivityList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhuma atividade recente.</p>';
+        return;
+      }
+      recentMoves.forEach(move => {
+        const icon = move.tipo === 'entrada' ? 'arrow_downward' : move.tipo === 'saída' ? 'arrow_upward' : 'swap_horiz';
+        const color = move.tipo === 'entrada' ? 'green' : move.tipo === 'saída' ? 'red' : 'blue';
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between';
+        item.innerHTML = `
+          <div class="flex items-center gap-4">
+            <div class="p-2 rounded-full bg-${color}-100 dark:bg-${color}-900/40">
+              <span class="material-icons text-${color}-600 dark:text-${color}-300">${icon}</span>
+            </div>
+            <div>
+              <p class="font-medium">${move.tipo ? move.tipo.toUpperCase() : 'Movimento'}: ${move.quantidade || 0}x ${move.produto || ''}</p>
+              <p class="text-sm text-subtle-light dark:text-subtle-dark">${move.usuario || ''}</p>
+            </div>
+          </div>
+          <p class="text-sm text-subtle-light dark:text-subtle-dark">${move.data ? new Date(move.data).toLocaleString('pt-BR') : ''}</p>`;
+        recentActivityList.appendChild(item);
+      });
+    }
+  };
+
+  const renderApprovalPage = async () => {
+    if (!userRole || userRole !== 'admin') return;
+    try {
+      showLoader();
+      const [pendingRes, activeRes] = await Promise.all([
+        fetch(`${BASE_URL}/api/users/pending?role=admin`, { credentials: 'include' }),
+        fetch(`${BASE_URL}/api/users?role=admin`, { credentials: 'include' })
+      ]);
+      const pendingData = await pendingRes.json();
+      const activeData = await activeRes.json();
+
+      pendingUsersList.innerHTML = '';
+      if (!pendingData.length) {
+        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário aguardando aprovação.</p>';
+      } else {
+        pendingData.forEach(user => {
+          const item = document.createElement('div');
+          item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
+          item.innerHTML = `
+            <div class="flex items-center gap-4">
+              <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <p class="font-semibold">${user.username}</p>
+                <p class="text-sm text-subtle-light dark:text-subtle-dark">ID: ${user.id}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button data-user-id="${user.id}" class="approve-user-btn p-2 rounded-full text-green-500 hover:bg-green-100 dark:hover:bg-green-900/50"><span class="material-icons">check_circle</span></button>
+              <button data-user-id="${user.id}" class="decline-user-btn p-2 rounded-full text-danger hover:bg-red-100 dark:hover:bg-red-900/50"><span class="material-icons">cancel</span></button>
+            </div>`;
+          pendingUsersList.appendChild(item);
+        });
+      }
+
+      activeUsersList.innerHTML = '';
+      if (!activeData.length) {
+        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário ativo.</p>';
+      } else {
+        activeData.forEach(user => {
+          const item = document.createElement('div');
+          item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
+          item.innerHTML = `
+            <div class="flex items-center gap-4">
+              <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <p class="font-semibold">${user.username}</p>
+                <p class="text-sm text-subtle-light dark:text-subtle-dark">${user.role || ''}</p>
+              </div>
+            </div>
+            <button data-user-id="${user.id}" class="delete-user-btn p-2 rounded-full text-danger hover:bg-red-100 dark:hover:bg-red-900/50"><span class="material-icons">delete</span></button>`;
+          activeUsersList.appendChild(item);
+        });
+      }
+
+      document.querySelectorAll('.approve-user-btn').forEach(btn => {
+        btn.addEventListener('click', () => approveUser(btn.dataset.userId));
+      });
+      document.querySelectorAll('.decline-user-btn').forEach(btn => {
+        btn.addEventListener('click', () => declineUser(btn.dataset.userId));
+      });
+      document.querySelectorAll('.delete-user-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteUser(btn.dataset.userId));
+      });
+    } catch (err) {
+      console.error('Erro ao carregar usuários:', err);
+      alert('Erro ao carregar usuários: ' + err.message);
+    } finally {
+      hideLoader();
+    }
+  };
+
+  // CRUD -----------------------------------------------------------------------
+  const handleAddSubmit = async event => {
+    event.preventDefault();
+    const produto = document.getElementById('add-name').value.trim();
+    const tipo = document.getElementById('add-type').value.trim();
+    const lote = document.getElementById('add-lot').value.trim();
+    const quantidade = Number(document.getElementById('add-quantity').value) || 0;
+    const validade = document.getElementById('add-expiryDate').value || null;
+    if (!produto) {
+      alert('Informe o nome do produto.');
+      return;
+    }
+    try {
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/estoque`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ produto, tipo, lote, validade, quantidade, usuario: currentUser }),
         credentials: 'include'
       });
       const data = await res.json();
-      if (res.ok) {
-        alert('Produto adicionado com sucesso!');
-        stockForm.reset();
-        if (viewStockSection.style.display !== 'none') loadStock();
-        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes(movInicio.value, movFim.value);
-      } else {
-        alert(data.error || 'Erro ao adicionar produto');
+      if (!res.ok) {
+        alert(data.error || 'Erro ao adicionar produto.');
+        return;
       }
+      closeModal('add-modal');
+      addForm.reset();
+      document.getElementById('add-image-preview').classList.add('hidden');
+      await loadStock();
+      await loadMovimentacoes();
+      updateHomePage();
+      alert('Produto adicionado com sucesso!');
     } catch (err) {
       alert('Erro ao adicionar produto: ' + err.message);
+    } finally {
+      hideLoader();
     }
-  }
+  };
 
-  function editProduct(id) {
-    const row   = document.querySelector(`tr[data-id="${id}"]`);
-    const cells = row.querySelectorAll('td');
-    const produto    = cells[0].textContent;
-    const tipo       = cells[1].textContent;
-    const lote       = cells[2].textContent;
-    const validade   = cells[3].textContent === 'N/A' ? '' : cells[3].textContent;
-    const quantidade = cells[4].textContent;
+  const openEditModal = productId => {
+    const product = estoqueData.find(item => String(item.id) === String(productId));
+    if (!product) return;
+    currentProductId = product.id;
+    editForm.elements.id.value = product.id;
+    editForm.elements.type.value = product.tipo || 'Açaí';
+    editForm.elements.name.value = product.produto || '';
+    editForm.elements.lot.value = product.lote || '';
+    editForm.elements.quantity.value = product.quantidade || 0;
+    editForm.elements.expiryDate.value = product.validade ? product.validade.substring(0, 10) : '';
+    const preview = document.getElementById('edit-image-preview');
+    const storedImage = getStoredProductImage(product.id) || generatePlaceholderImage(product.produto);
+    preview.src = storedImage;
+    preview.classList.remove('hidden');
+    openModal('edit-modal');
+  };
 
-    row.innerHTML = `
-      <td><input type="text" class="edit-input" value="${produto}"    data-field="produto"></td>
-      <td><input type="text" class="edit-input" value="${tipo}"       data-field="tipo"></td>
-      <td><input type="text" class="edit-input" value="${lote}"       data-field="lote"></td>
-      <td><input type="date" class="edit-input" value="${validade}"   data-field="validade"></td>
-      <td><input type="number" class="edit-input" value="${quantidade}" data-field="quantidade"></td>
-      <td>
-        <button class="save-btn"   data-id="${id}">Salvar</button>
-        <button class="cancel-btn" data-id="${id}">Cancelar</button>
-      </td>
-    `;
-    row.querySelector('.save-btn').addEventListener('click', () => saveProduct(id));
-    row.querySelector('.cancel-btn').addEventListener('click', () => loadStock());
-  }
-
-  async function saveProduct(id) {
-    const row    = document.querySelector(`tr[data-id="${id}"]`);
-    const inputs = row.querySelectorAll('.edit-input');
-    const updatedProduct = {
-      produto:    inputs[0].value,
-      tipo:       inputs[1].value,
-      lote:       inputs[2].value,
-      validade:   inputs[3].value || null,
-      quantidade: parseInt(inputs[4].value, 10) || 0
-    };
+  const handleEditSubmit = async event => {
+    event.preventDefault();
+    const id = editForm.elements.id.value;
+    const produto = editForm.elements.name.value.trim();
+    const tipo = editForm.elements.type.value.trim();
+    const lote = editForm.elements.lot.value.trim();
+    const quantidade = Number(editForm.elements.quantity.value) || 0;
+    const validade = editForm.elements.expiryDate.value || null;
+    if (!produto) {
+      alert('Informe o nome do produto.');
+      return;
+    }
     try {
-      const res  = await fetch(`${BASE_URL}/api/estoque/${id}`, {
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/estoque/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({ usuario: currentUser }, updatedProduct)),
+        body: JSON.stringify({ produto, tipo, lote, validade, quantidade, usuario: currentUser }),
         credentials: 'include'
       });
       const data = await res.json();
-      if (res.ok) {
-        alert('Produto atualizado com sucesso!');
-        loadStock();
-        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes(movInicio.value, movFim.value);
-      } else {
-        alert(data.error || 'Erro ao atualizar produto');
+      if (!res.ok) {
+        alert(data.error || 'Erro ao atualizar produto.');
+        return;
       }
+      const preview = document.getElementById('edit-image-preview');
+      if (!preview.classList.contains('hidden')) {
+        storeProductImage(id, preview.src);
+      }
+      closeModal('edit-modal');
+      await loadStock();
+      await loadMovimentacoes();
+      updateHomePage();
+      alert('Produto atualizado com sucesso!');
     } catch (err) {
       alert('Erro ao atualizar produto: ' + err.message);
+    } finally {
+      hideLoader();
     }
-  }
+  };
 
-  function showDeleteModal(id) {
-    const modal = document.createElement('div');
-    modal.className = 'delete-modal';
-    modal.innerHTML = `
-      <div class="modal-content">
-        <h2>Confirmar Exclusão</h2>
-        <p>Deseja realmente excluir o produto de ID <strong>${id}</strong>?</p>
-        <input type="text" id="delete-reason" placeholder="Motivo da exclusão">
-        <button class="confirm-delete-btn">Confirmar</button>
-        <button class="cancel-delete-btn">Cancelar</button>
-      </div>
-    `;
-    document.body.appendChild(modal);
+  const openDeleteModal = (id, name) => {
+    currentProductId = id;
+    deleteProductName.textContent = name || '';
+    deleteReasonInput.value = '';
+    openModal('delete-modal');
+  };
 
-    modal.querySelector('.confirm-delete-btn')
-      .addEventListener('click', async () => {
-        const reason = modal.querySelector('#delete-reason').value.trim();
-        if (!reason) return alert('Informe o motivo da exclusão.');
-        await performDelete(id, reason);
-        modal.remove();
-      });
-    modal.querySelector('.cancel-delete-btn')
-      .addEventListener('click', () => modal.remove());
-  }
-
-  async function performDelete(id, motivo) {
+  const handleDeleteConfirm = async () => {
+    if (!currentProductId) return;
+    const motivo = deleteReasonInput.value.trim();
+    if (!motivo) {
+      alert('Informe o motivo da exclusão.');
+      return;
+    }
     try {
-      const res  = await fetch(`${BASE_URL}/api/estoque/${id}`, {
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/estoque/${currentProductId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ motivo, usuario: currentUser }),
         credentials: 'include'
       });
       const data = await res.json();
-      if (res.ok) {
-        alert('Produto excluído com sucesso!');
-        loadStock();
-        if (movimentacoesSection.style.display !== 'none') loadMovimentacoes(movInicio.value, movFim.value);
-      } else {
-        alert(data.error || 'Erro ao excluir produto');
+      if (!res.ok) {
+        alert(data.error || 'Erro ao excluir produto.');
+        return;
       }
+      closeModal('delete-modal');
+      await loadStock();
+      await loadMovimentacoes();
+      updateHomePage();
+      alert('Produto excluído com sucesso!');
     } catch (err) {
       alert('Erro ao remover produto: ' + err.message);
+    } finally {
+      hideLoader();
     }
-  }
+  };
 
-// ----- Gestão de usuários (admin) -----
-  async function loadPendingUsers() {
-    const res  = await fetch(`${BASE_URL}/api/users/pending?role=admin`);
-    const data = await res.json();
-    pendingUsersList.innerHTML = '';
-    data.forEach(u => {
-      const li = document.createElement('li');
-      li.textContent = u.username;
-      const btn = document.createElement('button');
-      btn.textContent = 'Aprovar';
-      btn.addEventListener('click', () => approveUser(u.id));
-      li.appendChild(btn);
-      pendingUsersList.appendChild(li);
+  // Gestão de usuários ---------------------------------------------------------
+  const approveUser = async userId => {
+    try {
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/users/${userId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roleAtuante: 'admin' })
+      });
+      if (res.ok) {
+        await renderApprovalPage();
+      }
+    } catch (err) {
+      alert('Erro ao aprovar usuário: ' + err.message);
+    } finally {
+      hideLoader();
+    }
+  };
+
+  const declineUser = async userId => {
+    try {
+      showLoader();
+      const res = await fetch(`${BASE_URL}/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roleAtuante: 'admin' })
+      });
+      if (res.ok) {
+        await renderApprovalPage();
+      }
+    } catch (err) {
+      alert('Erro ao recusar usuário: ' + err.message);
+    } finally {
+      hideLoader();
+    }
+  };
+
+  const deleteUser = async userId => {
+    await declineUser(userId);
+  };
+
+  // Navegação ------------------------------------------------------------------
+  const switchPage = pageId => {
+    pageContents.forEach(page => page.classList.add('hidden'));
+    const target = document.getElementById(pageId);
+    target?.classList.remove('hidden');
+    if (pageId === 'stock-page') {
+      if (!estoqueData.length) loadStock();
+    } else if (pageId === 'reports-page') {
+      loadReports();
+    } else if (pageId === 'approve-page') {
+      renderApprovalPage();
+    }
+  };
+
+  const highlightMenu = link => {
+    mainMenu.querySelectorAll('a').forEach(item => {
+      item.classList.remove('bg-white/20', 'text-white');
+      item.classList.add('text-white/70', 'hover:bg-white/10');
+    });
+    if (link) {
+      link.classList.add('bg-white/20', 'text-white');
+      link.classList.remove('text-white/70');
+    }
+  };
+
+  const setupMenuNavigation = () => {
+    mainMenu.addEventListener('click', event => {
+      const link = event.target.closest('a[data-page]');
+      if (!link) return;
+      event.preventDefault();
+      highlightMenu(link);
+      switchPage(link.dataset.page);
+    });
+  };
+
+  const setupUserMenus = () => {
+    document.querySelectorAll('.user-menu-button').forEach(button => {
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        const menu = button.nextElementSibling;
+        document.querySelectorAll('.user-dropdown-menu').forEach(otherMenu => {
+          if (otherMenu !== menu) otherMenu.classList.add('hidden');
+        });
+        menu?.classList.toggle('hidden');
+      });
+    });
+    window.addEventListener('click', event => {
+      if (!event.target.closest('.user-menu-button')) {
+        document.querySelectorAll('.user-dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+      }
+    });
+  };
+
+  // Perfil ---------------------------------------------------------------------
+  const openProfileModal = () => {
+    profileModalImage.src = userAvatarImgs[0]?.src || 'https://placehold.co/100x100/6D28D9/FFFFFF?text=U';
+    openModal('profile-modal');
+  };
+
+  const handleProfileSave = async () => {
+    const newSrc = profileModalImage.src;
+    updateAllAvatars(newSrc);
+    if (currentUser) {
+      localStorage.setItem(`profilePhoto_${currentUser}`, newSrc);
+    }
+    await updateProfilePhotoOnServer(newSrc);
+    closeModal('profile-modal');
+  };
+
+  const setupImagePreview = (inputId, previewId) => {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    if (!input || !preview) return;
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Selecione um arquivo de imagem.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Eventos --------------------------------------------------------------------
+  loginForm.addEventListener('submit', handleLogin);
+  registerForm.addEventListener('submit', handleRegister);
+  showRegisterBtn.addEventListener('click', showRegisterForm);
+  showLoginBtn.addEventListener('click', showLoginForm);
+  logoutLinks.forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    logout();
+  }));
+  profileLinks.forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    openProfileModal();
+  }));
+  if (addProductLink) addProductLink.addEventListener('click', event => { event.preventDefault(); openModal('add-modal'); });
+  if (quickAddBtn) quickAddBtn.addEventListener('click', () => openModal('add-modal'));
+  if (quickExportBtn) quickExportBtn.addEventListener('click', () => window.open(`${BASE_URL}/api/movimentacoes/csv`, '_blank'));
+  if (searchInput) searchInput.addEventListener('input', () => applyFilters());
+  if (filterButtonsContainer) {
+    filterButtonsContainer.addEventListener('click', event => {
+      const button = event.target.closest('button[data-filter]');
+      if (!button) return;
+      activeFilter = button.dataset.filter;
+      filterButtonsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
+      button.classList.add('bg-primary', 'text-white');
+      applyFilters();
+    });
+    const defaultFilter = filterButtonsContainer.querySelector('[data-filter="all"]');
+    defaultFilter?.classList.add('bg-primary', 'text-white');
+  }
+  if (gridViewBtn) gridViewBtn.addEventListener('click', () => {
+    currentView = 'grid';
+    gridViewBtn.classList.add('bg-primary', 'text-white');
+    listViewBtn?.classList.remove('bg-primary', 'text-white');
+    renderStock();
+  });
+  if (listViewBtn) listViewBtn.addEventListener('click', () => {
+    currentView = 'list';
+    listViewBtn.classList.add('bg-primary', 'text-white');
+    gridViewBtn?.classList.remove('bg-primary', 'text-white');
+    renderStock();
+  });
+  if (addForm) addForm.addEventListener('submit', handleAddSubmit);
+  if (editForm) editForm.addEventListener('submit', handleEditSubmit);
+  if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', handleDeleteConfirm);
+  if (filtrarMovBtn) filtrarMovBtn.addEventListener('click', () => loadMovimentacoes(movInicio.value, movFim.value));
+  if (saveProfileBtn) saveProfileBtn.addEventListener('click', handleProfileSave);
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));
+  });
+  if (profileImageUpload) {
+    profileImageUpload.addEventListener('change', () => {
+      const file = profileImageUpload.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Selecione um arquivo de imagem.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Imagem deve ter no máximo 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        profileModalImage.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     });
   }
 
-  async function loadUsers() {
-    const res  = await fetch(`${BASE_URL}/api/users?role=admin`);
-    const data = await res.json();
-    usersList.innerHTML = '';
-    data.forEach(u => {
-      const li = document.createElement('li');
-      li.textContent = `${u.username} (${u.role})`;
-      const btn = document.createElement('button');
-      btn.textContent = 'Excluir';
-      btn.addEventListener('click', () => deleteUser(u.id));
-      li.appendChild(btn);
-      usersList.appendChild(li);
+  setupImagePreview('add-image', 'add-image-preview');
+  setupImagePreview('edit-image', 'edit-image-preview');
+  setupMenuNavigation();
+  setupUserMenus();
+
+  // Login animation ------------------------------------------------------------
+  document.body.addEventListener('mousemove', event => {
+    if (!seguirPunteroMouse || !monster) return;
+    const { clientX, clientY } = event;
+    if (clientX < anchoMitad && clientY < altoMitad)      monster.src = 'img/idle/2.png';
+    else if (clientX < anchoMitad && clientY > altoMitad) monster.src = 'img/idle/3.png';
+    else if (clientX > anchoMitad && clientY < altoMitad) monster.src = 'img/idle/5.png';
+    else                                                  monster.src = 'img/idle/4.png';
+  });
+  if (inputUsuario) {
+    inputUsuario.addEventListener('focus', () => seguirPunteroMouse = false);
+    inputUsuario.addEventListener('blur', () => seguirPunteroMouse = true);
+  }
+  if (inputClave) {
+    inputClave.addEventListener('focus', () => {
+      seguirPunteroMouse = false;
+      let cont = 1;
+      const covering = setInterval(() => {
+        monster.src = `img/cover/${cont}.png`;
+        if (cont++ === 8) clearInterval(covering);
+      }, 60);
+    });
+    inputClave.addEventListener('blur', () => {
+      seguirPunteroMouse = true;
+      let cont = 8;
+      const uncovering = setInterval(() => {
+        monster.src = `img/cover/${--cont}.png`;
+        if (cont === 1) clearInterval(uncovering);
+      }, 60);
+    });
+  }
+  if (togglePasswordLogin) {
+    togglePasswordLogin.addEventListener('click', () => {
+      if (inputClave.type === 'password') {
+        inputClave.type = 'text';
+        monster.src = 'img/idle/1.png';
+        seguirPunteroMouse = false;
+      } else {
+        inputClave.type = 'password';
+        seguirPunteroMouse = true;
+      }
+    });
+  }
+  if (togglePasswordRegister) {
+    togglePasswordRegister.addEventListener('click', () => {
+      const registerPassword = document.getElementById('register-password');
+      registerPassword.type = registerPassword.type === 'password' ? 'text' : 'password';
     });
   }
 
-  async function approveUser(id) {
-    const res = await fetch(`${BASE_URL}/api/users/${id}/approve`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roleAtuante: 'admin' })
-    });
-    if (res.ok) loadPendingUsers();
-  }
-
-  async function deleteUser(id) {
-    const res = await fetch(`${BASE_URL}/api/users/${id}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roleAtuante: 'admin' })
-    });
-    if (res.ok) loadUsers();
-  }
-
-  function showRegisterForm() {
-    loginForm.style.display    = 'none';
-    registerForm.style.display = 'block';
-  }
-
-  function showLoginForm() {
-    registerForm.style.display = 'none';
-    loginForm.style.display    = 'block';
-  }
-
-// Listeners finais
-loginForm.addEventListener('submit', handleLogin);
-registerForm.addEventListener('submit', handleRegister);
-showRegisterBtn.addEventListener('click', showRegisterForm);
-showLoginBtn.addEventListener('click', showLoginForm);
-logoutBtn.addEventListener('click', logout);
-stockForm.addEventListener('submit', addProduct);
-if (filterInput) {
-  filterInput.addEventListener('input', () => applyFilter(1));
-}
-if (filterType) {
-  filterType.addEventListener('change', () => applyFilter(1));
-}
-  if (approveUsersBtn) {
-  approveUsersBtn.addEventListener('click', () => {
-    adminSection.style.display = 'block';
-    loadPendingUsers();
-  });
-}
-if (deleteUsersBtn) {
-  deleteUsersBtn.addEventListener('click', () => {
-    adminSection.style.display = 'block';
-    loadUsers();
-  });
-}
-if (exportCsvBtn) {
-  exportCsvBtn.addEventListener('click', () => {
-    window.open(`${BASE_URL}/api/movimentacoes/csv`, '_blank');
-  });
-}
-  if (filtrarMovBtn) {
-  filtrarMovBtn.addEventListener('click', () => {
-    const inicio = movInicio.value;
-    const fim    = movFim.value;
-    loadMovimentacoes(inicio, fim);
-  });
-}
-if (aplicarFiltroBtn) {
-  aplicarFiltroBtn.addEventListener('click', () => {
-    const inicio = filtroInicio.value;
-    const fim    = filtroFim.value;
-    loadRelatorios(inicio, fim);
-  });
-}
-if (closeAdminBtn) {
-  closeAdminBtn.addEventListener('click', () => {
-    adminSection.style.display = 'none';
-  });
-}
-
+  resetProfilePhoto();
+  showLoginForm();
 });
+
