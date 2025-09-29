@@ -22,9 +22,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let profileImageFile = null;
   let isRefreshingAllData = false;
   const ACTIVE_PAGE_STORAGE_KEY = 'acaiStock_active_page';
+  const SESSION_STORAGE_KEY = 'acaiStock_session';
   const AUTO_REFRESH_INTERVAL_MS = 60_000;
   let autoRefreshIntervalId = null;
   let activePageId = null;
+  let socket = null;
+  let usersDataDirty = true;
+  let isRestoringSession = false;
+  let pendingRealtimeRefresh = false;
+  let pendingRealtimeOptions = {};
 
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
@@ -95,6 +101,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentProductId = null;
 
+  const persistSession = session => {
+    if (!session) return;
+    const { username, userId, role } = session;
+    if (!username || !userId || !role) return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ username, userId, role }));
+    } catch (error) {
+      console.warn('Não foi possível salvar a sessão:', error);
+    }
+  };
+
+  const getStoredSession = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      const { username, userId, role } = parsed;
+      if (!username || !userId || !role) return null;
+      return { username, userId, role };
+    } catch (error) {
+      console.warn('Não foi possível recuperar a sessão:', error);
+      return null;
+    }
+  };
+
+  const clearStoredSession = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    } catch (error) {
+      console.warn('Não foi possível limpar a sessão:', error);
+    }
+  };
+
   // Utilitários -----------------------------------------------------------------
   const showLoader = () => loader?.classList.remove('hidden');
   const hideLoader = () => loader?.classList.add('hidden');
@@ -111,6 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) {
       modal.classList.add('hidden');
     }
+  };
+
+  const isPageVisible = pageId => {
+    const page = document.getElementById(pageId);
+    return !!page && !page.classList.contains('hidden');
   };
 
   const formatDate = value => {
@@ -278,6 +326,106 @@ document.addEventListener('DOMContentLoaded', () => {
     return data.photo || null;
   };
 
+  const disconnectSocket = () => {
+    if (socket) {
+      socket.disconnect();
+      socket = null;
+    }
+  };
+
+  const connectSocket = () => {
+    if (typeof io === 'undefined' || socket || !currentUserId) return;
+    socket = io(BASE_URL || undefined, {
+      transports: ['websocket', 'polling'],
+      withCredentials: true
+    });
+    socket.on('connect_error', error => {
+      console.error('Erro ao conectar ao servidor em tempo real:', error);
+    });
+    socket.on('dataUpdated', async () => {
+      if (!currentUser) return;
+      try {
+        await refreshAllData({ force: true, silent: true });
+      } catch (error) {
+        console.error('Erro ao atualizar dados em tempo real:', error);
+      }
+    });
+    socket.on('usersUpdated', async () => {
+      if (userRole !== 'admin') return;
+      usersDataDirty = true;
+      if (isPageVisible('approve-page')) {
+        try {
+          await renderApprovalPage({ silent: true });
+        } catch (error) {
+          console.error('Erro ao atualizar usuários em tempo real:', error);
+        }
+      }
+    });
+    socket.on('userPhotoUpdated', async payload => {
+      if (!payload) return;
+      const { id, photo } = payload;
+      if (id && String(id) === String(currentUserId)) {
+        try {
+          if (currentUser && typeof window !== 'undefined' && window.localStorage) {
+            if (photo) {
+              window.localStorage.setItem(`profilePhoto_${currentUser}`, photo);
+            } else {
+              window.localStorage.removeItem(`profilePhoto_${currentUser}`);
+            }
+          }
+        } catch (error) {
+          console.warn('Não foi possível atualizar a foto armazenada localmente:', error);
+        }
+        try {
+          await initProfilePhoto();
+        } catch (error) {
+          console.error('Erro ao sincronizar foto de perfil:', error);
+        }
+      }
+      if (userRole === 'admin') {
+        usersDataDirty = true;
+        if (isPageVisible('approve-page')) {
+          try {
+            await renderApprovalPage({ silent: true });
+          } catch (error) {
+            console.error('Erro ao atualizar usuários em tempo real:', error);
+          }
+        }
+      }
+    });
+  };
+
+  const enterApplication = async ({ username, userId, role, photo } = {}) => {
+    if (!username || !userId || !role) return;
+    currentUser = username;
+    currentUserId = userId;
+    userRole = role;
+    persistSession({ username, userId, role });
+    usersDataDirty = true;
+    homeGreeting.textContent = `Bem-vindo de volta, ${username}!`;
+    updateAllUserNames(username);
+    loginContainer.classList.add('hidden');
+    loginContainer.style.display = 'none';
+    appContainer.classList.remove('hidden');
+    if (photo) {
+      try {
+        localStorage.setItem(`profilePhoto_${currentUser}`, photo);
+      } catch (error) {
+        console.warn('Não foi possível armazenar a foto de perfil:', error);
+      }
+    }
+    await initProfilePhoto();
+    toggleAdminFeatures(userRole === 'admin');
+    restoreStoredPage();
+    stopAutoRefresh();
+    await refreshAllData({ force: true });
+    if (userRole === 'admin' && isPageVisible('approve-page') && usersDataDirty) {
+      await renderApprovalPage();
+    }
+    startAutoRefresh();
+    connectSocket();
+  };
+
   const showLoginForm = () => {
     loginForm.style.display = 'block';
     registerForm.style.display = 'none';
@@ -286,6 +434,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const showRegisterForm = () => {
     loginForm.style.display = 'none';
     registerForm.style.display = 'block';
+  };
+
+  const showLoginScreen = () => {
+    showLoginForm();
+    loginContainer.style.display = 'flex';
+    loginContainer.classList.remove('hidden');
+    appContainer.classList.add('hidden');
   };
 
   const handleLogin = async event => {
@@ -309,22 +464,12 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(data.error || 'Erro no login.');
         return;
       }
-      currentUser = username;
-      currentUserId = data.userId;
-      userRole = data.role;
-      homeGreeting.textContent = `Bem-vindo de volta, ${username}!`;
-      updateAllUserNames(username);
-      loginContainer.classList.add('hidden');
-      loginContainer.style.display = 'none';
-      appContainer.classList.remove('hidden');
-      restoreStoredPage();
-      if (data.photo) {
-        localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
-      }
-      await initProfilePhoto();
-      toggleAdminFeatures(userRole === 'admin');
-      await refreshAllData({ force: true });
-      startAutoRefresh();
+      await enterApplication({
+        username,
+        userId: data.userId,
+        role: data.role,
+        photo: data.photo ?? null
+      });
     } catch (err) {
       alert('Erro no servidor: ' + err.message);
     } finally {
@@ -362,6 +507,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const logout = () => {
+    clearStoredSession();
+    disconnectSocket();
     currentUser = null;
     currentUserId = null;
     userRole = null;
@@ -370,10 +517,12 @@ document.addEventListener('DOMContentLoaded', () => {
     movementsData = [];
     currentPage = 1;
     activePageId = null;
+    usersDataDirty = true;
+    isRestoringSession = false;
     stopAutoRefresh();
-    loginContainer.style.display = 'flex';
-    loginContainer.classList.remove('hidden');
-    appContainer.classList.add('hidden');
+    pendingRealtimeRefresh = false;
+    pendingRealtimeOptions = {};
+    showLoginScreen();
     inputUsuario.value = '';
     inputClave.value = '';
     profileModal.classList.add('hidden');
@@ -394,7 +543,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Dados -----------------------------------------------------------------------
   const refreshAllData = async (options = {}) => {
     const { force = false } = options;
-    if (isRefreshingAllData && !force) return;
+    if (isRefreshingAllData) {
+      if (force) {
+        pendingRealtimeRefresh = true;
+        pendingRealtimeOptions = { ...pendingRealtimeOptions, ...options, force: false };
+      }
+      return;
+    }
     isRefreshingAllData = true;
     const filterStart = movInicio?.value || undefined;
     const filterEnd = movFim?.value || undefined;
@@ -407,6 +562,12 @@ document.addEventListener('DOMContentLoaded', () => {
       updateHomePage();
     } finally {
       isRefreshingAllData = false;
+      if (pendingRealtimeRefresh) {
+        const queuedOptions = { ...pendingRealtimeOptions };
+        pendingRealtimeRefresh = false;
+        pendingRealtimeOptions = {};
+        refreshAllData(queuedOptions).catch(err => console.error('Erro ao atualizar dados pendentes:', err));
+      }
     }
   };
 
@@ -800,10 +961,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const renderApprovalPage = async () => {
+  const renderApprovalPage = async (options = {}) => {
+    const { silent = false } = options;
     if (!userRole || userRole !== 'admin') return;
     try {
-      showLoader();
+      if (!silent) showLoader();
       const [pendingRes, activeRes] = await Promise.all([
         fetch(`${BASE_URL}/api/users/pending?role=admin`, { credentials: 'include' }),
         fetch(`${BASE_URL}/api/users?role=admin`, { credentials: 'include' })
@@ -867,11 +1029,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.delete-user-btn').forEach(btn => {
         btn.addEventListener('click', () => deleteUser(btn.dataset.userId));
       });
+      usersDataDirty = false;
     } catch (err) {
       console.error('Erro ao carregar usuários:', err);
       alert('Erro ao carregar usuários: ' + err.message);
     } finally {
-      hideLoader();
+      if (!silent) hideLoader();
     }
   };
 
@@ -1126,7 +1289,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (pageId === 'reports-page') {
       loadReports(undefined, undefined, options);
     } else if (pageId === 'approve-page') {
-      renderApprovalPage();
+      if (userRole === 'admin' && usersDataDirty) {
+        renderApprovalPage(options);
+      }
     }
   };
 
@@ -1267,6 +1432,27 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  const initializeFromStoredSession = async () => {
+    if (isRestoringSession) return;
+    const storedSession = getStoredSession();
+    if (!storedSession) {
+      showLoginScreen();
+      return;
+    }
+    isRestoringSession = true;
+    try {
+      showLoader();
+      await enterApplication(storedSession);
+    } catch (error) {
+      console.error('Erro ao restaurar sessão:', error);
+      clearStoredSession();
+      showLoginScreen();
+    } finally {
+      hideLoader();
+      isRestoringSession = false;
+    }
   };
 
   // Eventos --------------------------------------------------------------------
@@ -1417,7 +1603,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  window.addEventListener('storage', event => {
+    if (event.key !== SESSION_STORAGE_KEY) return;
+    if (!event.newValue && currentUser) {
+      logout();
+    } else if (event.newValue && !currentUser) {
+      initializeFromStoredSession();
+    }
+  });
+
   resetProfilePhoto();
-  showLoginForm();
+  initializeFromStoredSession();
 });
 
