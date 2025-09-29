@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Elementos gerais da aplicação
   const mainMenu = document.getElementById('main-menu');
+  const stockMenuItem = document.getElementById('stock-menu-item');
   const pageContents = document.querySelectorAll('.page-content');
   const addProductLink = document.getElementById('add-product-link');
   const quickAddBtn = document.getElementById('quick-add-product');
@@ -74,6 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const homeGreeting = document.getElementById('home-greeting');
   const homeUserName = document.getElementById('home-user-name');
   const recentActivityList = document.getElementById('recent-activity-list');
+  const homeKpiCardTotal = document.getElementById('home-card-total-stock');
+  const homeKpiCardLow = document.getElementById('home-card-low-stock');
+  const homeKpiCardExpiring = document.getElementById('home-card-expiring');
 
   const movInicio = document.getElementById('mov-inicio');
   const movFim = document.getElementById('mov-fim');
@@ -86,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Referências dos KPIs
   const homeKpiTotalStock = document.getElementById('home-kpi-total-stock');
   const homeKpiLowStock = document.getElementById('home-kpi-low-stock');
-  const homeKpiMoves = document.getElementById('home-kpi-moves');
+  const homeKpiExpiring = document.getElementById('home-kpi-expiring');
   const homeKpiStockValue = document.getElementById('home-kpi-stock-value');
   const reportsKpiInputs = document.getElementById('kpi-inputs');
   const reportsKpiOutputs = document.getElementById('kpi-outputs');
@@ -572,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const loadStock = async (options = {}) => {
-    const { silent = false } = options;
+    const { silent = false, onLoaded } = options;
     try {
       if (!silent) showLoader();
       const res = await fetch(`${BASE_URL}/api/estoque`, { credentials: 'include' });
@@ -584,6 +588,9 @@ document.addEventListener('DOMContentLoaded', () => {
       filteredProducts = [...estoqueData];
       currentPage = 1;
       renderStock();
+      if (typeof onLoaded === 'function') {
+        onLoaded();
+      }
     } catch (err) {
       console.error('Erro ao carregar estoque:', err);
       alert('Erro ao carregar estoque: ' + err.message);
@@ -804,6 +811,28 @@ document.addEventListener('DOMContentLoaded', () => {
     target?.classList.add('bg-primary', 'text-white');
   };
 
+  const goToStockPageWithFilter = filter => {
+    activeFilter = filter;
+    currentPage = 1;
+    if (filter === 'all' && searchInput) {
+      searchInput.value = '';
+    }
+    setActiveFilterButton(filter);
+    const applySelectedFilter = () => {
+      setActiveFilterButton(filter);
+      applyFilters();
+    };
+    const options = { onLoaded: applySelectedFilter };
+    if (stockMenuItem) {
+      activateMenuItem(stockMenuItem, options);
+    } else {
+      switchPage('stock-page', options);
+    }
+    if (estoqueData.length) {
+      applySelectedFilter();
+    }
+  };
+
   const renderMovimentacoes = () => {
     if (!movimentacoesTableBody) return;
     movimentacoesTableBody.innerHTML = '';
@@ -910,10 +939,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalStock = estoqueData.reduce((sum, item) => sum + (Number(item.quantidade) || 0), 0);
     const lowStockCount = estoqueData.filter(item => Number(item.quantidade) < 25).length;
     const today = new Date();
-    const movesToday = movementsData.filter(move => {
-      if (!move.data) return false;
-      const moveDate = new Date(move.data);
-      return moveDate.toDateString() === today.toDateString();
+    today.setHours(0, 0, 0, 0);
+    const expiringSoon = estoqueData.filter(item => {
+      if (!item.validade) return false;
+      const expiry = new Date(item.validade);
+      if (Number.isNaN(expiry.getTime())) return false;
+      expiry.setHours(0, 0, 0, 0);
+      const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+      return diff <= 30 && diff >= 0;
     }).length;
 
     let stockValue = estoqueData.reduce((sum, item) => {
@@ -926,7 +959,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     homeKpiTotalStock.textContent = totalStock.toLocaleString('pt-BR');
     homeKpiLowStock.textContent = lowStockCount.toString();
-    homeKpiMoves.textContent = movesToday.toString();
+    homeKpiExpiring.textContent = expiringSoon.toString();
     homeKpiStockValue.textContent = stockValue > 0
       ? `R$ ${stockValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : 'R$ 0,00';
@@ -1477,6 +1510,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (addProductLink) addProductLink.addEventListener('click', event => { event.preventDefault(); openModal('add-modal'); });
   if (quickAddBtn) quickAddBtn.addEventListener('click', () => openModal('add-modal'));
   if (quickExportBtn) quickExportBtn.addEventListener('click', () => window.open(`${BASE_URL}/api/movimentacoes/csv`, '_blank'));
+  if (homeKpiCardTotal) homeKpiCardTotal.addEventListener('click', () => goToStockPageWithFilter('all'));
+  if (homeKpiCardLow) homeKpiCardLow.addEventListener('click', () => goToStockPageWithFilter('low_stock'));
+  if (homeKpiCardExpiring) homeKpiCardExpiring.addEventListener('click', () => goToStockPageWithFilter('expiring_soon'));
   if (searchInput) searchInput.addEventListener('input', () => applyFilters());
   if (filterButtonsContainer) {
     filterButtonsContainer.addEventListener('click', event => {
