@@ -784,9 +784,9 @@ document.addEventListener('DOMContentLoaded', () => {
           item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
           item.innerHTML = `
             <div class="flex items-center gap-4">
-              <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_AVATAR_IMAGE}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+              <img src="https://placehold.co/40x40/f472b6/ffffff?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_AVATAR_IMAGE}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
               <div>
-                <p class="font-semibold">${user.username}</p>
+                <p class="font-semibold text-text-light dark:text-text-dark">${user.username}</p>
                 <p class="text-sm text-subtle-light dark:text-subtle-dark">ID: ${user.id}</p>
               </div>
             </div>
@@ -808,9 +808,9 @@ document.addEventListener('DOMContentLoaded', () => {
           item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
           item.innerHTML = `
             <div class="flex items-center gap-4">
-              <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_AVATAR_IMAGE}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+              <img src="https://placehold.co/40x40/22c55e/ffffff?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_AVATAR_IMAGE}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
               <div>
-                <p class="font-semibold">${user.username}</p>
+                <p class="font-semibold text-text-light dark:text-text-dark">${user.username}</p>
                 <p class="text-sm text-subtle-light dark:text-subtle-dark">${user.role || ''}</p>
               </div>
             </div>
@@ -1145,6 +1145,12 @@ document.addEventListener('DOMContentLoaded', () => {
   profileLinks.forEach(link => link.addEventListener('click', event => {
     event.preventDefault();
     openProfileModal();
+  }));
+  approveLinks.forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    document.querySelectorAll('.user-dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+    highlightMenu(null);
+    switchPage('approve-page');
   }));
   if (addProductLink) addProductLink.addEventListener('click', event => { event.preventDefault(); openModal('add-modal'); });
   if (quickAddBtn) quickAddBtn.addEventListener('click', () => openModal('add-modal'));
