@@ -5,5 +5,12 @@
     "password": "123",
     "role": "admin",
     "approved": true
+  },
+  {
+    "id": "admin-2",
+    "username": "vini",
+    "password": "123",
+    "role": "admin",
+    "approved": true
   }
 ]
