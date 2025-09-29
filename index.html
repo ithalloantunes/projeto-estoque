@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>AçaíStock</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="estilos.css" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -78,7 +80,7 @@
     <!-- Login -->
     <div id="login-container" class="container">
         <div class="imagem">
-            <img src="img/idle/1.png" alt="monster" id="monster">
+            <img src="img/idle/1.png" alt="monster" id="monster" loading="lazy" decoding="async">
         </div>
         <div class="formulario">
             <form id="login-form">
@@ -156,7 +158,7 @@
                         </div>
                         <div class="relative">
                             <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover">
+                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
                                 <span class="font-medium hidden md:block" id="home-user-name">Usuário</span>
                                 <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
                             </button>
@@ -235,7 +237,7 @@
                         <h1 class="text-2xl font-bold">Estoque</h1>
                         <div class="relative">
                             <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover">
+                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
                                 <span class="font-medium hidden md:block">Usuário</span>
                                 <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
                             </button>
@@ -281,7 +283,7 @@
                         <h1 class="text-2xl font-bold">Relatórios</h1>
                         <div class="relative">
                             <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover">
+                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
                                 <span class="font-medium hidden md:block">Usuário</span>
                                 <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
                             </button>
@@ -351,7 +353,7 @@
                         <h1 class="text-2xl font-bold">Gerenciar Cadastros</h1>
                         <div class="relative">
                             <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover">
+                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
                                 <span class="font-medium hidden md:block">Usuário</span>
                                 <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
                             </button>
@@ -432,7 +434,7 @@
                 </button>
             </header>
             <main class="p-6 space-y-4 flex flex-col items-center">
-                <img id="profile-modal-image" src="" alt="Foto de Perfil" class="w-32 h-32 rounded-full object-cover mb-4 border-4 border-primary">
+                <img id="profile-modal-image" src="" alt="Foto de Perfil" class="w-32 h-32 rounded-full object-cover mb-4 border-4 border-primary" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
                 <label for="profile-image-upload" class="cursor-pointer bg-secondary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-secondary/90">
                     Alterar Foto
                     <input type="file" name="profile_image" id="profile-image-upload" class="hidden" accept="image/*">
@@ -460,7 +462,7 @@
                 <main class="p-6 space-y-4">
                     <label class="block text-sm font-medium">Imagem
                         <input type="file" name="image" id="add-image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-violet-50 file:text-primary hover:file:bg-violet-100">
-                        <img id="add-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden">
+                        <img id="add-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden" loading="lazy" decoding="async" data-fallback-src="img/placeholders/product-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
                     </label>
                     <label class="block text-sm font-medium">Tipo
                         <select name="type" id="add-type" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
@@ -512,7 +514,7 @@
                     <input type="hidden" id="edit-id" name="id">
                     <label class="block text-sm font-medium">Imagem
                         <input type="file" name="image" id="edit-image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-violet-50 file:text-primary hover:file:bg-violet-100">
-                        <img id="edit-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden">
+                        <img id="edit-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden" loading="lazy" decoding="async" data-fallback-src="img/placeholders/product-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
                     </label>
                     <label class="block text-sm font-medium">Tipo
                         <select name="type" id="edit-type" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
@@ -571,7 +573,7 @@
         <div class="loader h-16 w-16 rounded-full border-4 border-t-4 border-gray-200"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="javascript.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js" onerror="this.onerror=null;this.src='vendor/chart.umd.min.js';"></script>
+    <script defer src="javascript.js"></script>
 </body>
 </html>

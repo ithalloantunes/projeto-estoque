@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let stockByTypeChart = null;
   const productImages = new Map();
   const loader = document.getElementById('loader');
+  const FALLBACK_PRODUCT_IMAGE = 'img/placeholders/product-placeholder.svg';
+  const FALLBACK_AVATAR_IMAGE = 'img/placeholders/avatar-placeholder.svg';
 
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
@@ -136,8 +138,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const generatePlaceholderImage = (name = 'Produto') =>
-    `https://placehold.co/400x300/E2E8F0/4A5568?text=${encodeURIComponent(name.substring(0, 20))}`;
+  const generatePlaceholderImage = (name = 'Produto') => ({
+    primary: `https://placehold.co/400x300/E2E8F0/4A5568?text=${encodeURIComponent(name.substring(0, 20))}`,
+    fallback: FALLBACK_PRODUCT_IMAGE
+  });
+
+  const waitForChartLibrary = () => new Promise(resolve => {
+    if (typeof window !== 'undefined' && typeof window.Chart !== 'undefined') {
+      resolve(true);
+      return;
+    }
+    let attempts = 0;
+    const maxAttempts = 30;
+    const intervalId = setInterval(() => {
+      attempts += 1;
+      if (typeof window !== 'undefined' && typeof window.Chart !== 'undefined') {
+        clearInterval(intervalId);
+        resolve(true);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(intervalId);
+        resolve(false);
+      }
+    }, 100);
+  });
+
+  const registerImageFallbacks = root => {
+    if (!root) return;
+    const candidates = root.tagName === 'IMG'
+      ? [root]
+      : Array.from(root.querySelectorAll('img[data-fallback-src]'));
+    candidates.forEach(img => {
+      if (!img || !img.dataset?.fallbackSrc || img.dataset.fallbackHandlerApplied === 'true') return;
+      img.dataset.fallbackHandlerApplied = 'true';
+      if (!img.hasAttribute('loading')) img.loading = 'lazy';
+      if (!img.hasAttribute('decoding')) img.decoding = 'async';
+      img.addEventListener('error', () => {
+        if (img.dataset.fallbackApplied === 'true') return;
+        img.dataset.fallbackApplied = 'true';
+        img.src = img.dataset.fallbackSrc;
+      });
+    });
+  };
 
   const updateAllUserNames = name => {
     document.querySelectorAll('#home-user-name, header .user-menu-button span.font-medium').forEach(el => {
@@ -147,7 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const updateAllAvatars = src => {
     userAvatarImgs.forEach(img => {
+      if (!img.dataset.fallbackSrc) img.dataset.fallbackSrc = FALLBACK_AVATAR_IMAGE;
       img.src = src;
+      registerImageFallbacks(img);
     });
   };
 
@@ -157,25 +200,28 @@ document.addEventListener('DOMContentLoaded', () => {
   let seguirPunteroMouse = true;
 
   const resetProfilePhoto = () => {
-    const defaultPic = 'https://placehold.co/100x100/6D28D9/FFFFFF?text=U';
+    const defaultPic = FALLBACK_AVATAR_IMAGE;
     updateAllAvatars(defaultPic);
     profileModalImage.src = defaultPic;
+    registerImageFallbacks(profileModalImage);
     if (currentUser) {
       localStorage.removeItem(`profilePhoto_${currentUser}`);
     }
   };
 
   const initProfilePhoto = async () => {
-    const defaultPic = 'https://placehold.co/100x100/6D28D9/FFFFFF?text=U';
+    const defaultPic = FALLBACK_AVATAR_IMAGE;
     if (!currentUserId) {
       updateAllAvatars(defaultPic);
       profileModalImage.src = defaultPic;
+      registerImageFallbacks(profileModalImage);
       return;
     }
     const saved = currentUser ? localStorage.getItem(`profilePhoto_${currentUser}`) : null;
     if (saved) {
       updateAllAvatars(saved);
       profileModalImage.src = saved;
+      registerImageFallbacks(profileModalImage);
       return;
     }
     try {
@@ -188,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (currentUser) {
             localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
           }
+          registerImageFallbacks(profileModalImage);
           return;
         }
       }
@@ -196,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateAllAvatars(defaultPic);
     profileModalImage.src = defaultPic;
+    registerImageFallbacks(profileModalImage);
   };
 
   const updateProfilePhotoOnServer = async photo => {
@@ -378,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
       const summaryData = await resSummary.json();
       const stockData = await resStock.json();
-      renderReports(summaryData, stockData);
+      await renderReports(summaryData, stockData);
     } catch (err) {
       console.error('Erro ao carregar relatórios:', err);
       alert('Erro ao carregar relatórios: ' + err.message);
@@ -433,7 +481,8 @@ document.addEventListener('DOMContentLoaded', () => {
     pageItems.forEach(product => {
       const quantity = Number(product.quantidade) || 0;
       const placeholder = generatePlaceholderImage(product.produto);
-      const storedImage = getStoredProductImage(product.id) || placeholder;
+      const storedImage = getStoredProductImage(product.id);
+      const imageSrc = storedImage || placeholder.primary;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       let expiryBadge = '';
@@ -453,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const commonContent = `
         <div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">${product.tipo || '-'}</div>
         ${expiryBadge}
-        <img alt="${product.produto}" class="w-full ${currentView === 'grid' ? 'h-40' : 'h-full'} object-cover" src="${storedImage}" />
+        <img alt="${product.produto}" class="w-full ${currentView === 'grid' ? 'h-40' : 'h-full'} object-cover" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
         <div class="p-4 ${currentView === 'grid' ? 'flex-grow flex flex-col' : 'flex-1 ml-4 grid grid-cols-5 items-center gap-4'}">
           ${currentView === 'grid'
             ? `
@@ -505,13 +554,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="delete-btn bg-danger text-white p-2 rounded-lg flex-1" data-id="${product.id}" data-name="${product.produto}"><span class="material-icons">delete</span></button>
           </div>`;
         productGrid.appendChild(card);
+        registerImageFallbacks(card);
       } else {
         const row = document.createElement('div');
         row.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm flex items-center p-4 transition-shadow hover:shadow-md';
         row.innerHTML = `
-          <img alt="${product.produto}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0" src="${storedImage}" />
-          ${commonContent}`;
+          <img alt="${product.produto}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
+        ${commonContent}`;
         productGrid.appendChild(row);
+        registerImageFallbacks(row);
       }
     });
 
@@ -575,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  const renderReports = (summaryData, estoqueResumo) => {
+  const renderReports = async (summaryData, estoqueResumo) => {
     const porProduto = summaryData?.porProduto || {};
     const labels = Object.keys(porProduto);
     const entradas = labels.map(label => Number(porProduto[label]?.entradas) || 0);
@@ -598,6 +649,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return diff <= 30 && diff >= 0;
     }).length;
     reportsKpiExpiring.textContent = expiring;
+
+    const chartReady = await waitForChartLibrary();
+    if (!chartReady) {
+      console.warn('Biblioteca de gráficos indisponível. Os relatórios serão exibidos sem gráficos.');
+      return;
+    }
+
+    if (!stockByProductCanvas || !stockByTypeCanvas) return;
 
     if (stockByProductChart) stockByProductChart.destroy();
     stockByProductChart = new Chart(stockByProductCanvas, {
@@ -725,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
           item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
           item.innerHTML = `
             <div class="flex items-center gap-4">
-              <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover">
+              <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_AVATAR_IMAGE}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
               <div>
                 <p class="font-semibold">${user.username}</p>
                 <p class="text-sm text-subtle-light dark:text-subtle-dark">ID: ${user.id}</p>
@@ -736,6 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <button data-user-id="${user.id}" class="decline-user-btn p-2 rounded-full text-danger hover:bg-red-100 dark:hover:bg-red-900/50"><span class="material-icons">cancel</span></button>
             </div>`;
           pendingUsersList.appendChild(item);
+          registerImageFallbacks(item);
         });
       }
 
@@ -748,7 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
           item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
           item.innerHTML = `
             <div class="flex items-center gap-4">
-              <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover">
+              <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_AVATAR_IMAGE}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
               <div>
                 <p class="font-semibold">${user.username}</p>
                 <p class="text-sm text-subtle-light dark:text-subtle-dark">${user.role || ''}</p>
@@ -756,6 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <button data-user-id="${user.id}" class="delete-user-btn p-2 rounded-full text-danger hover:bg-red-100 dark:hover:bg-red-900/50"><span class="material-icons">delete</span></button>`;
           activeUsersList.appendChild(item);
+          registerImageFallbacks(item);
         });
       }
 
@@ -841,9 +902,12 @@ document.addEventListener('DOMContentLoaded', () => {
         : (Math.round(custoValor * 100) / 100).toFixed(2);
     }
     const preview = document.getElementById('edit-image-preview');
-    const storedImage = getStoredProductImage(product.id) || generatePlaceholderImage(product.produto);
-    preview.src = storedImage;
+    const placeholder = generatePlaceholderImage(product.produto);
+    const storedImage = getStoredProductImage(product.id);
+    preview.src = storedImage || placeholder.primary;
+    if (!preview.dataset.fallbackSrc) preview.dataset.fallbackSrc = placeholder.fallback;
     preview.classList.remove('hidden');
+    registerImageFallbacks(preview);
     openModal('edit-modal');
   };
 
@@ -1030,7 +1094,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Perfil ---------------------------------------------------------------------
   const openProfileModal = () => {
-    profileModalImage.src = userAvatarImgs[0]?.src || 'https://placehold.co/100x100/6D28D9/FFFFFF?text=U';
+    const fallbackSrc = userAvatarImgs[0]?.src || FALLBACK_AVATAR_IMAGE;
+    profileModalImage.src = fallbackSrc;
+    registerImageFallbacks(profileModalImage);
     openModal('profile-modal');
   };
 
@@ -1048,6 +1114,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById(inputId);
     const preview = document.getElementById(previewId);
     if (!input || !preview) return;
+    if (!preview.dataset.fallbackSrc) preview.dataset.fallbackSrc = FALLBACK_PRODUCT_IMAGE;
+    registerImageFallbacks(preview);
     input.addEventListener('change', () => {
       const file = input.files?.[0];
       if (!file) return;
@@ -1059,6 +1127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       reader.onload = e => {
         preview.src = e.target.result;
         preview.classList.remove('hidden');
+        registerImageFallbacks(preview);
       };
       reader.readAsDataURL(file);
     });
@@ -1138,6 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const reader = new FileReader();
       reader.onload = e => {
         profileModalImage.src = e.target.result;
+        registerImageFallbacks(profileModalImage);
       };
       reader.readAsDataURL(file);
     });
@@ -1147,6 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupImagePreview('edit-image', 'edit-image-preview');
   setupMenuNavigation();
   setupUserMenus();
+  registerImageFallbacks(document);
 
   // Login animation ------------------------------------------------------------
   document.body.addEventListener('mousemove', event => {
