@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import http from 'http';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -16,16 +17,80 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.static(__dirname));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const dataDir     = path.join(__dirname, 'data');
 const usersFile   = path.join(dataDir, 'users.json');
 const estoqueFile = path.join(dataDir, 'estoque.json');
 const movFile     = path.join(dataDir, 'movimentacoes.json');
+const uploadsDir        = path.join(__dirname, 'uploads');
+const productImagesDir  = path.join(uploadsDir, 'products');
+const userImagesDir     = path.join(uploadsDir, 'users');
 
-if (!fs.existsSync(dataDir))       fs.mkdirSync(dataDir, { recursive: true });
+const ensureDir = dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+};
+
+ensureDir(dataDir);
+ensureDir(uploadsDir);
+ensureDir(productImagesDir);
+ensureDir(userImagesDir);
+
 if (!fs.existsSync(usersFile))     fs.writeFileSync(usersFile, '[]', 'utf8');
 if (!fs.existsSync(estoqueFile))   fs.writeFileSync(estoqueFile, '[]', 'utf8');
 if (!fs.existsSync(movFile))       fs.writeFileSync(movFile, '[]', 'utf8');
+
+const imageFileFilter = (req, file, cb) => {
+  if (!file.mimetype || !file.mimetype.startsWith('image/')) {
+    cb(new Error('Arquivo de imagem inválido.'));
+  } else {
+    cb(null, true);
+  }
+};
+
+const createStorage = destination => multer.diskStorage({
+  destination,
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${uuidv4()}`;
+    const extension = path.extname(file.originalname || '') || '.png';
+    cb(null, `${uniqueSuffix}${extension}`);
+  }
+});
+
+const productUpload = multer({
+  storage: createStorage(productImagesDir),
+  fileFilter: imageFileFilter
+});
+
+const userUpload = multer({
+  storage: createStorage(userImagesDir),
+  fileFilter: imageFileFilter
+});
+
+const toPublicPath = relativePath => {
+  if (!relativePath) return null;
+  const normalized = relativePath.replace(/\\/g, '/');
+  return normalized.startsWith('/') ? normalized : `/${normalized}`;
+};
+
+const getStoredFilePath = file => {
+  if (!file) return null;
+  return path.relative(__dirname, file.path).replace(/\\/g, '/');
+};
+
+const removeStoredFile = relativePath => {
+  if (!relativePath) return;
+  const trimmed = relativePath.replace(/^\/+/, '');
+  const absolutePath = path.resolve(__dirname, trimmed);
+  if (!absolutePath.startsWith(uploadsDir)) return;
+  if (fs.existsSync(absolutePath)) {
+    try {
+      fs.unlinkSync(absolutePath);
+    } catch (error) {
+      console.warn(`Não foi possível remover o arquivo ${absolutePath}:`, error.message);
+    }
+  }
+};
 
 const readJSON = file => {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -88,7 +153,7 @@ app.post('/api/login', (req, res) => {
     message: 'Login bem-sucedido',
     userId: user.id,
     role: user.role,
-    photo: user.photo || null
+    photo: toPublicPath(user.photo)
   });
 });
 
@@ -132,21 +197,36 @@ app.delete('/api/users/:id', (req, res) => {
   res.json({ message: 'Usuário excluído' });
 });
 
-app.put('/api/users/:id/photo', (req, res) => {
-  const { photo } = req.body;
+app.put('/api/users/:id/photo', userUpload.single('photo'), (req, res) => {
+  const { remove } = req.body;
   const users = readJSON(usersFile);
   const idx   = users.findIndex(u => u.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
-  users[idx].photo = photo || null;
+  const atual = users[idx];
+
+  if (remove === 'true') {
+    if (atual.photo) removeStoredFile(atual.photo);
+    atual.photo = null;
+    writeJSON(usersFile, users);
+    return res.json({ message: 'Foto removida', photo: null });
+  }
+
+  const newPhotoPath = getStoredFilePath(req.file);
+  if (!newPhotoPath) {
+    return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+  }
+
+  if (atual.photo) removeStoredFile(atual.photo);
+  atual.photo = newPhotoPath;
   writeJSON(usersFile, users);
-  res.json({ message: 'Foto atualizada' });
+  res.json({ message: 'Foto atualizada', photo: toPublicPath(newPhotoPath) });
 });
 
 app.get('/api/users/:id/photo', (req, res) => {
   const users = readJSON(usersFile);
   const user  = users.find(u => u.id === req.params.id);
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-  res.json({ photo: user.photo || null });
+  res.json({ photo: toPublicPath(user.photo) });
 });
 
 // Rotas de estoque (mantidas iguais ao seu último estado)
@@ -156,7 +236,11 @@ app.get('/api/estoque', (req, res) => {
     estoque = Object.entries(estoque).map(([id, item]) => ({ id, ...item }));
     writeJSON(estoqueFile, estoque);
   }
-  res.json(estoque);
+  const response = estoque.map(item => ({
+    ...item,
+    image: item?.image ? toPublicPath(item.image) : null
+  }));
+  res.json(response);
 });
 
 // Rota para obter o histórico de movimentações de estoque
@@ -175,72 +259,111 @@ app.get('/api/movimentacoes', (req, res) => {
   res.json(filtered);
 });
 
-app.post('/api/estoque', (req, res) => {
-  const { produto, tipo, lote, quantidade, validade, usuario, custo: custoBruto } = req.body;
-  if (!produto || quantidade === undefined) {
+app.post('/api/estoque', productUpload.single('image'), (req, res) => {
+  const uploadedImagePath = getStoredFilePath(req.file);
+  const produto = (req.body.produto || '').trim();
+  const tipo = (req.body.tipo || '').trim();
+  const lote = (req.body.lote || '').trim();
+  const quantidadeBruta = req.body.quantidade;
+  const validade = req.body.validade || null;
+  const usuario = req.body.usuario;
+  const custoBruto = req.body.custo;
+
+  if (!produto || quantidadeBruta === undefined) {
+    if (uploadedImagePath) removeStoredFile(uploadedImagePath);
     return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
   }
   if (custoBruto === undefined || custoBruto === null || custoBruto === '') {
+    if (uploadedImagePath) removeStoredFile(uploadedImagePath);
     return res.status(400).json({ error: 'Custo é obrigatório' });
   }
+
   const custoSanitizado = sanitizeCost(custoBruto);
   if (custoSanitizado === null) {
+    if (uploadedImagePath) removeStoredFile(uploadedImagePath);
     return res.status(400).json({ error: 'Custo inválido' });
   }
+
+  const quantidadeNumerica = Number.parseInt(quantidadeBruta, 10);
+  const quantidadeFinal = Number.isNaN(quantidadeNumerica) ? 0 : quantidadeNumerica;
   const estoque = readJSON(estoqueFile);
-  const id      = uuidv4();
+  const id = uuidv4();
+  const imagePath = uploadedImagePath;
+
   estoque.push({
     id,
-    produto: produto.trim(),
-    tipo:    tipo ? tipo.trim() : '',
-    lote:    lote ? lote.trim() : '',
-    quantidade: parseInt(quantidade, 10) || 0,
-    validade:   validade || null,
-    custo:       custoSanitizado,
-    dataCadastro: new Date().toISOString()
+    produto,
+    tipo,
+    lote,
+    quantidade: quantidadeFinal,
+    validade,
+    custo: custoSanitizado,
+    dataCadastro: new Date().toISOString(),
+    image: imagePath
   });
+
   logMovimentacao({
     id: uuidv4(),
     produtoId: id,
-    produto: produto.trim(),
+    produto,
     tipo: 'adicao',
-    quantidade: parseInt(quantidade, 10) || 0,
+    quantidade: quantidadeFinal,
     quantidadeAnterior: 0,
-    quantidadeAtual: parseInt(quantidade, 10) || 0,
+    quantidadeAtual: quantidadeFinal,
     data: new Date().toISOString(),
     usuario: usuario || 'desconhecido'
   });
-  writeJSON(estoqueFile, estoque);
-  res.json({ message: 'Produto adicionado com sucesso', id });
-  });
 
-app.put('/api/estoque/:id', (req, res) => {
+  writeJSON(estoqueFile, estoque);
+  res.json({
+    message: 'Produto adicionado com sucesso',
+    id,
+    image: toPublicPath(imagePath)
+  });
+});
+
+app.put('/api/estoque/:id', productUpload.single('image'), (req, res) => {
   const rawId  = req.params.id;
   const usuario = req.body.usuario;
   const estoque = readJSON(estoqueFile) || [];
+  const uploadedImagePath = getStoredFilePath(req.file);
 
   // Converte para número se for dígitos, senão usa string (UUID)
   const itemId = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
 
-  console.log('Atualizando produto', itemId);  // debug
-
   const idx = estoque.findIndex(item => item.id === itemId);
   if (idx === -1) {
+    if (uploadedImagePath) removeStoredFile(uploadedImagePath);
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
 
   const atual = estoque[idx];
-  const novaQtd = Number.isInteger(+req.body.quantidade)
-                    ? parseInt(req.body.quantidade, 10)
-                    : atual.quantidade;
+  const quantidadeBruta = req.body.quantidade;
+  let novaQtd = atual.quantidade;
+  if (quantidadeBruta !== undefined) {
+    const parsedQtd = Number.parseInt(quantidadeBruta, 10);
+    if (!Number.isNaN(parsedQtd)) {
+      novaQtd = parsedQtd;
+    }
+  }
   const hasCusto = Object.prototype.hasOwnProperty.call(req.body, 'custo');
   let custoAtualizado = atual.custo;
   if (hasCusto) {
     const custoSanitizado = sanitizeCost(req.body.custo);
     if (custoSanitizado === null) {
+      if (uploadedImagePath) removeStoredFile(uploadedImagePath);
       return res.status(400).json({ error: 'Custo inválido' });
     }
     custoAtualizado = custoSanitizado;
+  }
+
+  let imagemAtualizada = atual.image;
+  if (req.body.removeImage === 'true') {
+    if (atual.image) removeStoredFile(atual.image);
+    imagemAtualizada = null;
+  } else if (uploadedImagePath) {
+    if (atual.image) removeStoredFile(atual.image);
+    imagemAtualizada = uploadedImagePath;
   }
 
   estoque[idx] = {
@@ -249,9 +372,10 @@ app.put('/api/estoque/:id', (req, res) => {
     tipo:       req.body.tipo ? req.body.tipo.trim() : atual.tipo,
     lote:       req.body.lote ? req.body.lote.trim() : atual.lote,
     quantidade: novaQtd,
-    validade:   req.body.validade !== undefined ? req.body.validade : atual.validade,
+    validade:   req.body.validade !== undefined ? (req.body.validade || null) : atual.validade,
     custo:      hasCusto ? custoAtualizado : atual.custo,
-    dataAtualizacao: new Date().toISOString()
+    dataAtualizacao: new Date().toISOString(),
+    image: imagemAtualizada
   };
   const diff = novaQtd - atual.quantidade;
   logMovimentacao({
@@ -267,7 +391,10 @@ app.put('/api/estoque/:id', (req, res) => {
 });
 
   writeJSON(estoqueFile, estoque);
-  res.json({ message: 'Produto atualizado com sucesso' });
+  res.json({
+    message: 'Produto atualizado com sucesso',
+    image: toPublicPath(imagemAtualizada)
+  });
 });
 
 app.delete('/api/estoque/:id', (req, res) => {
@@ -287,6 +414,9 @@ app.delete('/api/estoque/:id', (req, res) => {
   }
 
   const removed = estoque.splice(idx, 1)[0];
+  if (removed?.image) {
+    removeStoredFile(removed.image);
+  }
   writeJSON(estoqueFile, estoque);
   logMovimentacao({
     id: uuidv4(),
@@ -365,6 +495,17 @@ app.get('/api/movimentacoes/csv', (req, res) => {
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="movimentacoes.csv"');
   res.send(csv);
+});
+
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: err.message });
+  }
+  if (typeof err.message === 'string' && err.message.toLowerCase().includes('imagem')) {
+    return res.status(400).json({ error: err.message });
+  }
+  console.error(err);
+  return res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
 app.get('*', (req, res) => {

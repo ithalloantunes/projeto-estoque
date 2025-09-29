@@ -16,10 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeFilter = 'all';
   let stockByProductChart = null;
   let stockByTypeChart = null;
-  const productImages = new Map();
   const loader = document.getElementById('loader');
   const FALLBACK_PRODUCT_IMAGE = 'img/placeholders/product-placeholder.svg';
   const FALLBACK_AVATAR_IMAGE = 'img/placeholders/avatar-placeholder.svg';
+  let profileImageFile = null;
 
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
@@ -115,27 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return date.toLocaleDateString('pt-BR');
   };
 
-  const getStoredProductImage = id => {
-    if (!id) return null;
-    if (productImages.has(id)) {
-      return productImages.get(id);
-    }
-    const stored = localStorage.getItem(`productImage_${id}`);
-    if (stored) {
-      productImages.set(id, stored);
-      return stored;
-    }
-    return null;
-  };
-
-  const storeProductImage = (id, dataUrl) => {
-    if (!id || !dataUrl) return;
-    productImages.set(id, dataUrl);
-    try {
-      localStorage.setItem(`productImage_${id}`, dataUrl);
-    } catch (err) {
-      console.warn('Não foi possível armazenar imagem localmente:', err);
-    }
+  const getFullImageUrl = value => {
+    if (!value) return null;
+    if (value.startsWith('data:')) return value;
+    if (/^https?:\/\//i.test(value)) return value;
+    const normalized = value.startsWith('/') ? value : `/${value}`;
+    if (!BASE_URL) return normalized;
+    return `${BASE_URL}${normalized}`;
   };
 
   const generatePlaceholderImage = (name = 'Produto') => ({
@@ -187,9 +173,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const updateAllAvatars = src => {
+    const resolvedSrc = getFullImageUrl(src) || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
     userAvatarImgs.forEach(img => {
       if (!img.dataset.fallbackSrc) img.dataset.fallbackSrc = FALLBACK_AVATAR_IMAGE;
-      img.src = src;
+      img.src = resolvedSrc;
       registerImageFallbacks(img);
     });
   };
@@ -200,17 +187,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let seguirPunteroMouse = true;
 
   const resetProfilePhoto = () => {
-    const defaultPic = FALLBACK_AVATAR_IMAGE;
+    const defaultPic = getFullImageUrl(FALLBACK_AVATAR_IMAGE);
     updateAllAvatars(defaultPic);
     profileModalImage.src = defaultPic;
     registerImageFallbacks(profileModalImage);
     if (currentUser) {
       localStorage.removeItem(`profilePhoto_${currentUser}`);
     }
+    profileImageFile = null;
+    if (profileImageUpload) profileImageUpload.value = '';
   };
 
   const initProfilePhoto = async () => {
-    const defaultPic = FALLBACK_AVATAR_IMAGE;
+    const defaultPic = getFullImageUrl(FALLBACK_AVATAR_IMAGE);
     if (!currentUserId) {
       updateAllAvatars(defaultPic);
       profileModalImage.src = defaultPic;
@@ -219,8 +208,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const saved = currentUser ? localStorage.getItem(`profilePhoto_${currentUser}`) : null;
     if (saved) {
-      updateAllAvatars(saved);
-      profileModalImage.src = saved;
+      const resolved = getFullImageUrl(saved);
+      updateAllAvatars(resolved);
+      profileModalImage.src = resolved;
       registerImageFallbacks(profileModalImage);
       return;
     }
@@ -229,8 +219,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.ok) {
         const data = await res.json();
         if (data.photo) {
-          updateAllAvatars(data.photo);
-          profileModalImage.src = data.photo;
+          const resolved = getFullImageUrl(data.photo);
+          updateAllAvatars(resolved);
+          profileModalImage.src = resolved;
           if (currentUser) {
             localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
           }
@@ -241,23 +232,33 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Erro ao buscar foto de perfil:', err);
     }
+    if (currentUser) {
+      localStorage.removeItem(`profilePhoto_${currentUser}`);
+    }
     updateAllAvatars(defaultPic);
     profileModalImage.src = defaultPic;
     registerImageFallbacks(profileModalImage);
   };
 
-  const updateProfilePhotoOnServer = async photo => {
-    if (!currentUserId) return;
+  const uploadProfilePhotoToServer = async file => {
+    if (!currentUserId || !file) return null;
+    const formData = new FormData();
+    formData.append('photo', file);
+    const res = await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
+      method: 'PUT',
+      body: formData,
+      credentials: 'include'
+    });
+    let data = {};
     try {
-      await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo }),
-        credentials: 'include'
-      });
+      data = await res.json();
     } catch (err) {
-      console.error('Erro ao atualizar foto no servidor:', err);
+      data = {};
     }
+    if (!res.ok) {
+      throw new Error(data.error || 'Não foi possível atualizar a foto.');
+    }
+    return data.photo || null;
   };
 
   const showLoginForm = () => {
@@ -481,8 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pageItems.forEach(product => {
       const quantity = Number(product.quantidade) || 0;
       const placeholder = generatePlaceholderImage(product.produto);
-      const storedImage = getStoredProductImage(product.id);
-      const imageSrc = storedImage || placeholder.primary;
+      const imageSrc = getFullImageUrl(product.image) || placeholder.primary;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       let expiryBadge = '';
@@ -856,12 +856,22 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
+    const addImageInput = document.getElementById('add-image');
+    const imageFile = addImageInput?.files?.[0] ?? null;
     try {
       showLoader();
+      const formData = new FormData();
+      formData.append('produto', produto);
+      formData.append('tipo', tipo);
+      formData.append('lote', lote);
+      formData.append('quantidade', String(quantidade));
+      formData.append('validade', validade ?? '');
+      formData.append('custo', String(custoFormatado));
+      if (currentUser) formData.append('usuario', currentUser);
+      if (imageFile) formData.append('image', imageFile);
       const res = await fetch(`${BASE_URL}/api/estoque`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ produto, tipo, lote, validade, quantidade, custo: custoFormatado, usuario: currentUser }),
+        body: formData,
         credentials: 'include'
       });
       const data = await res.json();
@@ -871,6 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       closeModal('add-modal');
       addForm.reset();
+      if (addImageInput) addImageInput.value = '';
       document.getElementById('add-image-preview').classList.add('hidden');
       await loadStock();
       await loadMovimentacoes();
@@ -903,8 +914,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const preview = document.getElementById('edit-image-preview');
     const placeholder = generatePlaceholderImage(product.produto);
-    const storedImage = getStoredProductImage(product.id);
-    preview.src = storedImage || placeholder.primary;
+    const existingImage = getFullImageUrl(product.image);
+    preview.src = existingImage || placeholder.primary;
     if (!preview.dataset.fallbackSrc) preview.dataset.fallbackSrc = placeholder.fallback;
     preview.classList.remove('hidden');
     registerImageFallbacks(preview);
@@ -930,12 +941,22 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Informe o nome do produto.');
       return;
     }
+    const editImageInput = document.getElementById('edit-image');
+    const newImageFile = editImageInput?.files?.[0] ?? null;
     try {
       showLoader();
+      const formData = new FormData();
+      formData.append('produto', produto);
+      formData.append('tipo', tipo);
+      formData.append('lote', lote);
+      formData.append('quantidade', String(quantidade));
+      formData.append('validade', validade ?? '');
+      formData.append('custo', String(custoFormatado));
+      if (currentUser) formData.append('usuario', currentUser);
+      if (newImageFile) formData.append('image', newImageFile);
       const res = await fetch(`${BASE_URL}/api/estoque/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ produto, tipo, lote, validade, quantidade, custo: custoFormatado, usuario: currentUser }),
+        body: formData,
         credentials: 'include'
       });
       const data = await res.json();
@@ -943,10 +964,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(data.error || 'Erro ao atualizar produto.');
         return;
       }
-      const preview = document.getElementById('edit-image-preview');
-      if (!preview.classList.contains('hidden')) {
-        storeProductImage(id, preview.src);
-      }
+      if (editImageInput) editImageInput.value = '';
       closeModal('edit-modal');
       await loadStock();
       await loadMovimentacoes();
@@ -1094,19 +1112,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Perfil ---------------------------------------------------------------------
   const openProfileModal = () => {
-    const fallbackSrc = userAvatarImgs[0]?.src || FALLBACK_AVATAR_IMAGE;
+    const fallbackSrc = userAvatarImgs[0]?.src || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
     profileModalImage.src = fallbackSrc;
     registerImageFallbacks(profileModalImage);
+    profileImageFile = null;
+    if (profileImageUpload) profileImageUpload.value = '';
     openModal('profile-modal');
   };
 
   const handleProfileSave = async () => {
-    const newSrc = profileModalImage.src;
-    updateAllAvatars(newSrc);
-    if (currentUser) {
-      localStorage.setItem(`profilePhoto_${currentUser}`, newSrc);
+    if (profileImageFile) {
+      try {
+        showLoader();
+        const uploadedPath = await uploadProfilePhotoToServer(profileImageFile);
+        const resolved = getFullImageUrl(uploadedPath) || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
+        updateAllAvatars(resolved);
+        profileModalImage.src = resolved;
+        if (currentUser) {
+          if (uploadedPath) {
+            localStorage.setItem(`profilePhoto_${currentUser}`, uploadedPath);
+          } else {
+            localStorage.removeItem(`profilePhoto_${currentUser}`);
+          }
+        }
+        registerImageFallbacks(profileModalImage);
+      } catch (err) {
+        alert('Erro ao salvar foto: ' + err.message);
+        return;
+      } finally {
+        hideLoader();
+      }
     }
-    await updateProfilePhotoOnServer(newSrc);
+    profileImageFile = null;
+    if (profileImageUpload) profileImageUpload.value = '';
     closeModal('profile-modal');
   };
 
@@ -1201,15 +1239,21 @@ document.addEventListener('DOMContentLoaded', () => {
   if (profileImageUpload) {
     profileImageUpload.addEventListener('change', () => {
       const file = profileImageUpload.files?.[0];
+      profileImageFile = null;
       if (!file) return;
       if (!file.type.startsWith('image/')) {
         alert('Selecione um arquivo de imagem.');
+        profileImageFile = null;
+        profileImageUpload.value = '';
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
         alert('Imagem deve ter no máximo 5MB.');
+        profileImageFile = null;
+        profileImageUpload.value = '';
         return;
       }
+      profileImageFile = file;
       const reader = new FileReader();
       reader.onload = e => {
         profileModalImage.src = e.target.result;
