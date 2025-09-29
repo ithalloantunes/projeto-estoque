@@ -5,7 +5,8 @@
     "tipo": "Açaí",
     "lote": "LOT-000",
     "quantidade": 92,
-    "validade": "2026-01-30"
+    "validade": "2026-01-30",
+    "custo": 9.78
   },
   {
     "id": 1,
@@ -13,7 +14,8 @@
     "tipo": "Açaí",
     "lote": "LOT-001",
     "quantidade": 150,
-    "validade": "2025-08-14"
+    "validade": "2025-08-14",
+    "custo": 40.23
   },
   {
     "id": 2,
@@ -21,7 +23,8 @@
     "tipo": "Açaí",
     "lote": "LOT-002",
     "quantidade": 133,
-    "validade": "2026-05-17"
+    "validade": "2026-05-17",
+    "custo": 39.77
   },
   {
     "id": 3,
@@ -29,7 +32,8 @@
     "tipo": "Açaí",
     "lote": "LOT-003",
     "quantidade": 43,
-    "validade": "2025-09-09"
+    "validade": "2025-09-09",
+    "custo": 22.66
   },
   {
     "id": 4,
@@ -37,7 +41,8 @@
     "tipo": "Açaí",
     "lote": "LOT-004",
     "quantidade": 81,
-    "validade": "2025-09-15"
+    "validade": "2025-09-15",
+    "custo": 30.9
   },
   {
     "id": 5,
@@ -45,7 +50,8 @@
     "tipo": "Açaí",
     "lote": "LOT-005",
     "quantidade": 133,
-    "validade": "2026-05-29"
+    "validade": "2026-05-29",
+    "custo": 37.96
   },
   {
     "id": 6,
@@ -53,7 +59,8 @@
     "tipo": "Açaí",
     "lote": "LOT-006",
     "quantidade": 98,
-    "validade": "2025-11-05"
+    "validade": "2025-11-05",
+    "custo": 39.33
   },
   {
     "id": 7,
@@ -61,7 +68,8 @@
     "tipo": "Açaí",
     "lote": "LOT-007",
     "quantidade": 41,
-    "validade": "2025-10-13"
+    "validade": "2025-10-13",
+    "custo": 43.52
   },
   {
     "id": 8,
@@ -69,7 +77,8 @@
     "tipo": "Açaí",
     "lote": "LOT-008",
     "quantidade": 101,
-    "validade": "2025-08-18"
+    "validade": "2025-08-18",
+    "custo": 21.2
   },
   {
     "id": 9,
@@ -77,7 +86,8 @@
     "tipo": "Açaí",
     "lote": "LOT-009",
     "quantidade": 93,
-    "validade": "2026-05-17"
+    "validade": "2026-05-17",
+    "custo": 38.76
   },
   {
     "id": 10,
@@ -85,7 +95,8 @@
     "tipo": "Açaí",
     "lote": "LOT-010",
     "quantidade": 93,
-    "validade": "2025-10-23"
+    "validade": "2025-10-23",
+    "custo": 43.68
   },
   {
     "id": 11,
@@ -93,7 +104,8 @@
     "tipo": "Açaí",
     "lote": "LOT-011",
     "quantidade": 84,
-    "validade": "2026-01-20"
+    "validade": "2026-01-20",
+    "custo": 36.63
   },
   {
     "id": 12,
@@ -101,7 +113,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-012",
     "quantidade": 29,
-    "validade": "2026-06-06"
+    "validade": "2026-06-06",
+    "custo": 23.01
   },
   {
     "id": 13,
@@ -109,7 +122,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-013",
     "quantidade": 116,
-    "validade": "2025-08-03"
+    "validade": "2025-08-03",
+    "custo": 19.26
   },
   {
     "id": 14,
@@ -117,7 +131,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-014",
     "quantidade": 118,
-    "validade": "2025-09-03"
+    "validade": "2025-09-03",
+    "custo": 18.81
   },
   {
     "id": 15,
@@ -125,7 +140,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-015",
     "quantidade": 131,
-    "validade": "2026-05-17"
+    "validade": "2026-05-17",
+    "custo": 27.21
   },
   {
     "id": 16,
@@ -133,7 +149,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-016",
     "quantidade": 34,
-    "validade": "2025-12-11"
+    "validade": "2025-12-11",
+    "custo": 40.77
   },
   {
     "id": 17,
@@ -141,7 +158,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-017",
     "quantidade": 86,
-    "validade": "2025-09-23"
+    "validade": "2025-09-23",
+    "custo": 23.4
   },
   {
     "id": 18,
@@ -149,7 +167,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-018",
     "quantidade": 59,
-    "validade": "2026-05-30"
+    "validade": "2026-05-30",
+    "custo": 39.46
   },
   {
     "id": 19,
@@ -157,7 +176,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-019",
     "quantidade": 109,
-    "validade": "2025-07-15"
+    "validade": "2025-07-15",
+    "custo": 18.43
   },
   {
     "id": 20,
@@ -165,7 +185,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-020",
     "quantidade": 103,
-    "validade": "2025-09-21"
+    "validade": "2025-09-21",
+    "custo": 35.19
   },
   {
     "id": 21,
@@ -173,7 +194,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-021",
     "quantidade": 83,
-    "validade": "2025-08-15"
+    "validade": "2025-08-15",
+    "custo": 14.77
   },
   {
     "id": 22,
@@ -181,7 +203,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-022",
     "quantidade": 123,
-    "validade": "2026-01-27"
+    "validade": "2026-01-27",
+    "custo": 15.14
   },
   {
     "id": 23,
@@ -189,7 +212,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-023",
     "quantidade": 111,
-    "validade": "2026-01-05"
+    "validade": "2026-01-05",
+    "custo": 12.52
   },
   {
     "id": 24,
@@ -197,7 +221,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-024",
     "quantidade": 40,
-    "validade": "2025-12-31"
+    "validade": "2025-12-31",
+    "custo": 11.49
   },
   {
     "id": 25,
@@ -205,7 +230,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-025",
     "quantidade": 46,
-    "validade": "2025-10-20"
+    "validade": "2025-10-20",
+    "custo": 12.09
   },
   {
     "id": 26,
@@ -213,7 +239,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-026",
     "quantidade": 131,
-    "validade": "2025-10-29"
+    "validade": "2025-10-29",
+    "custo": 23.92
   },
   {
     "id": 27,
@@ -221,7 +248,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-027",
     "quantidade": 115,
-    "validade": "2025-07-22"
+    "validade": "2025-07-22",
+    "custo": 12.65
   },
   {
     "id": 28,
@@ -229,7 +257,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-028",
     "quantidade": 148,
-    "validade": "2025-08-15"
+    "validade": "2025-08-15",
+    "custo": 12.4
   },
   {
     "id": 29,
@@ -237,7 +266,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-029",
     "quantidade": 83,
-    "validade": "2026-02-25"
+    "validade": "2026-02-25",
+    "custo": 7.97
   },
   {
     "id": 30,
@@ -245,7 +275,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-030",
     "quantidade": 59,
-    "validade": "2026-03-04"
+    "validade": "2026-03-04",
+    "custo": 11.9
   },
   {
     "id": 31,
@@ -253,7 +284,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-031",
     "quantidade": 22,
-    "validade": "2025-08-02"
+    "validade": "2025-08-02",
+    "custo": 43.94
   },
   {
     "id": 32,
@@ -261,7 +293,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-032",
     "quantidade": 90,
-    "validade": "2025-10-19"
+    "validade": "2025-10-19",
+    "custo": 24.81
   },
   {
     "id": 33,
@@ -269,7 +302,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-033",
     "quantidade": 114,
-    "validade": "2026-04-12"
+    "validade": "2026-04-12",
+    "custo": 7.64
   },
   {
     "id": 34,
@@ -277,7 +311,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-034",
     "quantidade": 36,
-    "validade": "2025-10-21"
+    "validade": "2025-10-21",
+    "custo": 35.88
   },
   {
     "id": 35,
@@ -285,7 +320,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-035",
     "quantidade": 55,
-    "validade": "2025-10-05"
+    "validade": "2025-10-05",
+    "custo": 24.77
   },
   {
     "id": 36,
@@ -293,7 +329,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-036",
     "quantidade": 138,
-    "validade": "2026-06-08"
+    "validade": "2026-06-08",
+    "custo": 20.71
   },
   {
     "id": 37,
@@ -301,7 +338,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-037",
     "quantidade": 94,
-    "validade": "2025-11-03"
+    "validade": "2025-11-03",
+    "custo": 16.33
   },
   {
     "id": 38,
@@ -309,7 +347,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-038",
     "quantidade": 133,
-    "validade": "2026-05-09"
+    "validade": "2026-05-09",
+    "custo": 6.88
   },
   {
     "id": 39,
@@ -317,7 +356,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-039",
     "quantidade": 134,
-    "validade": "2025-11-18"
+    "validade": "2025-11-18",
+    "custo": 15.55
   },
   {
     "id": 40,
@@ -325,7 +365,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-040",
     "quantidade": 52,
-    "validade": "2026-03-05"
+    "validade": "2026-03-05",
+    "custo": 26.25
   },
   {
     "id": 41,
@@ -333,7 +374,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-041",
     "quantidade": 35,
-    "validade": "2025-09-12"
+    "validade": "2025-09-12",
+    "custo": 27.13
   },
   {
     "id": 42,
@@ -341,7 +383,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-042",
     "quantidade": 74,
-    "validade": "2025-09-09"
+    "validade": "2025-09-09",
+    "custo": 38.13
   },
   {
     "id": 43,
@@ -349,7 +392,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-043",
     "quantidade": 117,
-    "validade": "2026-01-10"
+    "validade": "2026-01-10",
+    "custo": 13.03
   },
   {
     "id": 44,
@@ -357,7 +401,8 @@
     "tipo": "Sorvete",
     "lote": "LOT-044",
     "quantidade": 78,
-    "validade": "2026-05-03"
+    "validade": "2026-05-03",
+    "custo": 33.24
   },
   {
     "id": 45,
@@ -365,7 +410,8 @@
     "tipo": "Farináceo",
     "lote": "LOT-045",
     "quantidade": 134,
-    "validade": "2026-01-11"
+    "validade": "2026-01-11",
+    "custo": 13.81
   },
   {
     "id": 46,
@@ -373,7 +419,8 @@
     "tipo": "Farináceo",
     "lote": "LOT-046",
     "quantidade": 119,
-    "validade": "2025-08-11"
+    "validade": "2025-08-11",
+    "custo": 44.18
   },
   {
     "id": 47,
@@ -381,7 +428,8 @@
     "tipo": "Farináceo",
     "lote": "LOT-047",
     "quantidade": 34,
-    "validade": "2026-03-31"
+    "validade": "2026-03-31",
+    "custo": 20.45
   },
   {
     "id": 48,
@@ -389,7 +437,8 @@
     "tipo": "Farináceo",
     "lote": "LOT-048",
     "quantidade": 61,
-    "validade": "2026-05-05"
+    "validade": "2026-05-05",
+    "custo": 34.18
   },
   {
     "id": 49,
@@ -397,7 +446,8 @@
     "tipo": "Farináceo",
     "lote": "LOT-049",
     "quantidade": 79,
-    "validade": "2025-07-26"
+    "validade": "2025-07-26",
+    "custo": 44.93
   },
   {
     "id": 50,
@@ -405,7 +455,8 @@
     "tipo": "Cobertura",
     "lote": "LOT-050",
     "quantidade": 98,
-    "validade": "2025-10-23"
+    "validade": "2025-10-23",
+    "custo": 26.14
   },
   {
     "id": 51,
@@ -413,7 +464,8 @@
     "tipo": "Cobertura",
     "lote": "LOT-051",
     "quantidade": 121,
-    "validade": "2025-08-26"
+    "validade": "2025-08-26",
+    "custo": 18.61
   },
   {
     "id": 52,
@@ -421,7 +473,8 @@
     "tipo": "Cobertura",
     "lote": "LOT-052",
     "quantidade": 141,
-    "validade": "2026-02-19"
+    "validade": "2026-02-19",
+    "custo": 10.97
   },
   {
     "id": 53,
@@ -429,7 +482,8 @@
     "tipo": "Cobertura",
     "lote": "LOT-053",
     "quantidade": 78,
-    "validade": "2025-12-02"
+    "validade": "2025-12-02",
+    "custo": 31.06
   },
   {
     "id": 54,
@@ -437,7 +491,8 @@
     "tipo": "Cobertura",
     "lote": "LOT-054",
     "quantidade": 65,
-    "validade": "2026-04-23"
+    "validade": "2026-04-23",
+    "custo": 25.86
   },
   {
     "id": 55,
@@ -445,7 +500,8 @@
     "tipo": "Cobertura",
     "lote": "LOT-055",
     "quantidade": 48,
-    "validade": "2026-01-30"
+    "validade": "2026-01-30",
+    "custo": 44.58
   },
   {
     "id": 56,
@@ -453,7 +509,8 @@
     "tipo": "Cobertura",
     "lote": "LOT-056",
     "quantidade": 92,
-    "validade": "2025-08-14"
+    "validade": "2025-08-14",
+    "custo": 43.73
   },
   {
     "id": 57,
@@ -461,7 +518,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-057",
     "quantidade": 53,
-    "validade": "2025-12-08"
+    "validade": "2025-12-08",
+    "custo": 36.02
   },
   {
     "id": 58,
@@ -469,7 +527,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-058",
     "quantidade": 101,
-    "validade": "2025-09-30"
+    "validade": "2025-09-30",
+    "custo": 30
   },
   {
     "id": 59,
@@ -477,7 +536,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-059",
     "quantidade": 129,
-    "validade": "2026-01-19"
+    "validade": "2026-01-19",
+    "custo": 17.44
   },
   {
     "id": 60,
@@ -485,7 +545,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-060",
     "quantidade": 86,
-    "validade": "2026-05-13"
+    "validade": "2026-05-13",
+    "custo": 29.4
   },
   {
     "id": 61,
@@ -493,7 +554,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-061",
     "quantidade": 146,
-    "validade": "2026-03-02"
+    "validade": "2026-03-02",
+    "custo": 33.18
   },
   {
     "id": 62,
@@ -501,7 +563,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-062",
     "quantidade": 133,
-    "validade": "2026-02-18"
+    "validade": "2026-02-18",
+    "custo": 26.8
   },
   {
     "id": 63,
@@ -509,7 +572,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-063",
     "quantidade": 101,
-    "validade": "2026-04-14"
+    "validade": "2026-04-14",
+    "custo": 36.22
   },
   {
     "id": 64,
@@ -517,7 +581,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-064",
     "quantidade": 42,
-    "validade": "2025-09-25"
+    "validade": "2025-09-25",
+    "custo": 44.56
   },
   {
     "id": 65,
@@ -525,7 +590,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-065",
     "quantidade": 32,
-    "validade": "2025-12-20"
+    "validade": "2025-12-20",
+    "custo": 6.62
   },
   {
     "id": 66,
@@ -533,7 +599,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-066",
     "quantidade": 44,
-    "validade": "2025-07-15"
+    "validade": "2025-07-15",
+    "custo": 18.54
   },
   {
     "id": 67,
@@ -541,7 +608,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-067",
     "quantidade": 84,
-    "validade": "2025-10-04"
+    "validade": "2025-10-04",
+    "custo": 17.24
   },
   {
     "id": 68,
@@ -549,7 +617,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-068",
     "quantidade": 56,
-    "validade": "2025-08-12"
+    "validade": "2025-08-12",
+    "custo": 44
   },
   {
     "id": 69,
@@ -557,7 +626,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-069",
     "quantidade": 147,
-    "validade": "2026-05-02"
+    "validade": "2026-05-02",
+    "custo": 6.35
   },
   {
     "id": 70,
@@ -565,7 +635,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-070",
     "quantidade": 60,
-    "validade": "2025-08-10"
+    "validade": "2025-08-10",
+    "custo": 32.13
   },
   {
     "id": 71,
@@ -573,7 +644,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-071",
     "quantidade": 146,
-    "validade": "2025-07-24"
+    "validade": "2025-07-24",
+    "custo": 23.27
   },
   {
     "id": 72,
@@ -581,7 +653,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-072",
     "quantidade": 74,
-    "validade": "2026-02-27"
+    "validade": "2026-02-27",
+    "custo": 21.94
   },
   {
     "id": 73,
@@ -589,7 +662,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-073",
     "quantidade": 24,
-    "validade": "2026-02-06"
+    "validade": "2026-02-06",
+    "custo": 31.74
   },
   {
     "id": 74,
@@ -597,7 +671,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-074",
     "quantidade": 103,
-    "validade": "2026-04-22"
+    "validade": "2026-04-22",
+    "custo": 39.16
   },
   {
     "id": 75,
@@ -605,7 +680,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-075",
     "quantidade": 77,
-    "validade": "2026-03-30"
+    "validade": "2026-03-30",
+    "custo": 6.55
   },
   {
     "id": 76,
@@ -613,7 +689,8 @@
     "tipo": "Creme de Chocolate",
     "lote": "LOT-076",
     "quantidade": 140,
-    "validade": "2025-09-07"
+    "validade": "2025-09-07",
+    "custo": 41.39
   },
   {
     "id": 77,
@@ -621,7 +698,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-077",
     "quantidade": 84,
-    "validade": "2025-10-03"
+    "validade": "2025-10-03",
+    "custo": 17.92
   },
   {
     "id": 78,
@@ -629,7 +707,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-078",
     "quantidade": 86,
-    "validade": "2026-06-15"
+    "validade": "2026-06-15",
+    "custo": 34.09
   },
   {
     "id": 79,
@@ -637,7 +716,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-079",
     "quantidade": 52,
-    "validade": "2026-02-04"
+    "validade": "2026-02-04",
+    "custo": 33.35
   },
   {
     "id": 80,
@@ -645,7 +725,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-080",
     "quantidade": 132,
-    "validade": "2025-11-20"
+    "validade": "2025-11-20",
+    "custo": 36.61
   },
   {
     "id": 81,
@@ -653,7 +734,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-081",
     "quantidade": 76,
-    "validade": "2025-11-22"
+    "validade": "2025-11-22",
+    "custo": 10.86
   },
   {
     "id": 82,
@@ -661,7 +743,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-082",
     "quantidade": 20,
-    "validade": "2025-08-08"
+    "validade": "2025-08-08",
+    "custo": 7.25
   },
   {
     "id": 83,
@@ -669,7 +752,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-083",
     "quantidade": 143,
-    "validade": "2026-04-26"
+    "validade": "2026-04-26",
+    "custo": 19.26
   },
   {
     "id": 84,
@@ -677,7 +761,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-084",
     "quantidade": 127,
-    "validade": "2026-01-05"
+    "validade": "2026-01-05",
+    "custo": 31.41
   },
   {
     "id": 85,
@@ -685,7 +770,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-085",
     "quantidade": 74,
-    "validade": "2026-01-10"
+    "validade": "2026-01-10",
+    "custo": 38.13
   },
   {
     "id": 86,
@@ -693,7 +779,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-086",
     "quantidade": 25,
-    "validade": "2025-08-10"
+    "validade": "2025-08-10",
+    "custo": 12.91
   },
   {
     "id": 87,
@@ -701,7 +788,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-087",
     "quantidade": 44,
-    "validade": "2025-08-18"
+    "validade": "2025-08-18",
+    "custo": 35.36
   },
   {
     "id": 88,
@@ -709,7 +797,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-088",
     "quantidade": 137,
-    "validade": "2026-01-29"
+    "validade": "2026-01-29",
+    "custo": 27.13
   },
   {
     "id": 89,
@@ -717,7 +806,8 @@
     "tipo": "Pista Doce",
     "lote": "LOT-089",
     "quantidade": 74,
-    "validade": "2026-04-22"
+    "validade": "2026-04-22",
+    "custo": 42.09
   },
   {
     "id": 90,
@@ -725,6 +815,7 @@
     "tipo": "Pista Doce",
     "lote": "LOT-090",
     "quantidade": 77,
-    "validade": "2026-02-21"
+    "validade": "2026-02-21",
+    "custo": 19.74
   }
 ]

@@ -784,16 +784,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const lote = document.getElementById('add-lot').value.trim();
     const quantidade = Number(document.getElementById('add-quantity').value) || 0;
     const validade = document.getElementById('add-expiryDate').value || null;
+    const custoInput = document.getElementById('add-cost').value;
+    const custo = custoInput === '' ? null : Number.parseFloat(custoInput);
     if (!produto) {
       alert('Informe o nome do produto.');
       return;
     }
+    if (custo === null || Number.isNaN(custo) || custo < 0) {
+      alert('Informe um custo válido.');
+      return;
+    }
+    const custoFormatado = Math.round(custo * 100) / 100;
     try {
       showLoader();
       const res = await fetch(`${BASE_URL}/api/estoque`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ produto, tipo, lote, validade, quantidade, usuario: currentUser }),
+        body: JSON.stringify({ produto, tipo, lote, validade, quantidade, custo: custoFormatado, usuario: currentUser }),
         credentials: 'include'
       });
       const data = await res.json();
@@ -825,6 +832,14 @@ document.addEventListener('DOMContentLoaded', () => {
     editForm.elements.lot.value = product.lote || '';
     editForm.elements.quantity.value = product.quantidade || 0;
     editForm.elements.expiryDate.value = product.validade ? product.validade.substring(0, 10) : '';
+    if (editForm.elements.cost) {
+      const custoValor = product.custo !== undefined && product.custo !== null
+        ? Number(product.custo)
+        : '';
+      editForm.elements.cost.value = custoValor === '' || Number.isNaN(custoValor)
+        ? ''
+        : (Math.round(custoValor * 100) / 100).toFixed(2);
+    }
     const preview = document.getElementById('edit-image-preview');
     const storedImage = getStoredProductImage(product.id) || generatePlaceholderImage(product.produto);
     preview.src = storedImage;
@@ -840,6 +855,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const lote = editForm.elements.lot.value.trim();
     const quantidade = Number(editForm.elements.quantity.value) || 0;
     const validade = editForm.elements.expiryDate.value || null;
+    const custoInput = editForm.elements.cost?.value ?? '';
+    const custo = custoInput === '' ? null : Number.parseFloat(custoInput);
+    if (custo === null || Number.isNaN(custo) || custo < 0) {
+      alert('Informe um custo válido.');
+      return;
+    }
+    const custoFormatado = Math.round(custo * 100) / 100;
     if (!produto) {
       alert('Informe o nome do produto.');
       return;
@@ -849,7 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`${BASE_URL}/api/estoque/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ produto, tipo, lote, validade, quantidade, usuario: currentUser }),
+        body: JSON.stringify({ produto, tipo, lote, validade, quantidade, custo: custoFormatado, usuario: currentUser }),
         credentials: 'include'
       });
       const data = await res.json();

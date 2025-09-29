@@ -476,12 +476,15 @@
                     <label class="block text-sm font-medium">Lote
                         <input type="text" name="lot" id="add-lot" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
                     </label>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label class="block text-sm font-medium">Quantidade
                             <input type="number" name="quantity" id="add-quantity" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" min="0">
                         </label>
                         <label class="block text-sm font-medium">Validade
                             <input type="date" name="expiryDate" id="add-expiryDate" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                        </label>
+                        <label class="block text-sm font-medium">Custo de Aquisição (R$)
+                            <input type="number" name="cost" id="add-cost" required step="0.01" min="0" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" placeholder="Ex.: 15.90">
                         </label>
                     </div>
                 </main>
@@ -525,12 +528,15 @@
                     <label class="block text-sm font-medium">Lote
                         <input type="text" name="lot" id="edit-lot" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
                     </label>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label class="block text-sm font-medium">Quantidade
                             <input type="number" name="quantity" id="edit-quantity" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" min="0">
                         </label>
                         <label class="block text-sm font-medium">Validade
                             <input type="date" name="expiryDate" id="edit-expiryDate" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                        </label>
+                        <label class="block text-sm font-medium">Custo de Aquisição (R$)
+                            <input type="number" name="cost" id="edit-cost" required step="0.01" min="0" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" placeholder="Ex.: 15.90">
                         </label>
                     </div>
                 </main>
