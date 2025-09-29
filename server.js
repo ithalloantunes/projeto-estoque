@@ -35,6 +35,13 @@ const writeJSON = (file, data) => {
   fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
 };
 
+const sanitizeCost = value => {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return Math.round(parsed * 100) / 100;
+};
+
 const logMovimentacao = mov => {
   const logs = readJSON(movFile);
   logs.push(mov);
@@ -169,9 +176,16 @@ app.get('/api/movimentacoes', (req, res) => {
 });
 
 app.post('/api/estoque', (req, res) => {
-  const { produto, tipo, lote, quantidade, validade, usuario } = req.body;
+  const { produto, tipo, lote, quantidade, validade, usuario, custo: custoBruto } = req.body;
   if (!produto || quantidade === undefined) {
     return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
+  }
+  if (custoBruto === undefined || custoBruto === null || custoBruto === '') {
+    return res.status(400).json({ error: 'Custo é obrigatório' });
+  }
+  const custoSanitizado = sanitizeCost(custoBruto);
+  if (custoSanitizado === null) {
+    return res.status(400).json({ error: 'Custo inválido' });
   }
   const estoque = readJSON(estoqueFile);
   const id      = uuidv4();
@@ -182,6 +196,7 @@ app.post('/api/estoque', (req, res) => {
     lote:    lote ? lote.trim() : '',
     quantidade: parseInt(quantidade, 10) || 0,
     validade:   validade || null,
+    custo:       custoSanitizado,
     dataCadastro: new Date().toISOString()
   });
   logMovimentacao({
@@ -199,7 +214,7 @@ app.post('/api/estoque', (req, res) => {
   res.json({ message: 'Produto adicionado com sucesso', id });
   });
 
-  app.put('/api/estoque/:id', (req, res) => {
+app.put('/api/estoque/:id', (req, res) => {
   const rawId  = req.params.id;
   const usuario = req.body.usuario;
   const estoque = readJSON(estoqueFile) || [];
@@ -218,6 +233,16 @@ app.post('/api/estoque', (req, res) => {
   const novaQtd = Number.isInteger(+req.body.quantidade)
                     ? parseInt(req.body.quantidade, 10)
                     : atual.quantidade;
+  const hasCusto = Object.prototype.hasOwnProperty.call(req.body, 'custo');
+  let custoAtualizado = atual.custo;
+  if (hasCusto) {
+    const custoSanitizado = sanitizeCost(req.body.custo);
+    if (custoSanitizado === null) {
+      return res.status(400).json({ error: 'Custo inválido' });
+    }
+    custoAtualizado = custoSanitizado;
+  }
+
   estoque[idx] = {
     ...atual,
     produto:    req.body.produto ? req.body.produto.trim() : atual.produto,
@@ -225,6 +250,7 @@ app.post('/api/estoque', (req, res) => {
     lote:       req.body.lote ? req.body.lote.trim() : atual.lote,
     quantidade: novaQtd,
     validade:   req.body.validade !== undefined ? req.body.validade : atual.validade,
+    custo:      hasCusto ? custoAtualizado : atual.custo,
     dataAtualizacao: new Date().toISOString()
   };
   const diff = novaQtd - atual.quantidade;
