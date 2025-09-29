@@ -6,18 +6,48 @@ import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import http from 'http';
 import multer from 'multer';
+import { Server as SocketIOServer } from 'socket.io';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
+const allowedOrigins = new Set([
+  'https://projeto-estoque-o1x5.onrender.com'
+]);
+
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.add('http://localhost:3000');
+  allowedOrigins.add('http://127.0.0.1:3000');
+}
+
+const isOriginAllowed = origin => !origin || allowedOrigins.has(origin);
+
 const app = express();
 app.use(cors({
-  origin: ['https://projeto-estoque-o1x5.onrender.com'],
+  origin: (origin, callback) => {
+    callback(null, isOriginAllowed(origin));
+  },
   credentials: true
 }));
 app.use(express.json());
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: (origin, callback) => {
+      callback(null, isOriginAllowed(origin));
+    },
+    credentials: true
+  }
+});
+
+io.on('connection', socket => {
+  socket.on('disconnect', () => {
+    // Intencionalmente vazio: mantemos o listener para facilitar depuração futura.
+  });
+});
 
 const dataDir     = path.join(__dirname, 'data');
 const usersFile   = path.join(dataDir, 'users.json');
@@ -107,6 +137,18 @@ const sanitizeCost = value => {
   return Math.round(parsed * 100) / 100;
 };
 
+const broadcastDataUpdated = () => {
+  io.emit('dataUpdated');
+};
+
+const broadcastUsersUpdated = () => {
+  io.emit('usersUpdated');
+};
+
+const broadcastUserPhotoUpdated = payload => {
+  io.emit('userPhotoUpdated', payload);
+};
+
 const logMovimentacao = mov => {
   const logs = readJSON(movFile);
   logs.push(mov);
@@ -132,6 +174,7 @@ app.post('/api/register', (req, res) => {
     photo: null
   });
   writeJSON(usersFile, users);
+  broadcastUsersUpdated();
   res.json({ message: 'Cadastro enviado para aprovação' });
 });
 
@@ -182,6 +225,7 @@ app.post('/api/users/:id/approve', (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
   users[idx].approved = true;
   writeJSON(usersFile, users);
+  broadcastUsersUpdated();
   res.json({ message: 'Usuário aprovado' });
 });
 
@@ -194,6 +238,7 @@ app.delete('/api/users/:id', (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
   users.splice(idx, 1);
   writeJSON(usersFile, users);
+  broadcastUsersUpdated();
   res.json({ message: 'Usuário excluído' });
 });
 
@@ -208,6 +253,8 @@ app.put('/api/users/:id/photo', userUpload.single('photo'), (req, res) => {
     if (atual.photo) removeStoredFile(atual.photo);
     atual.photo = null;
     writeJSON(usersFile, users);
+    broadcastUsersUpdated();
+    broadcastUserPhotoUpdated({ id: atual.id, photo: null });
     return res.json({ message: 'Foto removida', photo: null });
   }
 
@@ -219,6 +266,8 @@ app.put('/api/users/:id/photo', userUpload.single('photo'), (req, res) => {
   if (atual.photo) removeStoredFile(atual.photo);
   atual.photo = newPhotoPath;
   writeJSON(usersFile, users);
+  broadcastUsersUpdated();
+  broadcastUserPhotoUpdated({ id: atual.id, photo: toPublicPath(newPhotoPath) });
   res.json({ message: 'Foto atualizada', photo: toPublicPath(newPhotoPath) });
 });
 
@@ -315,6 +364,7 @@ app.post('/api/estoque', productUpload.single('image'), (req, res) => {
   });
 
   writeJSON(estoqueFile, estoque);
+  broadcastDataUpdated();
   res.json({
     message: 'Produto adicionado com sucesso',
     id,
@@ -391,6 +441,7 @@ app.put('/api/estoque/:id', productUpload.single('image'), (req, res) => {
 });
 
   writeJSON(estoqueFile, estoque);
+  broadcastDataUpdated();
   res.json({
     message: 'Produto atualizado com sucesso',
     image: toPublicPath(imagemAtualizada)
@@ -430,6 +481,7 @@ app.delete('/api/estoque/:id', (req, res) => {
     data: new Date().toISOString(),
     usuario: usuario || 'desconhecido'
   });
+  broadcastDataUpdated();
   res.json({ message: 'Produto excluído com sucesso!' });
 });
 
@@ -513,7 +565,7 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-http.createServer(app).listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
 
