@@ -172,6 +172,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  const updateActiveUserCardPhoto = newSrc => {
+    if (!activeUsersList || !currentUserId) return;
+    const card = activeUsersList.querySelector(`[data-user-id="${currentUserId}"]`);
+    if (!card) return;
+    const avatar = card.querySelector('img[data-role="active-user-photo"]');
+    if (!avatar) return;
+    if (!avatar.dataset.fallbackSrc) avatar.dataset.fallbackSrc = FALLBACK_AVATAR_IMAGE;
+    if (avatar.dataset.fallbackApplied) delete avatar.dataset.fallbackApplied;
+    avatar.src = newSrc || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
+  };
+
   const updateAllAvatars = src => {
     const resolvedSrc = getFullImageUrl(src) || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
     userAvatarImgs.forEach(img => {
@@ -179,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       img.src = resolvedSrc;
       registerImageFallbacks(img);
     });
+    updateActiveUserCardPhoto(resolvedSrc);
   };
 
   // Login -----------------------------------------------------------------------
@@ -805,10 +817,12 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         activeData.forEach(user => {
           const item = document.createElement('div');
+          const resolvedPhoto = getFullImageUrl(user.photo) || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
           item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
+          item.dataset.userId = user.id;
           item.innerHTML = `
             <div class="flex items-center gap-4">
-              <img src="https://placehold.co/40x40/22c55e/ffffff?text=${(user.username || 'U').charAt(0).toUpperCase()}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_AVATAR_IMAGE}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+              <img src="${resolvedPhoto}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-role="active-user-photo" data-fallback-src="${FALLBACK_AVATAR_IMAGE}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
               <div>
                 <p class="font-semibold text-text-light dark:text-text-dark">${user.username}</p>
                 <p class="text-sm text-subtle-light dark:text-subtle-dark">${user.role || ''}</p>
