@@ -20,6 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const FALLBACK_PRODUCT_IMAGE = 'img/placeholders/product-placeholder.svg';
   const FALLBACK_AVATAR_IMAGE = 'img/placeholders/avatar-placeholder.svg';
   let profileImageFile = null;
+  let isRefreshingAllData = false;
+  const ACTIVE_PAGE_STORAGE_KEY = 'acaiStock_active_page';
+  const AUTO_REFRESH_INTERVAL_MS = 60_000;
+  let autoRefreshIntervalId = null;
+  let activePageId = null;
 
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
@@ -312,13 +317,14 @@ document.addEventListener('DOMContentLoaded', () => {
       loginContainer.classList.add('hidden');
       loginContainer.style.display = 'none';
       appContainer.classList.remove('hidden');
-      document.getElementById('home-menu-item')?.click();
+      restoreStoredPage();
       if (data.photo) {
         localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
       }
       await initProfilePhoto();
       toggleAdminFeatures(userRole === 'admin');
-      await refreshAllData();
+      await refreshAllData({ force: true });
+      startAutoRefresh();
     } catch (err) {
       alert('Erro no servidor: ' + err.message);
     } finally {
@@ -363,6 +369,8 @@ document.addEventListener('DOMContentLoaded', () => {
     filteredProducts = [];
     movementsData = [];
     currentPage = 1;
+    activePageId = null;
+    stopAutoRefresh();
     loginContainer.style.display = 'flex';
     loginContainer.classList.remove('hidden');
     appContainer.classList.add('hidden');
@@ -384,14 +392,28 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Dados -----------------------------------------------------------------------
-  const refreshAllData = async () => {
-    await Promise.all([loadStock(), loadMovimentacoes(), loadReports()]);
-    updateHomePage();
+  const refreshAllData = async (options = {}) => {
+    const { force = false } = options;
+    if (isRefreshingAllData && !force) return;
+    isRefreshingAllData = true;
+    const filterStart = movInicio?.value || undefined;
+    const filterEnd = movFim?.value || undefined;
+    try {
+      await Promise.all([
+        loadStock(options),
+        loadMovimentacoes(filterStart, filterEnd, options),
+        loadReports(filterStart, filterEnd, options)
+      ]);
+      updateHomePage();
+    } finally {
+      isRefreshingAllData = false;
+    }
   };
 
-  const loadStock = async () => {
+  const loadStock = async (options = {}) => {
+    const { silent = false } = options;
     try {
-      showLoader();
+      if (!silent) showLoader();
       const res = await fetch(`${BASE_URL}/api/estoque`, { credentials: 'include' });
       const data = await res.json();
       const raw = Array.isArray(data)
@@ -405,16 +427,17 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Erro ao carregar estoque:', err);
       alert('Erro ao carregar estoque: ' + err.message);
     } finally {
-      hideLoader();
+      if (!silent) hideLoader();
     }
   };
 
-  const loadMovimentacoes = async (start, end) => {
+  const loadMovimentacoes = async (start, end, options = {}) => {
+    const { silent = false } = options;
     try {
       const params = new URLSearchParams();
       if (start) params.append('start', start);
       if (end) params.append('end', end);
-      showLoader();
+      if (!silent) showLoader();
       const res = await fetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`, { credentials: 'include' });
       const data = await res.json();
       movementsData = Array.isArray(data) ? data : [];
@@ -423,16 +446,17 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Erro ao carregar movimentações:', err);
       alert('Erro ao carregar movimentações: ' + err.message);
     } finally {
-      hideLoader();
+      if (!silent) hideLoader();
     }
   };
 
-  const loadReports = async (start, end) => {
+  const loadReports = async (start, end, options = {}) => {
+    const { silent = false } = options;
     try {
       const params = new URLSearchParams();
       if (start) params.append('start', start);
       if (end) params.append('end', end);
-      showLoader();
+      if (!silent) showLoader();
       const [resSummary, resStock] = await Promise.all([
         fetch(`${BASE_URL}/api/report/summary?${params.toString()}`, { credentials: 'include' }),
         fetch(`${BASE_URL}/api/report/estoque`, { credentials: 'include' })
@@ -444,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Erro ao carregar relatórios:', err);
       alert('Erro ao carregar relatórios: ' + err.message);
     } finally {
-      hideLoader();
+      if (!silent) hideLoader();
     }
   };
 
@@ -1072,17 +1096,44 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Navegação ------------------------------------------------------------------
-  const switchPage = pageId => {
+  const storeActivePage = pageId => {
+    activePageId = pageId;
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(ACTIVE_PAGE_STORAGE_KEY, pageId);
+    } catch (error) {
+      console.warn('Não foi possível salvar a aba ativa:', error);
+    }
+  };
+
+  const getStoredActivePage = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      return window.localStorage.getItem(ACTIVE_PAGE_STORAGE_KEY);
+    } catch (error) {
+      console.warn('Não foi possível recuperar a aba ativa:', error);
+      return null;
+    }
+  };
+
+  const switchPage = (pageId, options = {}) => {
+    storeActivePage(pageId);
     pageContents.forEach(page => page.classList.add('hidden'));
     const target = document.getElementById(pageId);
     target?.classList.remove('hidden');
     if (pageId === 'stock-page') {
-      if (!estoqueData.length) loadStock();
+      if (!estoqueData.length) loadStock(options);
     } else if (pageId === 'reports-page') {
-      loadReports();
+      loadReports(undefined, undefined, options);
     } else if (pageId === 'approve-page') {
       renderApprovalPage();
     }
+  };
+
+  const activateMenuItem = (link, options = {}) => {
+    if (!link) return;
+    highlightMenu(link);
+    switchPage(link.dataset.page, options);
   };
 
   const highlightMenu = link => {
@@ -1101,9 +1152,42 @@ document.addEventListener('DOMContentLoaded', () => {
       const link = event.target.closest('a[data-page]');
       if (!link) return;
       event.preventDefault();
-      highlightMenu(link);
-      switchPage(link.dataset.page);
+      activateMenuItem(link);
     });
+  };
+
+  const restoreStoredPage = () => {
+    const storedPage = getStoredActivePage();
+    if (storedPage) {
+      if (storedPage === 'approve-page') {
+        highlightMenu(null);
+        switchPage('approve-page');
+        return;
+      }
+      const storedLink = mainMenu?.querySelector(`a[data-page="${storedPage}"]`);
+      if (storedLink) {
+        activateMenuItem(storedLink);
+        return;
+      }
+    }
+    const homeLink = document.getElementById('home-menu-item');
+    if (homeLink) activateMenuItem(homeLink);
+  };
+
+  const stopAutoRefresh = () => {
+    if (autoRefreshIntervalId) {
+      clearInterval(autoRefreshIntervalId);
+      autoRefreshIntervalId = null;
+    }
+  };
+
+  const startAutoRefresh = () => {
+    if (typeof window === 'undefined') return;
+    stopAutoRefresh();
+    autoRefreshIntervalId = window.setInterval(() => {
+      if (document.hidden || !currentUser) return;
+      refreshAllData({ silent: true }).catch(err => console.error('Erro ao atualizar automaticamente:', err));
+    }, AUTO_REFRESH_INTERVAL_MS);
   };
 
   const setupUserMenus = () => {
