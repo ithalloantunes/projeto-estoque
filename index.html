@@ -172,7 +172,7 @@
                     </header>
                     <div class="flex-1 p-8 overflow-y-auto">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between">
+                            <div id="home-card-total-stock" class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between cursor-pointer hover:shadow-lg transition-shadow">
                                 <div>
                                     <p class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Itens em Estoque</p>
                                     <p id="home-kpi-total-stock" class="text-3xl font-bold mt-1">0</p>
@@ -181,7 +181,7 @@
                                     <span class="material-icons">inventory_2</span>
                                 </div>
                             </div>
-                            <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between">
+                            <div id="home-card-low-stock" class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between cursor-pointer hover:shadow-lg transition-shadow">
                                 <div>
                                     <p class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Estoque Baixo</p>
                                     <p id="home-kpi-low-stock" class="text-3xl font-bold mt-1">0</p>
@@ -190,13 +190,13 @@
                                     <span class="material-icons">warning</span>
                                 </div>
                             </div>
-                            <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between">
+                            <div id="home-card-expiring" class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between cursor-pointer hover:shadow-lg transition-shadow">
                                 <div>
-                                    <p class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Movimentações (Hoje)</p>
-                                    <p id="home-kpi-moves" class="text-3xl font-bold mt-1">0</p>
+                                    <p class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Itens Vencendo</p>
+                                    <p id="home-kpi-expiring" class="text-3xl font-bold mt-1">0</p>
                                 </div>
-                                <div class="bg-blue-500/10 text-blue-500 p-3 rounded-lg">
-                                    <span class="material-icons">swap_horiz</span>
+                                <div class="bg-red-500/10 text-danger p-3 rounded-lg">
+                                    <span class="material-icons">event_busy</span>
                                 </div>
                             </div>
                             <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between">
