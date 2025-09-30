@@ -966,29 +966,93 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (recentActivityList) {
       recentActivityList.innerHTML = '';
+
+      const ACTIVITY_STYLES = {
+        entrada: {
+          icon: '+',
+          badgeClasses: 'bg-emerald-100 dark:bg-emerald-900/50',
+          iconClasses: 'text-emerald-600 dark:text-emerald-300',
+          titlePrefix: 'Entrada',
+          useMaterialIcon: false
+        },
+        saida: {
+          icon: '-',
+          badgeClasses: 'bg-rose-100 dark:bg-rose-900/40',
+          iconClasses: 'text-rose-600 dark:text-rose-300',
+          titlePrefix: 'Saída',
+          useMaterialIcon: false
+        },
+        ajuste: {
+          icon: 'swap_horiz',
+          badgeClasses: 'bg-indigo-100 dark:bg-indigo-900/40',
+          iconClasses: 'text-indigo-600 dark:text-indigo-300',
+          titlePrefix: 'Ajuste',
+          useMaterialIcon: true
+        },
+        default: {
+          icon: 'swap_horiz',
+          badgeClasses: 'bg-slate-100 dark:bg-slate-800/60',
+          iconClasses: 'text-slate-600 dark:text-slate-300',
+          titlePrefix: 'Movimentação',
+          useMaterialIcon: true
+        }
+      };
+
+      const normalizeType = value => {
+        if (!value) return '';
+        return value
+          .toString()
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+      };
+
       const recentMoves = [...movementsData]
         .sort((a, b) => new Date(b.data) - new Date(a.data))
-        .slice(0, 5);
+        .slice(0, 3);
+
       if (recentMoves.length === 0) {
-        recentActivityList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhuma atividade recente.</p>';
+        recentActivityList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark text-center py-4">Nenhuma atividade recente.</p>';
         return;
       }
+
       recentMoves.forEach(move => {
-        const icon = move.tipo === 'entrada' ? 'arrow_downward' : move.tipo === 'saída' ? 'arrow_upward' : 'swap_horiz';
-        const color = move.tipo === 'entrada' ? 'green' : move.tipo === 'saída' ? 'red' : 'blue';
+        const moveType = normalizeType(move.tipo);
+        const activityStyle = ACTIVITY_STYLES[moveType] || ACTIVITY_STYLES.default;
+
+        const quantity = Number(move.quantidade) || 0;
+        const productName = move.produto || move.nomeProduto || '';
+        const userLabel = move.usuario ? `Usuário: ${move.usuario}` : '';
+        const destinationLabel = move.destino ? `Destino: ${move.destino}` : '';
+        const details = [userLabel, destinationLabel].filter(Boolean).join(' · ');
+
+        const timeLabel = (() => {
+          if (!move.data) return 'Data não informada';
+          const parsedDate = new Date(move.data);
+          if (Number.isNaN(parsedDate.getTime())) return 'Data não informada';
+          return parsedDate.toLocaleString('pt-BR', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          });
+        })();
+
         const item = document.createElement('div');
-        item.className = 'flex items-center justify-between';
+        item.className = 'flex items-start justify-between gap-4 rounded-xl border border-gray-200/70 dark:border-gray-700/60 bg-surface-light dark:bg-surface-dark/70 p-4 shadow-sm';
+        const badgeIconClasses = activityStyle.useMaterialIcon
+          ? `material-icons ${activityStyle.iconClasses}`
+          : `text-xl font-semibold leading-none ${activityStyle.iconClasses}`;
+
         item.innerHTML = `
-          <div class="flex items-center gap-4">
-            <div class="p-2 rounded-full bg-${color}-100 dark:bg-${color}-900/40">
-              <span class="material-icons text-${color}-600 dark:text-${color}-300">${icon}</span>
+          <div class="flex items-start gap-4">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full ${activityStyle.badgeClasses}">
+              <span class="${badgeIconClasses}">${activityStyle.icon}</span>
             </div>
             <div>
-              <p class="font-medium">${move.tipo ? move.tipo.toUpperCase() : 'Movimento'}: ${move.quantidade || 0}x ${move.produto || ''}</p>
-              <p class="text-sm text-subtle-light dark:text-subtle-dark">${move.usuario || ''}</p>
+              <p class="font-semibold text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantity.toLocaleString('pt-BR')}x ${productName}</p>
+              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'Movimentação registrada no sistema.'}</p>
             </div>
           </div>
-          <p class="text-sm text-subtle-light dark:text-subtle-dark">${move.data ? new Date(move.data).toLocaleString('pt-BR') : ''}</p>`;
+          <p class="text-sm text-subtle-light dark:text-subtle-dark whitespace-nowrap">${timeLabel}</p>`;
         recentActivityList.appendChild(item);
       });
     }
