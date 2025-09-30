@@ -47,6 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Elementos gerais da aplicação
   const mainMenu = document.getElementById('main-menu');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+  const mobileMenuToggles = document.querySelectorAll('.mobile-menu-toggle');
+  const mobileMenuCloseButtons = document.querySelectorAll('.mobile-menu-close');
   const stockMenuItem = document.getElementById('stock-menu-item');
   const pageContents = document.querySelectorAll('.page-content');
   const addProductLink = document.getElementById('add-product-link');
@@ -104,6 +108,78 @@ document.addEventListener('DOMContentLoaded', () => {
   const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
 
   let currentProductId = null;
+  let isMobileSidebarOpen = false;
+
+  const isDesktopViewport = () => window.matchMedia('(min-width: 640px)').matches;
+
+  const setSidebarState = isOpen => {
+    if (!sidebar) return;
+    if (isOpen) {
+      sidebar.setAttribute('data-open', 'true');
+      sidebarBackdrop?.setAttribute('data-visible', 'true');
+      document.body.classList.add('sidebar-locked');
+    } else {
+      sidebar.removeAttribute('data-open');
+      sidebarBackdrop?.removeAttribute('data-visible');
+      document.body.classList.remove('sidebar-locked');
+    }
+    const shouldHideForAccessibility = !isOpen && !isDesktopViewport();
+    sidebar.setAttribute('aria-hidden', shouldHideForAccessibility ? 'true' : 'false');
+    mobileMenuToggles.forEach(button => button.setAttribute('aria-expanded', isOpen ? 'true' : 'false'));
+    isMobileSidebarOpen = isOpen;
+  };
+
+  const openMobileSidebar = () => {
+    if (isDesktopViewport()) return;
+    setSidebarState(true);
+  };
+
+  const closeMobileSidebar = force => {
+    if (!isMobileSidebarOpen && !force) return;
+    setSidebarState(false);
+  };
+
+  mobileMenuToggles.forEach(button => {
+    button.addEventListener('click', event => {
+      event.preventDefault();
+      if (isMobileSidebarOpen) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
+    });
+  });
+
+  mobileMenuCloseButtons.forEach(button => {
+    button.addEventListener('click', event => {
+      event.preventDefault();
+      closeMobileSidebar(true);
+    });
+  });
+
+  sidebarBackdrop?.addEventListener('click', () => closeMobileSidebar(true));
+
+  window.addEventListener('keyup', event => {
+    if (event.key === 'Escape') {
+      closeMobileSidebar(true);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (isDesktopViewport()) {
+      closeMobileSidebar(true);
+    }
+  });
+
+  mainMenu?.addEventListener('click', event => {
+    if (!(event.target instanceof HTMLElement)) return;
+    if (isDesktopViewport()) return;
+    if (event.target.closest('a')) {
+      closeMobileSidebar(true);
+    }
+  });
+
+  closeMobileSidebar(true);
 
   const persistSession = session => {
     if (!session) return;
@@ -526,6 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stopAutoRefresh();
     pendingRealtimeRefresh = false;
     pendingRealtimeOptions = {};
+    closeMobileSidebar(true);
     showLoginScreen();
     inputUsuario.value = '';
     inputClave.value = '';
