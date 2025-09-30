@@ -969,21 +969,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const ACTIVITY_STYLES = {
         entrada: {
-          icon: 'arrow_downward',
+          icon: 'add',
           badgeClasses: 'bg-emerald-100 dark:bg-emerald-900/50',
           iconClasses: 'text-emerald-600 dark:text-emerald-300',
           titlePrefix: 'Entrada'
         },
         saida: {
-          icon: 'arrow_upward',
-          badgeClasses: 'bg-rose-100 dark:bg-rose-900/40',
+          icon: 'remove',
+          badgeClasses: 'bg-rose-100 dark:bg-rose-900/50',
           iconClasses: 'text-rose-600 dark:text-rose-300',
           titlePrefix: 'Saída'
         },
         ajuste: {
-          icon: 'swap_horiz',
-          badgeClasses: 'bg-indigo-100 dark:bg-indigo-900/40',
-          iconClasses: 'text-indigo-600 dark:text-indigo-300',
+          icon: 'edit',
+          badgeClasses: 'bg-amber-100 dark:bg-amber-900/50',
+          iconClasses: 'text-amber-600 dark:text-amber-300',
           titlePrefix: 'Ajuste'
         },
         default: {
@@ -1038,18 +1038,18 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
 
         const item = document.createElement('div');
-        item.className = 'flex items-start justify-between gap-4 rounded-xl border border-gray-200/70 dark:border-gray-700/60 bg-surface-light dark:bg-surface-dark/70 p-4 shadow-sm';
+        item.className = 'flex items-center justify-between gap-4 py-1';
         item.innerHTML = `
-          <div class="flex items-start gap-4">
+          <div class="flex items-center gap-4">
             <div class="p-2 rounded-full ${activityStyle.badgeClasses}">
               <span class="material-icons ${activityStyle.iconClasses}">${activityStyle.icon}</span>
             </div>
             <div>
-              <p class="font-semibold text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantitySymbol ? quantitySymbol + ' ' : ''}${quantity.toLocaleString('pt-BR')}x ${productName}</p>
+              <p class="font-medium text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantitySymbol ? quantitySymbol + ' ' : ''}${quantity.toLocaleString('pt-BR')}x ${productName}</p>
               <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'Movimentação registrada no sistema.'}</p>
             </div>
           </div>
-          <p class="text-sm text-subtle-light dark:text-subtle-dark whitespace-nowrap">${timeLabel}</p>`;
+          <p class="text-sm text-subtle-light dark:text-subtle-dark whitespace-nowrap text-right">${timeLabel}</p>`;
         recentActivityList.appendChild(item);
       });
     }
