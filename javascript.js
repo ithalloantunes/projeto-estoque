@@ -1017,6 +1017,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const activityStyle = ACTIVITY_STYLES[moveType] || ACTIVITY_STYLES.default;
 
         const quantity = Number(move.quantidade) || 0;
+        const quantitySymbol = (() => {
+          if (moveType === 'entrada') return '+';
+          if (moveType === 'saida') return '-';
+          return '';
+        })();
         const productName = move.produto || move.nomeProduto || '';
         const userLabel = move.usuario ? `Usuário: ${move.usuario}` : '';
         const destinationLabel = move.destino ? `Destino: ${move.destino}` : '';
@@ -1040,7 +1045,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="material-icons ${activityStyle.iconClasses}">${activityStyle.icon}</span>
             </div>
             <div>
-              <p class="font-semibold text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantity.toLocaleString('pt-BR')}x ${productName}</p>
+              <p class="font-semibold text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantitySymbol ? quantitySymbol + ' ' : ''}${quantity.toLocaleString('pt-BR')}x ${productName}</p>
               <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'Movimentação registrada no sistema.'}</p>
             </div>
           </div>
