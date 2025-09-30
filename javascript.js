@@ -970,24 +970,78 @@ document.addEventListener('DOMContentLoaded', () => {
       const ACTIVITY_STYLES = {
         entrada: {
           icon: 'add',
-          badgeClasses: 'bg-emerald-100 dark:bg-emerald-900/50',
-          iconClasses: 'text-emerald-600 dark:text-emerald-300',
+          badgeClasses: 'bg-green-100 dark:bg-green-900/50',
+          iconClasses: 'text-green-600 dark:text-green-300',
+          titlePrefix: 'Entrada'
+        },
+        adicao: {
+          icon: 'add',
+          badgeClasses: 'bg-green-100 dark:bg-green-900/50',
+          iconClasses: 'text-green-600 dark:text-green-300',
+          titlePrefix: 'Entrada'
+        },
+        reposicao: {
+          icon: 'add',
+          badgeClasses: 'bg-green-100 dark:bg-green-900/50',
+          iconClasses: 'text-green-600 dark:text-green-300',
           titlePrefix: 'Entrada'
         },
         saida: {
           icon: 'remove',
-          badgeClasses: 'bg-rose-100 dark:bg-rose-900/50',
-          iconClasses: 'text-rose-600 dark:text-rose-300',
+          badgeClasses: 'bg-red-100 dark:bg-red-900/50',
+          iconClasses: 'text-red-600 dark:text-red-300',
+          titlePrefix: 'Saída'
+        },
+        exclusao: {
+          icon: 'remove',
+          badgeClasses: 'bg-red-100 dark:bg-red-900/50',
+          iconClasses: 'text-red-600 dark:text-red-300',
+          titlePrefix: 'Saída'
+        },
+        baixa: {
+          icon: 'remove',
+          badgeClasses: 'bg-red-100 dark:bg-red-900/50',
+          iconClasses: 'text-red-600 dark:text-red-300',
           titlePrefix: 'Saída'
         },
         ajuste: {
           icon: 'edit',
-          badgeClasses: 'bg-amber-100 dark:bg-amber-900/50',
-          iconClasses: 'text-amber-600 dark:text-amber-300',
+          badgeClasses: 'bg-yellow-100 dark:bg-yellow-900/50',
+          iconClasses: 'text-yellow-600 dark:text-yellow-300',
           titlePrefix: 'Ajuste'
         },
+        edicao: {
+          icon: 'edit',
+          badgeClasses: 'bg-yellow-100 dark:bg-yellow-900/50',
+          iconClasses: 'text-yellow-600 dark:text-yellow-300',
+          titlePrefix: 'Ajuste'
+        },
+        atualizacao: {
+          icon: 'edit',
+          badgeClasses: 'bg-yellow-100 dark:bg-yellow-900/50',
+          iconClasses: 'text-yellow-600 dark:text-yellow-300',
+          titlePrefix: 'Ajuste'
+        },
+        usuario_aprovado: {
+          icon: 'person_add',
+          badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
+          iconClasses: 'text-blue-600 dark:text-blue-300',
+          titlePrefix: 'Usuário'
+        },
+        aprovacao_usuario: {
+          icon: 'person_add',
+          badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
+          iconClasses: 'text-blue-600 dark:text-blue-300',
+          titlePrefix: 'Usuário'
+        },
+        aprovacao: {
+          icon: 'person_add',
+          badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
+          iconClasses: 'text-blue-600 dark:text-blue-300',
+          titlePrefix: 'Usuário'
+        },
         default: {
-          icon: 'swap_horiz',
+          icon: 'history',
           badgeClasses: 'bg-slate-100 dark:bg-slate-800/60',
           iconClasses: 'text-slate-600 dark:text-slate-300',
           titlePrefix: 'Movimentação'
@@ -1018,8 +1072,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const quantity = Number(move.quantidade) || 0;
         const quantitySymbol = (() => {
-          if (moveType === 'entrada') return '+';
-          if (moveType === 'saida') return '-';
+          if (['entrada', 'adicao', 'reposicao'].includes(moveType)) return '+';
+          if (['saida', 'exclusao', 'baixa'].includes(moveType)) return '-';
           return '';
         })();
         const productName = move.produto || move.nomeProduto || '';
