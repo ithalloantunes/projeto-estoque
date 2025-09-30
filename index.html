@@ -476,9 +476,9 @@
         </div>
     </div>
 
-    <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-lg">
-            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+    <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start sm:items-center justify-center p-4 sm:p-6 hidden overflow-y-auto">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700 sticky top-0 bg-surface-light dark:bg-surface-dark z-10">
                 <h2 class="text-xl font-bold flex items-center gap-2">
                     <span class="material-icons">add_circle</span>
                     <span>Adicionar Produto</span>
@@ -487,8 +487,8 @@
                     <span class="material-icons">close</span>
                 </button>
             </header>
-            <form id="add-form">
-                <main class="p-6 space-y-4">
+            <form id="add-form" class="flex-1 flex flex-col overflow-hidden">
+                <main class="p-6 space-y-4 overflow-y-auto flex-1">
                     <label class="block text-sm font-medium">Imagem
                         <input type="file" name="image" id="add-image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-violet-50 file:text-primary hover:file:bg-violet-100">
                         <img id="add-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden" loading="lazy" decoding="async" data-fallback-src="img/placeholders/product-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
@@ -527,9 +527,9 @@
         </div>
     </div>
 
-    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-md">
-            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start sm:items-center justify-center p-4 sm:p-6 hidden overflow-y-auto">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700 sticky top-0 bg-surface-light dark:bg-surface-dark z-10">
                 <h2 class="text-xl font-bold flex items-center gap-2">
                     <span class="material-icons">edit</span>
                     <span>Editar Produto</span>
@@ -538,8 +538,8 @@
                     <span class="material-icons">close</span>
                 </button>
             </header>
-            <form id="edit-form">
-                <main class="p-4 space-y-4">
+            <form id="edit-form" class="flex-1 flex flex-col overflow-hidden">
+                <main class="p-4 space-y-4 overflow-y-auto flex-1">
                     <input type="hidden" id="edit-id" name="id">
                     <label class="block text-sm font-medium">Imagem
                         <input type="file" name="image" id="edit-image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-violet-50 file:text-primary hover:file:bg-violet-100">
