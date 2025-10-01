@@ -56,6 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const addProductLink = document.getElementById('add-product-link');
   const quickAddBtn = document.getElementById('quick-add-product');
   const quickExportBtn = document.getElementById('quick-export-report');
+  const stockAddProductBtn = document.getElementById('stock-add-product-btn');
+  const suggestProductBtn = document.getElementById('suggest-product-btn');
   const searchInput = document.getElementById('search-input');
   const filterButtonsContainer = document.getElementById('filter-buttons');
   const clearFiltersBtn = document.getElementById('clear-filters-btn');
@@ -65,6 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const paginationContainer = document.getElementById('pagination-controls');
   const addForm = document.getElementById('add-form');
   const editForm = document.getElementById('edit-form');
+  const suggestionsModal = document.getElementById('suggestions-modal');
+  const suggestionsContent = document.getElementById('suggestions-content');
   const deleteModal = document.getElementById('delete-modal');
   const deleteProductName = document.getElementById('delete-product-name');
   const deleteReasonInput = document.getElementById('delete-reason');
@@ -246,6 +250,87 @@ document.addEventListener('DOMContentLoaded', () => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'N/A';
     return date.toLocaleDateString('pt-BR');
+  };
+
+  const buildSuggestionSection = (title, icon, items, emptyMessage) => {
+    if (!items || items.length === 0) {
+      return `
+        <section class="bg-background-light dark:bg-background-dark rounded-xl border border-gray-200/70 dark:border-gray-700/70 p-5">
+          <header class="flex items-center gap-2 mb-3">
+            <span class="material-icons text-secondary">${icon}</span>
+            <h3 class="text-lg font-semibold">${title}</h3>
+          </header>
+          <p class="text-sm text-subtle-light dark:text-subtle-dark">${emptyMessage}</p>
+        </section>`;
+    }
+
+    const listItems = items
+      .map(item => {
+        const quantity = Number(item.quantidade) || 0;
+        const validade = item.validade ? formatDate(item.validade) : 'Sem validade';
+        const subtitleParts = [];
+        if (item.lote) subtitleParts.push(`Lote ${item.lote}`);
+        subtitleParts.push(`${quantity} un.`);
+        subtitleParts.push(`Validade: ${validade}`);
+        return `
+          <li class="flex items-start justify-between gap-4 py-2">
+            <div>
+              <p class="font-medium">${item.produto || 'Produto'}</p>
+              <p class="text-xs text-subtle-light dark:text-subtle-dark">${subtitleParts.join(' • ')}</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+              ${item.tipo || 'Categoria'}
+            </span>
+          </li>`;
+      })
+      .join('');
+
+    return `
+      <section class="bg-background-light dark:bg-background-dark rounded-xl border border-gray-200/70 dark:border-gray-700/70 p-5">
+        <header class="flex items-center gap-2 mb-3">
+          <span class="material-icons text-secondary">${icon}</span>
+          <h3 class="text-lg font-semibold">${title}</h3>
+        </header>
+        <ul class="divide-y divide-gray-200/70 dark:divide-gray-700/60">${listItems}</ul>
+      </section>`;
+  };
+
+  const generateSmartSuggestions = () => {
+    if (!Array.isArray(estoqueData) || estoqueData.length === 0) {
+      return '<p class="text-center text-subtle-light dark:text-subtle-dark">Carregando dados do estoque...</p>';
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lowStock = estoqueData
+      .filter(item => Number(item.quantidade) < 25)
+      .sort((a, b) => Number(a.quantidade) - Number(b.quantidade))
+      .slice(0, 4);
+
+    const expiringSoon = estoqueData
+      .filter(item => {
+        if (!item.validade) return false;
+        const expiry = new Date(item.validade);
+        if (Number.isNaN(expiry.getTime())) return false;
+        expiry.setHours(0, 0, 0, 0);
+        const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+        return diff <= 45 && diff >= 0;
+      })
+      .sort((a, b) => new Date(a.validade) - new Date(b.validade))
+      .slice(0, 4);
+
+    const bestSellers = estoqueData
+      .slice()
+      .sort((a, b) => Number(b.saidas || 0) - Number(a.saidas || 0))
+      .slice(0, 4);
+
+    return `
+      <div class="space-y-5">
+        ${buildSuggestionSection('Repor com urgência', 'inventory_2', lowStock, 'Nenhum item com estoque crítico no momento.')}
+        ${buildSuggestionSection('Atentos à validade', 'event_available', expiringSoon, 'Sem produtos próximos do vencimento nos próximos 45 dias.')}
+        ${buildSuggestionSection('Itens mais procurados', 'trending_up', bestSellers, 'Ainda não há histórico suficiente para recomendações.')}
+      </div>`;
   };
 
   const getFullImageUrl = value => {
@@ -1701,6 +1786,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }));
   if (addProductLink) addProductLink.addEventListener('click', event => { event.preventDefault(); openModal('add-modal'); });
   if (quickAddBtn) quickAddBtn.addEventListener('click', () => openModal('add-modal'));
+  if (stockAddProductBtn) stockAddProductBtn.addEventListener('click', () => openModal('add-modal'));
+  if (suggestProductBtn) {
+    suggestProductBtn.addEventListener('click', () => {
+      if (suggestionsContent) {
+        suggestionsContent.innerHTML = generateSmartSuggestions();
+      }
+      openModal('suggestions-modal');
+    });
+  }
   if (quickExportBtn) quickExportBtn.addEventListener('click', () => window.open(`${BASE_URL}/api/movimentacoes/csv`, '_blank'));
   if (homeKpiCardTotal) homeKpiCardTotal.addEventListener('click', () => goToStockPageWithFilter('all'));
   if (homeKpiCardLow) homeKpiCardLow.addEventListener('click', () => goToStockPageWithFilter('low_stock'));
@@ -1740,6 +1834,9 @@ document.addEventListener('DOMContentLoaded', () => {
     gridViewBtn?.classList.remove('bg-primary', 'text-white');
     renderStock();
   });
+  if (gridViewBtn && !gridViewBtn.classList.contains('bg-primary')) {
+    gridViewBtn.classList.add('bg-primary', 'text-white');
+  }
   if (addForm) addForm.addEventListener('submit', handleAddSubmit);
   if (editForm) editForm.addEventListener('submit', handleEditSubmit);
   if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', handleDeleteConfirm);
