@@ -69,6 +69,15 @@
             animation: spin 1s linear infinite;
         }
 
+        #stock-page-container {
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        #stock-page .filter-btn {
+            color: inherit;
+        }
+
         @keyframes spin {
             to {
                 transform: rotate(360deg);
@@ -241,53 +250,63 @@
                 </div>
 
                 <!-- Stock Page -->
-                <div id="stock-page" class="page-content flex-1 flex flex-col hidden min-h-0">
-                    <header class="flex justify-between items-center p-6 bg-surface-light dark:bg-surface-dark border-b dark:border-gray-700">
-                        <div class="flex items-center gap-3">
-                            <button type="button" class="mobile-menu-toggle sm:hidden p-2 rounded-full border border-white/30 bg-primary/90 text-white shadow-md" aria-label="Abrir menu" aria-controls="sidebar">
-                                <span class="material-icons">menu</span>
-                            </button>
-                            <h1 class="text-2xl font-bold">Estoque</h1>
-                        </div>
-                        <div class="relative">
-                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
-                                <span class="font-medium hidden md:block">Usuário</span>
-                                <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
-                            </button>
-                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
-                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
-                                <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
-                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                                <a href="#" class="logout-link block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
-                            </div>
-                        </div>
-                    </header>
-                    <div class="p-6 bg-surface-light dark:bg-surface-dark">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 gap-4">
-                            <div class="relative flex-1 md:max-w-md">
-                                <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-                                <input id="search-input" class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-primary focus:border-primary bg-background-light dark:bg-background-dark" placeholder="Buscar..." type="text" />
-                            </div>
-                            <div class="flex items-center space-x-2 flex-wrap gap-2">
-                                <div id="filter-buttons" class="flex items-center space-x-2">
-                                    <button data-filter="all" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium">Todos</button>
-                                    <button data-filter="low_stock" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium">Estoque Baixo</button>
-                                    <button data-filter="expiring_soon" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium">Vencendo</button>
+                <div id="stock-page" class="page-content flex-1 flex flex-col hidden min-h-0 bg-background-light dark:bg-background-dark">
+                    <div class="flex-1 flex flex-col items-center px-4 py-6 overflow-hidden">
+                        <div id="stock-page-container" class="w-full max-w-[1400px] flex-1 flex flex-col rounded-2xl border border-gray-200/60 dark:border-gray-700/60 shadow-sm bg-surface-light dark:bg-surface-dark overflow-hidden">
+                            <header class="flex items-center justify-between px-6 py-5 border-b border-gray-200/70 dark:border-gray-700/70 bg-surface-light dark:bg-surface-dark">
+                                <div class="flex items-center gap-3">
+                                    <button type="button" class="mobile-menu-toggle sm:hidden p-2 rounded-full border border-white/30 bg-primary/90 text-white shadow-md" aria-label="Abrir menu" aria-controls="sidebar">
+                                        <span class="material-icons">menu</span>
+                                    </button>
+                                    <h1 class="text-2xl font-bold">Estoque</h1>
                                 </div>
-                                <button id="clear-filters-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
-                                    Limpar filtros
-                                </button>
-                                <div class="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg">
-                                    <button id="grid-view-btn" class="p-2"><span class="material-icons">grid_view</span></button>
-                                    <button id="list-view-btn" class="p-2"><span class="material-icons">view_list</span></button>
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+                                        <span class="user-name-display font-medium hidden md:block">Usuário</span>
+                                        <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
+                                        <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
+                                        <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
+                                    </div>
+                                </div>
+                            </header>
+                            <div class="px-6 py-5 border-b border-gray-200/70 dark:border-gray-700/70 bg-surface-light dark:bg-surface-dark">
+                                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                    <div class="relative flex-1 lg:max-w-md">
+                                        <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                                        <input id="search-input" class="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background-light dark:bg-background-dark" placeholder="Buscar por produto ou categoria..." type="text" />
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-3 justify-end">
+                                        <div id="filter-buttons" class="flex items-center gap-2 bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 rounded-xl p-1">
+                                            <button data-filter="all" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition">Todos</button>
+                                            <button data-filter="low_stock" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition">Estoque Baixo</button>
+                                            <button data-filter="expiring_soon" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition">Vencendo</button>
+                                        </div>
+                                        <button id="clear-filters-btn" class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-subtle-light dark:text-subtle-dark hover:bg-gray-100 dark:hover:bg-gray-700 transition">Limpar filtros</button>
+                                        <button id="stock-add-product-btn" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm">
+                                            <span class="material-icons text-base">add</span>
+                                            <span>Adicionar</span>
+                                        </button>
+                                        <button id="suggest-product-btn" class="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm">
+                                            <span class="material-icons text-base">auto_awesome</span>
+                                            <span>Sugerir</span>
+                                        </button>
+                                        <div class="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+                                            <button id="grid-view-btn" class="p-2 transition-colors"><span class="material-icons">grid_view</span></button>
+                                            <button id="list-view-btn" class="p-2 transition-colors"><span class="material-icons">view_list</span></button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <div id="product-container" class="flex-1 px-6 py-6 overflow-y-auto bg-background-light dark:bg-background-dark flex flex-col">
+                                <div id="product-grid" class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 content-start"></div>
+                                <div id="pagination-controls" class="flex justify-center items-center mt-8 space-x-2"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div id="product-container" class="flex-1 p-6 overflow-y-auto bg-background-light dark:bg-background-dark flex flex-col">
-                        <div id="product-grid" class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 content-start"></div>
-                        <div id="pagination-controls" class="flex justify-center items-center mt-8 space-x-2"></div>
                     </div>
                 </div>
 
@@ -524,6 +543,21 @@
                     <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Adicionar</button>
                 </footer>
             </form>
+        </div>
+    </div>
+
+    <div id="suggestions-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <span class="material-icons text-secondary">auto_awesome</span>
+                    <span>Sugestões Inteligentes</span>
+                </h2>
+                <button data-close-modal="suggestions-modal" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <span class="material-icons">close</span>
+                </button>
+            </header>
+            <main id="suggestions-content" class="p-6 space-y-6 overflow-y-auto"></main>
         </div>
     </div>
 
