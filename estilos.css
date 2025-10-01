@@ -239,10 +239,10 @@ label {
     position: relative;
 }
 
-input[type="text"],
-input[type="password"],
-input[type="date"],
-input[type="number"] {
+#login-container input[type="text"],
+#login-container input[type="password"],
+#login-container input[type="date"],
+#login-container input[type="number"] {
     width: 100%;
     padding: 0.8rem;
     border: 2px solid #b388eb;
