@@ -87,39 +87,104 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark antialiased">
     <!-- Login -->
-    <div id="login-container" class="container">
-        <div class="imagem">
-            <img src="img/idle/1.png" alt="monster" id="monster" loading="lazy" decoding="async">
+    <div id="login-container" class="flex flex-col md:flex-row min-h-screen bg-background-light dark:bg-background-dark">
+        <div class="w-full md:w-1/2 bg-[#D4F4D4] dark:bg-purple-900/20 flex items-center justify-center p-8 md:p-12 transition-all duration-300">
+            <div class="text-center space-y-8">
+                <img src="img/idle/1.png" alt="Mascote roxo sorrindo com boné branco" id="monster" loading="lazy" decoding="async" class="mx-auto max-w-xs md:max-w-md lg:max-w-lg transform transition-transform duration-500 hover:scale-105">
+                <div class="hidden md:block space-y-2">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark">A energia que você precisa!</h2>
+                    <p class="text-secondary-text-light dark:text-secondary-text-dark">Faça login e peça o melhor açaí da região.</p>
+                </div>
+            </div>
         </div>
-        <div class="formulario">
-            <form id="login-form">
-                <h1>Login</h1>
-                <label for="input-usuario">Nome de Usuário (Login)</label>
-                <div class="input-container">
-                    <input type="text" id="input-usuario" placeholder="Digite seu usuário">
+        <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 bg-surface-light dark:bg-surface-dark">
+            <div class="w-full max-w-md space-y-10">
+                <form id="login-form" class="space-y-6">
+                    <div class="text-center md:text-left space-y-2">
+                        <h1 class="text-4xl font-bold text-primary">Bem-vindo de volta!</h1>
+                        <p class="text-lg text-secondary-text-light dark:text-secondary-text-dark">Acesse sua conta para continuar.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="input-usuario" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Nome de Usuário (Login)</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">person_outline</span>
+                                </span>
+                                <input type="text" id="input-usuario" placeholder="Digite seu usuário" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-4 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="username">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="input-clave" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Senha de Acesso</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">lock_outline</span>
+                                </span>
+                                <input type="password" id="input-clave" placeholder="Digite sua senha" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-12 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="current-password">
+                                <button type="button" id="toggle-password-login" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-primary" aria-label="Alternar visibilidade da senha">
+                                    <span class="material-icons" id="toggle-password-login-icon">visibility_off</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <label class="flex items-center gap-2 text-secondary-text-light dark:text-secondary-text-dark">
+                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
+                            Lembrar-me
+                        </label>
+                        <a href="#" class="font-medium text-primary hover:text-primary/80">Esqueceu sua senha?</a>
+                    </div>
+                    <div class="flex flex-col space-y-4">
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            Entrar
+                        </button>
+                        <button type="button" id="show-register" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-primary border border-gray-300 dark:border-gray-600 hover:bg-primary/10 transition focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            Ainda não tem uma conta? Cadastre-se
+                        </button>
+                    </div>
+                </form>
+                <form id="register-form" class="space-y-6" style="display: none;">
+                    <div class="text-center md:text-left space-y-2">
+                        <h1 class="text-4xl font-bold text-primary">Crie sua conta</h1>
+                        <p class="text-lg text-secondary-text-light dark:text-secondary-text-dark">Cadastre-se para aproveitar a experiência completa.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="register-username" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Nome de Usuário (Login)</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">person_outline</span>
+                                </span>
+                                <input type="text" id="register-username" placeholder="Crie um usuário" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-4 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="username">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="register-password" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Senha de Acesso</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">lock_outline</span>
+                                </span>
+                                <input type="password" id="register-password" placeholder="Crie uma senha" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-12 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="new-password">
+                                <button type="button" id="toggle-password-register" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-primary" aria-label="Alternar visibilidade da senha de cadastro">
+                                    <span class="material-icons" id="toggle-password-register-icon">visibility_off</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col space-y-4">
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            Cadastrar
+                        </button>
+                        <button type="button" id="show-login" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-primary border border-gray-300 dark:border-gray-600 hover:bg-primary/10 transition focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            Já possui uma conta? Voltar ao login
+                        </button>
+                    </div>
+                </form>
+                <div class="text-center md:hidden space-y-1">
+                    <h2 class="text-xl font-bold text-text-light dark:text-text-dark">A energia que você precisa!</h2>
+                    <p class="text-sm text-secondary-text-light dark:text-secondary-text-dark">Peça o melhor açaí da região.</p>
                 </div>
-                <label for="input-clave">Senha de Acesso</label>
-                <div class="input-container">
-                    <input type="password" id="input-clave" placeholder="Digite sua senha">
-                    <span id="toggle-password-login">👁️</span>
-                </div>
-                <button type="submit">Entrar</button>
-                <button type="button" id="show-register">Cadastrar</button>
-            </form>
-            <form id="register-form" style="display: none;">
-                <h1>Cadastro</h1>
-                <label for="register-username">Nome de Usuário (Login)</label>
-                <div class="input-container">
-                    <input type="text" id="register-username" placeholder="Digite seu usuário">
-                </div>
-                <label for="register-password">Senha de Acesso</label>
-                <div class="input-container">
-                    <input type="password" id="register-password" placeholder="Digite sua senha">
-                    <span id="toggle-password-register">👁️</span>
-                </div>
-                <button type="submit">Cadastrar</button>
-                <button type="button" id="show-login">Voltar ao Login</button>
-            </form>
+            </div>
         </div>
     </div>
 
