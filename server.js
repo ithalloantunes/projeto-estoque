@@ -7,6 +7,9 @@ import { v4 as uuidv4 } from 'uuid';
 import http from 'http';
 import multer from 'multer';
 import { Server as SocketIOServer } from 'socket.io';
+import cookieParser from 'cookie-parser';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -20,16 +23,30 @@ if (process.env.NODE_ENV !== 'production') {
   allowedOrigins.add('http://127.0.0.1:3000');
 }
 
+const SESSION_COOKIE_NAME = 'session';
+const JWT_EXPIRATION = '12h';
+const BCRYPT_SALT_ROUNDS = 12;
+
+const sanitizeText = value => typeof value === 'string' ? value.trim() : '';
+const normalizeUsername = value => sanitizeText(value).toLowerCase();
+
 const isOriginAllowed = origin => !origin || allowedOrigins.has(origin);
 
 const app = express();
+app.use(cookieParser());
 app.use(cors({
   origin: (origin, callback) => {
     callback(null, isOriginAllowed(origin));
   },
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+app.use((req, res, next) => {
+  if (req.path.startsWith('/data')) {
+    return res.status(404).json({ error: 'Recurso não encontrado' });
+  }
+  return next();
+});
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -69,6 +86,36 @@ ensureDir(userImagesDir);
 if (!fs.existsSync(usersFile))     fs.writeFileSync(usersFile, '[]', 'utf8');
 if (!fs.existsSync(estoqueFile))   fs.writeFileSync(estoqueFile, '[]', 'utf8');
 if (!fs.existsSync(movFile))       fs.writeFileSync(movFile, '[]', 'utf8');
+
+const jwtSecretFile = path.join(dataDir, '.jwt-secret');
+let JWT_SECRET = sanitizeText(process.env.JWT_SECRET);
+if (!JWT_SECRET) {
+  if (fs.existsSync(jwtSecretFile)) {
+    JWT_SECRET = sanitizeText(fs.readFileSync(jwtSecretFile, 'utf8'));
+  }
+  if (!JWT_SECRET) {
+    JWT_SECRET = `${uuidv4()}${uuidv4()}`.replace(/-/g, '');
+    fs.writeFileSync(jwtSecretFile, JWT_SECRET, { encoding: 'utf8' });
+  }
+}
+
+const getCookieOptions = () => ({
+  httpOnly: true,
+  sameSite: 'strict',
+  secure: process.env.NODE_ENV === 'production',
+  maxAge: 12 * 60 * 60 * 1000,
+  path: '/',
+});
+
+const setSessionCookie = (res, token) => {
+  res.cookie(SESSION_COOKIE_NAME, token, getCookieOptions());
+};
+
+const clearSessionCookie = res => {
+  const options = getCookieOptions();
+  delete options.maxAge;
+  res.clearCookie(SESSION_COOKIE_NAME, options);
+};
 
 const imageFileFilter = (req, file, cb) => {
   if (!file.mimetype || !file.mimetype.startsWith('image/')) {
@@ -130,6 +177,43 @@ const writeJSON = (file, data) => {
   fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
 };
 
+const loadUsers = () => readJSON(usersFile);
+const saveUsers = users => writeJSON(usersFile, users);
+
+const ensureUserMetadata = user => {
+  if (!user || !user.username) return user;
+  const lower = normalizeUsername(user.username);
+  if (user.usernameLower === lower) {
+    return user;
+  }
+  return { ...user, usernameLower: lower };
+};
+
+const sanitizeUserForResponse = user => ({
+  id: user.id,
+  username: user.username,
+  role: user.role,
+  approved: Boolean(user.approved),
+  photo: toPublicPath(user.photo) || null,
+});
+
+const refreshStoredUsersMetadata = () => {
+  const users = loadUsers();
+  let updated = false;
+  const sanitized = users.map(user => {
+    const ensured = ensureUserMetadata(user);
+    if (ensured !== user) {
+      updated = true;
+    }
+    return ensured;
+  });
+  if (updated) {
+    saveUsers(sanitized);
+  }
+};
+
+refreshStoredUsersMetadata();
+
 const sanitizeCost = value => {
   if (value === undefined || value === null || value === '') return null;
   const parsed = Number.parseFloat(value);
@@ -155,104 +239,200 @@ const logMovimentacao = mov => {
   writeJSON(movFile, logs);
 };
 
+const createSessionToken = user => jwt.sign({
+  userId: user.id,
+  role: user.role,
+  username: user.username,
+}, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+
+const authMiddleware = (req, res, next) => {
+  const token = req.cookies?.[SESSION_COOKIE_NAME];
+  if (!token) {
+    return res.status(401).json({ error: 'Não autenticado' });
+  }
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    const users = loadUsers();
+    const user = users.find(u => u.id === payload.userId);
+    if (!user || !user.approved) {
+      clearSessionCookie(res);
+      return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.' });
+    }
+    req.user = {
+      id: user.id,
+      role: user.role,
+      username: user.username,
+    };
+    return next();
+  } catch (error) {
+    clearSessionCookie(res);
+    return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
+  }
+};
+
+const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito' });
+  }
+  return next();
+};
+
 // ROTA DE REGISTRO (usuário fica pendente até aprovação)
 app.post('/api/register', (req, res) => {
-  const { username, password } = req.body;
+  const username = sanitizeText(req.body?.username);
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
   }
-  const users = readJSON(usersFile);
-  if (users.some(u => u.username === username)) {
+  if (username.length < 3) {
+    return res.status(400).json({ error: 'O usuário deve ter pelo menos 3 caracteres.' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
+  }
+
+  const users = loadUsers();
+  const normalized = normalizeUsername(username);
+  if (users.some(u => normalizeUsername(u.username || '') === normalized)) {
     return res.status(400).json({ error: 'Usuário já existe' });
   }
-  users.push({
+
+  const passwordHash = bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
+  const newUser = ensureUserMetadata({
     id: uuidv4(),
     username,
-    password,
+    passwordHash,
     role: 'user',
     approved: false,
-    photo: null
+    photo: null,
   });
-  writeJSON(usersFile, users);
+
+  users.push(newUser);
+  saveUsers(users);
   broadcastUsersUpdated();
   res.json({ message: 'Cadastro enviado para aprovação' });
 });
 
 // ROTA DE LOGIN (agora retorna role)
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
+  const username = sanitizeText(req.body?.username);
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
   }
-  const users = readJSON(usersFile);
-  const user  = users.find(u => u.username === username && u.password === password);
-  if (!user) {
+
+  const users = loadUsers();
+  const normalized = normalizeUsername(username);
+  const idx = users.findIndex(u => normalizeUsername(u.username || '') === normalized);
+  if (idx === -1) {
+    return res.status(401).json({ error: 'Credenciais inválidas' });
+  }
+
+  let user = users[idx];
+  let passwordMatches = false;
+  if (user.passwordHash) {
+    passwordMatches = bcrypt.compareSync(password, user.passwordHash);
+  } else if (user.password) {
+    passwordMatches = user.password === password;
+    if (passwordMatches) {
+      const passwordHash = bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
+      const updatedUser = ensureUserMetadata({
+        ...user,
+        passwordHash,
+      });
+      delete updatedUser.password;
+      users[idx] = updatedUser;
+      saveUsers(users);
+      user = updatedUser;
+    }
+  }
+
+  if (!passwordMatches) {
     return res.status(401).json({ error: 'Credenciais inválidas' });
   }
   if (!user.approved) {
     return res.status(403).json({ error: 'Usuário pendente de aprovação' });
   }
+
+  const token = createSessionToken(user);
+  setSessionCookie(res, token);
+
   res.json({
     message: 'Login bem-sucedido',
     userId: user.id,
+    username: user.username,
     role: user.role,
-    photo: toPublicPath(user.photo)
+    photo: toPublicPath(user.photo),
   });
 });
 
+app.get('/api/session', authMiddleware, (req, res) => {
+  const users = loadUsers();
+  const user = users.find(u => u.id === req.user.id);
+  if (!user || !user.approved) {
+    clearSessionCookie(res);
+    return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.' });
+  }
+  res.json({
+    userId: user.id,
+    username: user.username,
+    role: user.role,
+    photo: toPublicPath(user.photo),
+  });
+});
+
+app.post('/api/logout', (req, res) => {
+  clearSessionCookie(res);
+  res.json({ message: 'Logout realizado' });
+});
+
 // --- Gestão de usuários ---
-app.get('/api/users/pending', (req, res) => {
-  if (req.query.role !== 'admin') {
-    return res.status(403).json({ error: 'Acesso restrito' });
-  }
-  const users = readJSON(usersFile).filter(u => !u.approved);
-  res.json(users);
+app.get('/api/users/pending', authMiddleware, requireAdmin, (req, res) => {
+  const users = loadUsers().filter(u => !u.approved);
+  res.json(users.map(sanitizeUserForResponse));
 });
 
-app.get('/api/users', (req, res) => {
-  if (req.query.role !== 'admin') {
-    return res.status(403).json({ error: 'Acesso restrito' });
-  }
-  res.json(readJSON(usersFile));
+app.get('/api/users', authMiddleware, requireAdmin, (req, res) => {
+  res.json(loadUsers().map(sanitizeUserForResponse));
 });
 
-app.post('/api/users/:id/approve', (req, res) => {
-  if (req.body.roleAtuante !== 'admin') {
-    return res.status(403).json({ error: 'Acesso restrito' });
-  }
-  const users = readJSON(usersFile);
+app.post('/api/users/:id/approve', authMiddleware, requireAdmin, (req, res) => {
+  const users = loadUsers();
   const idx   = users.findIndex(u => u.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
   users[idx].approved = true;
-  writeJSON(usersFile, users);
+  users[idx] = ensureUserMetadata(users[idx]);
+  saveUsers(users);
   broadcastUsersUpdated();
   res.json({ message: 'Usuário aprovado' });
 });
 
-app.delete('/api/users/:id', (req, res) => {
-  if (req.body.roleAtuante !== 'admin') {
-    return res.status(403).json({ error: 'Acesso restrito' });
-  }
-  const users = readJSON(usersFile);
+app.delete('/api/users/:id', authMiddleware, requireAdmin, (req, res) => {
+  const users = loadUsers();
   const idx   = users.findIndex(u => u.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
   users.splice(idx, 1);
-  writeJSON(usersFile, users);
+  saveUsers(users);
   broadcastUsersUpdated();
   res.json({ message: 'Usuário excluído' });
 });
 
-app.put('/api/users/:id/photo', userUpload.single('photo'), (req, res) => {
+app.put('/api/users/:id/photo', authMiddleware, userUpload.single('photo'), (req, res) => {
   const { remove } = req.body;
-  const users = readJSON(usersFile);
+  const users = loadUsers();
   const idx   = users.findIndex(u => u.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
+  if (req.user.id !== req.params.id && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito' });
+  }
   const atual = users[idx];
 
   if (remove === 'true') {
     if (atual.photo) removeStoredFile(atual.photo);
     atual.photo = null;
-    writeJSON(usersFile, users);
+    saveUsers(users);
     broadcastUsersUpdated();
     broadcastUserPhotoUpdated({ id: atual.id, photo: null });
     return res.json({ message: 'Foto removida', photo: null });
@@ -265,21 +445,24 @@ app.put('/api/users/:id/photo', userUpload.single('photo'), (req, res) => {
 
   if (atual.photo) removeStoredFile(atual.photo);
   atual.photo = newPhotoPath;
-  writeJSON(usersFile, users);
+  saveUsers(users);
   broadcastUsersUpdated();
   broadcastUserPhotoUpdated({ id: atual.id, photo: toPublicPath(newPhotoPath) });
   res.json({ message: 'Foto atualizada', photo: toPublicPath(newPhotoPath) });
 });
 
-app.get('/api/users/:id/photo', (req, res) => {
-  const users = readJSON(usersFile);
+app.get('/api/users/:id/photo', authMiddleware, (req, res) => {
+  if (req.user.id !== req.params.id && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito' });
+  }
+  const users = loadUsers();
   const user  = users.find(u => u.id === req.params.id);
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
   res.json({ photo: toPublicPath(user.photo) });
 });
 
 // Rotas de estoque (mantidas iguais ao seu último estado)
-app.get('/api/estoque', (req, res) => {
+app.get('/api/estoque', authMiddleware, (req, res) => {
   let estoque = readJSON(estoqueFile);
   if (!Array.isArray(estoque)) {
     estoque = Object.entries(estoque).map(([id, item]) => ({ id, ...item }));
@@ -293,7 +476,7 @@ app.get('/api/estoque', (req, res) => {
 });
 
 // Rota para obter o histórico de movimentações de estoque
-app.get('/api/movimentacoes', (req, res) => {
+app.get('/api/movimentacoes', authMiddleware, (req, res) => {
   const logs = readJSON(movFile) || [];
   const { start, end } = req.query;
   let filtered = logs;
@@ -308,14 +491,14 @@ app.get('/api/movimentacoes', (req, res) => {
   res.json(filtered);
 });
 
-app.post('/api/estoque', productUpload.single('image'), (req, res) => {
+app.post('/api/estoque', authMiddleware, productUpload.single('image'), (req, res) => {
   const uploadedImagePath = getStoredFilePath(req.file);
   const produto = (req.body.produto || '').trim();
   const tipo = (req.body.tipo || '').trim();
   const lote = (req.body.lote || '').trim();
   const quantidadeBruta = req.body.quantidade;
   const validade = req.body.validade || null;
-  const usuario = req.body.usuario;
+  const usuario = req.user?.username;
   const custoBruto = req.body.custo;
 
   if (!produto || quantidadeBruta === undefined) {
@@ -372,9 +555,9 @@ app.post('/api/estoque', productUpload.single('image'), (req, res) => {
   });
 });
 
-app.put('/api/estoque/:id', productUpload.single('image'), (req, res) => {
+app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), (req, res) => {
   const rawId  = req.params.id;
-  const usuario = req.body.usuario;
+  const usuario = req.user?.username;
   const estoque = readJSON(estoqueFile) || [];
   const uploadedImagePath = getStoredFilePath(req.file);
 
@@ -429,16 +612,16 @@ app.put('/api/estoque/:id', productUpload.single('image'), (req, res) => {
   };
   const diff = novaQtd - atual.quantidade;
   logMovimentacao({
-  id: uuidv4(),
-  produtoId: itemId,
-  produto: estoque[idx].produto,
-  tipo: diff === 0 ? 'edicao' : diff > 0 ? 'entrada' : 'saida',
-  quantidade: diff,
-  quantidadeAnterior: atual.quantidade,
-  quantidadeAtual: novaQtd,
-  data: new Date().toISOString(),
-  usuario: usuario || 'desconhecido'
-});
+    id: uuidv4(),
+    produtoId: itemId,
+    produto: estoque[idx].produto,
+    tipo: diff === 0 ? 'edicao' : diff > 0 ? 'entrada' : 'saida',
+    quantidade: diff,
+    quantidadeAnterior: atual.quantidade,
+    quantidadeAtual: novaQtd,
+    data: new Date().toISOString(),
+    usuario: usuario || 'desconhecido'
+  });
 
   writeJSON(estoqueFile, estoque);
   broadcastDataUpdated();
@@ -448,9 +631,9 @@ app.put('/api/estoque/:id', productUpload.single('image'), (req, res) => {
   });
 });
 
-app.delete('/api/estoque/:id', (req, res) => {
+app.delete('/api/estoque/:id', authMiddleware, (req, res) => {
   const rawId   = req.params.id;
-  const { motivo, usuario } = req.body;
+  const { motivo } = req.body;
   if (!motivo) {
     return res.status(400).json({ error: 'Motivo é obrigatório' });
   }
@@ -479,14 +662,14 @@ app.delete('/api/estoque/:id', (req, res) => {
     quantidadeAtual: 0,
     motivo,
     data: new Date().toISOString(),
-    usuario: usuario || 'desconhecido'
+    usuario: req.user?.username || 'desconhecido'
   });
   broadcastDataUpdated();
   res.json({ message: 'Produto excluído com sucesso!' });
 });
 
 // Rota de resumo de relatorio
-app.get('/api/report/summary', (req, res) => {
+app.get('/api/report/summary', authMiddleware, (req, res) => {
   const logs = readJSON(movFile) || [];
   const sumProd = {};
   const sumDay = {};
@@ -505,7 +688,7 @@ app.get('/api/report/summary', (req, res) => {
 });
 
 // Rota de resumo do estoque atual
-app.get('/api/report/estoque', (req, res) => {
+app.get('/api/report/estoque', authMiddleware, (req, res) => {
   const estoque = readJSON(estoqueFile) || [];
   const resumo = {};
   for (const item of estoque) {
@@ -517,7 +700,7 @@ app.get('/api/report/estoque', (req, res) => {
 });
 
 // Rota para exportar movimentacoes em CSV
-app.get('/api/movimentacoes/csv', (req, res) => {
+app.get('/api/movimentacoes/csv', authMiddleware, (req, res) => {
   const logs = readJSON(movFile) || [];
   const header = [
     'id',

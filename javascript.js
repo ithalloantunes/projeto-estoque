@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let isRestoringSession = false;
   let pendingRealtimeRefresh = false;
   let pendingRealtimeOptions = {};
+  let isSessionExpiryHandled = false;
+  let isProcessingLogout = false;
 
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
@@ -458,19 +460,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     try {
-      const res = await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.photo) {
-          const resolved = getFullImageUrl(data.photo);
-          updateAllAvatars(resolved);
-          profileModalImage.src = resolved;
-          if (currentUser) {
-            localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
-          }
-          registerImageFallbacks(profileModalImage);
-          return;
+      const data = await authenticatedJsonFetch(`${BASE_URL}/api/users/${currentUserId}/photo`);
+      if (data.photo) {
+        const resolved = getFullImageUrl(data.photo);
+        updateAllAvatars(resolved);
+        profileModalImage.src = resolved;
+        if (currentUser) {
+          localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
         }
+        registerImageFallbacks(profileModalImage);
+        return;
       }
     } catch (err) {
       console.error('Erro ao buscar foto de perfil:', err);
@@ -487,20 +486,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentUserId || !file) return null;
     const formData = new FormData();
     formData.append('photo', file);
-    const res = await fetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
+    const data = await authenticatedJsonFetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
       method: 'PUT',
-      body: formData,
-      credentials: 'include'
+      body: formData
     });
-    let data = {};
-    try {
-      data = await res.json();
-    } catch (err) {
-      data = {};
-    }
-    if (!res.ok) {
-      throw new Error(data.error || 'Não foi possível atualizar a foto.');
-    }
     return data.photo || null;
   };
 
@@ -643,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       await enterApplication({
-        username,
+        username: data.username || username,
         userId: data.userId,
         role: data.role,
         photo: data.photo ?? null
@@ -684,29 +673,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const logout = () => {
-    clearStoredSession();
-    disconnectSocket();
-    currentUser = null;
-    currentUserId = null;
-    userRole = null;
-    estoqueData = [];
-    filteredProducts = [];
-    movementsData = [];
-    currentPage = 1;
-    activePageId = null;
-    usersDataDirty = true;
-    isRestoringSession = false;
-    stopAutoRefresh();
-    pendingRealtimeRefresh = false;
-    pendingRealtimeOptions = {};
-    closeMobileSidebar(true);
-    showLoginScreen();
-    inputUsuario.value = '';
-    inputClave.value = '';
-    profileModal.classList.add('hidden');
-    resetProfilePhoto();
-    toggleAdminFeatures(false);
+  const logout = async (options = {}) => {
+    const { skipRequest = false } = options;
+    if (isProcessingLogout) return;
+    isProcessingLogout = true;
+    try {
+      if (!skipRequest) {
+        try {
+          await fetch(`${BASE_URL}/api/logout`, {
+            method: 'POST',
+            credentials: 'include'
+          });
+        } catch (error) {
+          console.error('Não foi possível encerrar a sessão no servidor:', error);
+        }
+      }
+    } finally {
+      clearStoredSession();
+      disconnectSocket();
+      currentUser = null;
+      currentUserId = null;
+      userRole = null;
+      estoqueData = [];
+      filteredProducts = [];
+      movementsData = [];
+      currentPage = 1;
+      activePageId = null;
+      usersDataDirty = true;
+      isRestoringSession = false;
+      stopAutoRefresh();
+      pendingRealtimeRefresh = false;
+      pendingRealtimeOptions = {};
+      closeMobileSidebar(true);
+      hideLoader();
+      showLoginScreen();
+      inputUsuario.value = '';
+      inputClave.value = '';
+      profileModal.classList.add('hidden');
+      resetProfilePhoto();
+      toggleAdminFeatures(false);
+      isSessionExpiryHandled = false;
+      isProcessingLogout = false;
+    }
   };
 
   const toggleAdminFeatures = isAdmin => {
@@ -717,6 +725,36 @@ document.addEventListener('DOMContentLoaded', () => {
         link.classList.add('hidden');
       }
     });
+  };
+
+  const handleSessionExpiry = async () => {
+    if (isSessionExpiryHandled) return;
+    isSessionExpiryHandled = true;
+    alert('Sua sessão expirou. Faça login novamente.');
+    await logout({ skipRequest: true });
+  };
+
+  const authenticatedFetch = async (input, init = {}) => {
+    const options = {
+      credentials: 'include',
+      ...init,
+    };
+    const response = await fetch(input, options);
+    if (response.status === 401) {
+      await handleSessionExpiry();
+      throw new Error('Sessão expirada. Faça login novamente.');
+    }
+    return response;
+  };
+
+  const authenticatedJsonFetch = async (input, init = {}) => {
+    const response = await authenticatedFetch(input, init);
+    const data = await response.json();
+    if (!response.ok) {
+      const message = (data && data.error) || 'Erro na requisição.';
+      throw new Error(message);
+    }
+    return data;
   };
 
   // Dados -----------------------------------------------------------------------
@@ -754,8 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const { silent = false, onLoaded } = options;
     try {
       if (!silent) showLoader();
-      const res = await fetch(`${BASE_URL}/api/estoque`, { credentials: 'include' });
-      const data = await res.json();
+      const data = await authenticatedJsonFetch(`${BASE_URL}/api/estoque`);
       const raw = Array.isArray(data)
         ? data
         : Object.entries(data || {}).map(([id, item]) => ({ id, ...item }));
@@ -781,8 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (start) params.append('start', start);
       if (end) params.append('end', end);
       if (!silent) showLoader();
-      const res = await fetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`, { credentials: 'include' });
-      const data = await res.json();
+      const data = await authenticatedJsonFetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`);
       movementsData = Array.isArray(data) ? data : [];
       renderMovimentacoes();
     } catch (err) {
@@ -800,12 +836,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (start) params.append('start', start);
       if (end) params.append('end', end);
       if (!silent) showLoader();
-      const [resSummary, resStock] = await Promise.all([
-        fetch(`${BASE_URL}/api/report/summary?${params.toString()}`, { credentials: 'include' }),
-        fetch(`${BASE_URL}/api/report/estoque`, { credentials: 'include' })
+      const [summaryData, stockData] = await Promise.all([
+        authenticatedJsonFetch(`${BASE_URL}/api/report/summary?${params.toString()}`),
+        authenticatedJsonFetch(`${BASE_URL}/api/report/estoque`)
       ]);
-      const summaryData = await resSummary.json();
-      const stockData = await resStock.json();
       await renderReports(summaryData, stockData);
     } catch (err) {
       console.error('Erro ao carregar relatórios:', err);
@@ -1317,11 +1351,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (!silent) showLoader();
       const [pendingRes, activeRes] = await Promise.all([
-        fetch(`${BASE_URL}/api/users/pending?role=admin`, { credentials: 'include' }),
-        fetch(`${BASE_URL}/api/users?role=admin`, { credentials: 'include' })
+        authenticatedJsonFetch(`${BASE_URL}/api/users/pending`),
+        authenticatedJsonFetch(`${BASE_URL}/api/users`)
       ]);
-      const pendingData = await pendingRes.json();
-      const activeData = await activeRes.json();
+      const pendingData = pendingRes;
+      const activeData = activeRes;
 
       pendingUsersList.innerHTML = '';
       if (!pendingData.length) {
@@ -1418,18 +1452,11 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('quantidade', String(quantidade));
       formData.append('validade', validade ?? '');
       formData.append('custo', String(custoFormatado));
-      if (currentUser) formData.append('usuario', currentUser);
       if (imageFile) formData.append('image', imageFile);
-      const res = await fetch(`${BASE_URL}/api/estoque`, {
+      await authenticatedJsonFetch(`${BASE_URL}/api/estoque`, {
         method: 'POST',
-        body: formData,
-        credentials: 'include'
+        body: formData
       });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || 'Erro ao adicionar produto.');
-        return;
-      }
       closeModal('add-modal');
       addForm.reset();
       if (addImageInput) addImageInput.value = '';
@@ -1503,18 +1530,14 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('quantidade', String(quantidade));
       formData.append('validade', validade ?? '');
       formData.append('custo', String(custoFormatado));
-      if (currentUser) formData.append('usuario', currentUser);
       if (newImageFile) formData.append('image', newImageFile);
-      const res = await fetch(`${BASE_URL}/api/estoque/${id}`, {
-        method: 'PUT',
-        body: formData,
-        credentials: 'include'
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || 'Erro ao atualizar produto.');
-        return;
+      if (editForm.elements.removeImage?.checked) {
+        formData.append('removeImage', 'true');
       }
+      await authenticatedJsonFetch(`${BASE_URL}/api/estoque/${id}`, {
+        method: 'PUT',
+        body: formData
+      });
       if (editImageInput) editImageInput.value = '';
       closeModal('edit-modal');
       await loadStock();
@@ -1544,17 +1567,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     try {
       showLoader();
-      const res = await fetch(`${BASE_URL}/api/estoque/${currentProductId}`, {
+      await authenticatedJsonFetch(`${BASE_URL}/api/estoque/${currentProductId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ motivo, usuario: currentUser }),
-        credentials: 'include'
+        body: JSON.stringify({ motivo })
       });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || 'Erro ao excluir produto.');
-        return;
-      }
       closeModal('delete-modal');
       await loadStock();
       await loadMovimentacoes();
@@ -1571,14 +1588,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const approveUser = async userId => {
     try {
       showLoader();
-      const res = await fetch(`${BASE_URL}/api/users/${userId}/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roleAtuante: 'admin' })
+      await authenticatedJsonFetch(`${BASE_URL}/api/users/${userId}/approve`, {
+        method: 'POST'
       });
-      if (res.ok) {
-        await renderApprovalPage();
-      }
+      await renderApprovalPage();
     } catch (err) {
       alert('Erro ao aprovar usuário: ' + err.message);
     } finally {
@@ -1589,14 +1602,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const declineUser = async userId => {
     try {
       showLoader();
-      const res = await fetch(`${BASE_URL}/api/users/${userId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roleAtuante: 'admin' })
+      await authenticatedJsonFetch(`${BASE_URL}/api/users/${userId}`, {
+        method: 'DELETE'
       });
-      if (res.ok) {
-        await renderApprovalPage();
-      }
+      await renderApprovalPage();
     } catch (err) {
       alert('Erro ao recusar usuário: ' + err.message);
     } finally {
@@ -1786,17 +1795,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const initializeFromStoredSession = async () => {
     if (isRestoringSession) return;
-    const storedSession = getStoredSession();
-    if (!storedSession) {
-      showLoginScreen();
-      return;
-    }
     isRestoringSession = true;
     try {
       showLoader();
-      await enterApplication(storedSession);
+      const res = await fetch(`${BASE_URL}/api/session`, { credentials: 'include' });
+      if (!res.ok) {
+        throw new Error('Sessão não encontrada');
+      }
+      const data = await res.json();
+      await enterApplication({
+        username: data.username,
+        userId: data.userId,
+        role: data.role,
+        photo: data.photo ?? null
+      });
     } catch (error) {
-      console.error('Erro ao restaurar sessão:', error);
       clearStoredSession();
       showLoginScreen();
     } finally {
@@ -1810,9 +1823,9 @@ document.addEventListener('DOMContentLoaded', () => {
   registerForm.addEventListener('submit', handleRegister);
   showRegisterBtn.addEventListener('click', showRegisterForm);
   showLoginBtn.addEventListener('click', showLoginForm);
-  logoutLinks.forEach(link => link.addEventListener('click', event => {
+  logoutLinks.forEach(link => link.addEventListener('click', async event => {
     event.preventDefault();
-    logout();
+    await logout();
   }));
   profileLinks.forEach(link => link.addEventListener('click', event => {
     event.preventDefault();
@@ -1984,9 +1997,9 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('storage', event => {
     if (event.key !== SESSION_STORAGE_KEY) return;
     if (!event.newValue && currentUser) {
-      logout();
+      logout({ skipRequest: true }).catch(err => console.error('Erro ao sincronizar logout:', err));
     } else if (event.newValue && !currentUser) {
-      initializeFromStoredSession();
+      initializeFromStoredSession().catch(err => console.error('Erro ao sincronizar sessão:', err));
     }
   });
 
