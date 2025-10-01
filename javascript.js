@@ -64,6 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const gridViewBtn = document.getElementById('grid-view-btn');
   const listViewBtn = document.getElementById('list-view-btn');
   const productGrid = document.getElementById('product-grid');
+  const GRID_VIEW_CLASSES = [
+    'grid',
+    'grid-cols-1',
+    'sm:grid-cols-2',
+    'lg:grid-cols-3',
+    'xl:grid-cols-4',
+    '2xl:grid-cols-5',
+    'gap-6',
+    'content-start',
+  ];
+  const LIST_VIEW_CLASSES = ['flex', 'flex-col', 'gap-4'];
   const paginationContainer = document.getElementById('pagination-controls');
   const addForm = document.getElementById('add-form');
   const editForm = document.getElementById('edit-form');
@@ -829,8 +840,34 @@ document.addEventListener('DOMContentLoaded', () => {
     renderStock();
   };
 
+  const updateProductGridLayout = () => {
+    if (!productGrid) return;
+    productGrid.classList.remove(...GRID_VIEW_CLASSES, ...LIST_VIEW_CLASSES);
+    productGrid.classList.add('flex-1');
+    if (currentView === 'grid') {
+      productGrid.classList.add(...GRID_VIEW_CLASSES);
+    } else {
+      productGrid.classList.add(...LIST_VIEW_CLASSES);
+    }
+  };
+
+  const updateViewToggleState = () => {
+    const isGridView = currentView === 'grid';
+    if (gridViewBtn) {
+      gridViewBtn.classList.toggle('bg-primary', isGridView);
+      gridViewBtn.classList.toggle('text-white', isGridView);
+      gridViewBtn.setAttribute('aria-pressed', isGridView ? 'true' : 'false');
+    }
+    if (listViewBtn) {
+      listViewBtn.classList.toggle('bg-primary', !isGridView);
+      listViewBtn.classList.toggle('text-white', !isGridView);
+      listViewBtn.setAttribute('aria-pressed', !isGridView ? 'true' : 'false');
+    }
+  };
+
   const renderStock = () => {
     if (!productGrid) return;
+    updateProductGridLayout();
     const totalPages = Math.max(Math.ceil(filteredProducts.length / itemsPerPage), 1);
     if (currentPage > totalPages) currentPage = totalPages;
     if (currentPage < 1) currentPage = 1;
@@ -841,7 +878,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageItems = filteredProducts.slice(startIndex, endIndex);
 
     if (pageItems.length === 0) {
-      productGrid.innerHTML = '<p class="col-span-full text-center text-subtle-light dark:text-subtle-dark">Nenhum produto encontrado.</p>';
+      const emptyStateClasses = currentView === 'grid'
+        ? 'col-span-full text-center text-subtle-light dark:text-subtle-dark'
+        : 'w-full text-center text-subtle-light dark:text-subtle-dark';
+      productGrid.innerHTML = `<p class="${emptyStateClasses}">Nenhum produto encontrado.</p>`;
       renderPaginationControls(totalPages);
       return;
     }
@@ -865,56 +905,28 @@ document.addEventListener('DOMContentLoaded', () => {
       if (stockPercentage < 50) stockColor = 'bg-yellow-500';
       if (stockPercentage < 25) stockColor = 'bg-danger';
 
-      const commonContent = `
-        <div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">${product.tipo || '-'}</div>
-        ${expiryBadge}
-        <img alt="${product.produto}" class="w-full ${currentView === 'grid' ? 'h-40' : 'h-full'} object-cover" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
-        <div class="p-4 ${currentView === 'grid' ? 'flex-grow flex flex-col' : 'flex-1 ml-4 grid grid-cols-5 items-center gap-4'}">
-          ${currentView === 'grid'
-            ? `
-              <h3 class="font-bold">${product.produto}</h3>
-              <div class="mt-2 flex items-center justify-between">
-                <span class="text-3xl font-bold text-primary">${quantity}</span>
-                <div class="flex items-center text-sm text-subtle-light dark:text-subtle-dark">
-                  <span class="material-icons text-base mr-1">calendar_today</span>
-                  <span>${formatDate(product.validade)}</span>
-                </div>
-              </div>
-              <div class="mt-auto pt-4">
-                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div class="${stockColor} h-2 rounded-full" style="width: ${stockPercentage}%"></div>
-                </div>
-              </div>
-            `
-            : `
-              <div>
-                <p class="font-bold">${product.produto}</p>
-                <p class="text-sm text-subtle-light dark:text-subtle-dark">Lote: ${product.lote || '-'}</p>
-              </div>
-              <div class="text-center">
-                <span class="text-2xl font-bold text-primary">${quantity}</span>
-                <p class="text-xs text-subtle-light dark:text-subtle-dark">Unidades</p>
-              </div>
-              <div class="text-center">
-                <div class="flex items-center justify-center text-sm text-subtle-light dark:text-subtle-dark">
-                  <span class="material-icons text-base mr-1">calendar_today</span>
-                  <span>${formatDate(product.validade)}</span>
-                </div>
-              </div>
-              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div class="${stockColor} h-2 rounded-full" style="width: ${stockPercentage}%"></div>
-              </div>
-              <div class="flex justify-end items-center gap-2">
-                <button class="edit-btn bg-blue-500 text-white p-2 rounded-lg" data-id="${product.id}"><span class="material-icons">edit</span></button>
-                <button class="delete-btn bg-danger text-white p-2 rounded-lg" data-id="${product.id}" data-name="${product.produto}"><span class="material-icons">delete</span></button>
-              </div>
-            `}
-        </div>`;
-
       if (currentView === 'grid') {
         const card = document.createElement('div');
         card.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm overflow-hidden transition-transform duration-300 hover:-translate-y-1 flex flex-col';
-        card.innerHTML = `${commonContent}
+        card.innerHTML = `
+          <div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">${product.tipo || '-'}</div>
+          ${expiryBadge}
+          <img alt="${product.produto}" class="w-full h-40 object-cover" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
+          <div class="p-4 flex-grow flex flex-col">
+            <h3 class="font-bold">${product.produto}</h3>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-3xl font-bold text-primary">${quantity}</span>
+              <div class="flex items-center text-sm text-subtle-light dark:text-subtle-dark">
+                <span class="material-icons text-base mr-1">calendar_today</span>
+                <span>${formatDate(product.validade)}</span>
+              </div>
+            </div>
+            <div class="mt-auto pt-4">
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="${stockColor} h-2 rounded-full" style="width: ${stockPercentage}%"></div>
+              </div>
+            </div>
+          </div>
           <div class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center space-x-2 card-actions p-2">
             <button class="edit-btn bg-blue-500 text-white p-2 rounded-lg flex-1" data-id="${product.id}"><span class="material-icons">edit</span></button>
             <button class="delete-btn bg-danger text-white p-2 rounded-lg flex-1" data-id="${product.id}" data-name="${product.produto}"><span class="material-icons">delete</span></button>
@@ -923,10 +935,36 @@ document.addEventListener('DOMContentLoaded', () => {
         registerImageFallbacks(card);
       } else {
         const row = document.createElement('div');
-        row.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm flex items-center p-4 transition-shadow hover:shadow-md';
+        row.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm flex flex-col md:flex-row md:items-center p-4 gap-4 transition-shadow hover:shadow-md w-full';
         row.innerHTML = `
-          <img alt="${product.produto}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
-        ${commonContent}`;
+          <div class="relative w-full md:w-24 md:h-24 md:flex-shrink-0">
+            <div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">${product.tipo || '-'}</div>
+            ${expiryBadge}
+            <img alt="${product.produto}" class="w-full h-48 md:h-24 object-cover rounded-lg" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
+          </div>
+          <div class="flex-1 w-full md:ml-4 grid grid-cols-1 md:grid-cols-5 items-start md:items-center gap-4">
+            <div>
+              <p class="font-bold">${product.produto}</p>
+              <p class="text-sm text-subtle-light dark:text-subtle-dark">Lote: ${product.lote || '-'}</p>
+            </div>
+            <div class="text-left md:text-center">
+              <span class="text-2xl font-bold text-primary">${quantity}</span>
+              <p class="text-xs text-subtle-light dark:text-subtle-dark">Unidades</p>
+            </div>
+            <div class="text-left md:text-center">
+              <div class="flex items-center md:justify-center text-sm text-subtle-light dark:text-subtle-dark">
+                <span class="material-icons text-base mr-1">calendar_today</span>
+                <span>${formatDate(product.validade)}</span>
+              </div>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="${stockColor} h-2 rounded-full" style="width: ${stockPercentage}%"></div>
+            </div>
+            <div class="flex justify-end items-center gap-2">
+              <button class="edit-btn bg-blue-500 text-white p-2 rounded-lg" data-id="${product.id}"><span class="material-icons">edit</span></button>
+              <button class="delete-btn bg-danger text-white p-2 rounded-lg" data-id="${product.id}" data-name="${product.produto}"><span class="material-icons">delete</span></button>
+            </div>
+          </div>`;
         productGrid.appendChild(row);
         registerImageFallbacks(row);
       }
@@ -1822,21 +1860,23 @@ document.addEventListener('DOMContentLoaded', () => {
       applyFilters();
     });
   }
-  if (gridViewBtn) gridViewBtn.addEventListener('click', () => {
-    currentView = 'grid';
-    gridViewBtn.classList.add('bg-primary', 'text-white');
-    listViewBtn?.classList.remove('bg-primary', 'text-white');
-    renderStock();
-  });
-  if (listViewBtn) listViewBtn.addEventListener('click', () => {
-    currentView = 'list';
-    listViewBtn.classList.add('bg-primary', 'text-white');
-    gridViewBtn?.classList.remove('bg-primary', 'text-white');
-    renderStock();
-  });
-  if (gridViewBtn && !gridViewBtn.classList.contains('bg-primary')) {
-    gridViewBtn.classList.add('bg-primary', 'text-white');
+  if (gridViewBtn) {
+    gridViewBtn.addEventListener('click', () => {
+      if (currentView === 'grid') return;
+      currentView = 'grid';
+      updateViewToggleState();
+      renderStock();
+    });
   }
+  if (listViewBtn) {
+    listViewBtn.addEventListener('click', () => {
+      if (currentView === 'list') return;
+      currentView = 'list';
+      updateViewToggleState();
+      renderStock();
+    });
+  }
+  updateViewToggleState();
   if (addForm) addForm.addEventListener('submit', handleAddSubmit);
   if (editForm) editForm.addEventListener('submit', handleEditSubmit);
   if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', handleDeleteConfirm);
