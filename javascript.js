@@ -43,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputClave = document.getElementById('input-clave');
   const togglePasswordLogin = document.getElementById('toggle-password-login');
   const togglePasswordRegister = document.getElementById('toggle-password-register');
+  const togglePasswordLoginIcon = document.getElementById('toggle-password-login-icon');
+  const togglePasswordRegisterIcon = document.getElementById('toggle-password-register-icon');
   const monster = document.getElementById('monster');
 
   // Elementos gerais da aplicação
@@ -1950,21 +1952,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (togglePasswordLogin) {
-    togglePasswordLogin.addEventListener('click', () => {
-      if (inputClave.type === 'password') {
+    togglePasswordLogin.addEventListener('click', event => {
+      event.preventDefault();
+      const shouldReveal = inputClave.type === 'password';
+      if (shouldReveal) {
         inputClave.type = 'text';
-        monster.src = 'img/idle/1.png';
+        if (monster) monster.src = 'img/idle/1.png';
         seguirPunteroMouse = false;
       } else {
         inputClave.type = 'password';
         seguirPunteroMouse = true;
       }
+      if (togglePasswordLoginIcon) {
+        togglePasswordLoginIcon.textContent = shouldReveal ? 'visibility' : 'visibility_off';
+      }
     });
   }
   if (togglePasswordRegister) {
-    togglePasswordRegister.addEventListener('click', () => {
+    togglePasswordRegister.addEventListener('click', event => {
+      event.preventDefault();
       const registerPassword = document.getElementById('register-password');
-      registerPassword.type = registerPassword.type === 'password' ? 'text' : 'password';
+      if (!registerPassword) return;
+      const shouldReveal = registerPassword.type === 'password';
+      registerPassword.type = shouldReveal ? 'text' : 'password';
+      if (togglePasswordRegisterIcon) {
+        togglePasswordRegisterIcon.textContent = shouldReveal ? 'visibility' : 'visibility_off';
+      }
     });
   }
 
