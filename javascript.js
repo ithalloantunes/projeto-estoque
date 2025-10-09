@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ACTIVE_PAGE_STORAGE_KEY = 'acaiStock_active_page';
   const ACTIVE_MODULE_STORAGE_KEY = 'acaiStock_active_module';
   const SESSION_STORAGE_KEY = 'acaiStock_session';
+  const DARK_MODE_STORAGE_KEY = 'acaiStock_dark_mode';
   const AUTO_REFRESH_INTERVAL_MS = 60_000;
   let autoRefreshIntervalId = null;
   let activePageId = null;
@@ -36,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let isProcessingLogout = false;
   let activeModule = 'stock';
   const bodyElement = document.body;
+  const darkModeMediaQuery = typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : null;
 
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
@@ -58,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
   const mobileMenuToggles = document.querySelectorAll('.mobile-menu-toggle');
   const mobileMenuCloseButtons = document.querySelectorAll('.mobile-menu-close');
+  const darkModeToggles = document.querySelectorAll('.dark-mode-toggle');
   const stockSidebarContent = document.getElementById('stock-sidebar-content');
   const cashierSidebarContent = document.getElementById('cashier-sidebar-content');
   const moduleStockBtn = document.getElementById('module-stock-btn');
@@ -118,6 +123,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const pendingUsersList = document.getElementById('pending-users-list');
   const activeUsersList = document.getElementById('active-users-list');
+
+  const cashierKpiElements = {
+    total: {
+      valueEl: document.getElementById('cashier-kpi-total'),
+      changeWrapper: document.querySelector('[data-kpi-change="total"]'),
+      changeTextEl: document.querySelector('[data-kpi-change-text="total"]'),
+      iconEl: document.querySelector('[data-kpi-trend-icon="total"]'),
+    },
+    revenue: {
+      valueEl: document.getElementById('cashier-kpi-revenue'),
+      changeWrapper: document.querySelector('[data-kpi-change="revenue"]'),
+      changeTextEl: document.querySelector('[data-kpi-change-text="revenue"]'),
+      iconEl: document.querySelector('[data-kpi-trend-icon="revenue"]'),
+    },
+    expenses: {
+      valueEl: document.getElementById('cashier-kpi-expenses'),
+      changeWrapper: document.querySelector('[data-kpi-change="expenses"]'),
+      changeTextEl: document.querySelector('[data-kpi-change-text="expenses"]'),
+      iconEl: document.querySelector('[data-kpi-trend-icon="expenses"]'),
+    },
+    profit: {
+      valueEl: document.getElementById('cashier-kpi-profit'),
+      changeWrapper: document.querySelector('[data-kpi-change="profit"]'),
+      changeTextEl: document.querySelector('[data-kpi-change-text="profit"]'),
+      iconEl: document.querySelector('[data-kpi-trend-icon="profit"]'),
+    },
+  };
 
   // Referências dos KPIs
   const homeKpiTotalStock = document.getElementById('home-kpi-total-stock');
@@ -478,6 +510,120 @@ document.addEventListener('DOMContentLoaded', () => {
         img.src = img.dataset.fallbackSrc;
       });
     });
+  };
+
+  const formatCurrencyBRL = value => {
+    const numericValue = Number.isFinite(Number(value)) ? Number(value) : 0;
+    return numericValue.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const DEFAULT_CASHIER_METRICS = {
+    total: { value: 1100, change: 12, trend: 'up' },
+    revenue: { value: 1250, change: 8, trend: 'up' },
+    expenses: { value: 150, change: -5, trend: 'down' },
+    profit: { value: 1100, change: 15, trend: 'up' },
+  };
+
+  let cashierDashboardMetrics = Object.keys(DEFAULT_CASHIER_METRICS).reduce((acc, key) => {
+    acc[key] = { ...DEFAULT_CASHIER_METRICS[key] };
+    return acc;
+  }, {});
+
+  const updateCashierDashboard = (metrics = cashierDashboardMetrics) => {
+    Object.entries(cashierKpiElements).forEach(([key, elements]) => {
+      if (!elements) return;
+      const { valueEl, changeWrapper, changeTextEl, iconEl } = elements;
+      const metric = metrics?.[key];
+      if (valueEl) {
+        valueEl.textContent = formatCurrencyBRL(metric?.value ?? 0);
+      }
+      if (!changeWrapper || !changeTextEl || !iconEl) return;
+      const changeValue = Number.isFinite(Number(metric?.change)) ? Number(metric.change) : 0;
+      const trend = metric?.trend === 'down' ? 'down' : changeValue < 0 ? 'down' : 'up';
+      iconEl.textContent = trend === 'down' ? 'arrow_downward' : 'arrow_upward';
+      const sign = changeValue > 0 ? '+' : '';
+      changeTextEl.textContent = `${sign}${changeValue}% vs mês passado`;
+      changeWrapper.classList.remove('text-success', 'text-danger');
+      changeWrapper.classList.add(trend === 'down' ? 'text-danger' : 'text-success');
+    });
+  };
+
+  const setCashierDashboardMetrics = updates => {
+    if (!updates || typeof updates !== 'object') {
+      updateCashierDashboard();
+      return;
+    }
+    const nextMetrics = { ...cashierDashboardMetrics };
+    Object.entries(updates).forEach(([key, data]) => {
+      if (!nextMetrics[key]) {
+        nextMetrics[key] = {};
+      }
+      nextMetrics[key] = {
+        ...nextMetrics[key],
+        ...(typeof data === 'object' ? data : {}),
+      };
+    });
+    cashierDashboardMetrics = nextMetrics;
+    updateCashierDashboard();
+  };
+
+  const getStoredDarkModePreference = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      const stored = window.localStorage.getItem(DARK_MODE_STORAGE_KEY);
+      if (stored === null) return null;
+      return stored === 'true';
+    } catch (error) {
+      console.warn('Não foi possível recuperar o tema salvo:', error);
+      return null;
+    }
+  };
+
+  const updateDarkModeToggleState = isDark => {
+    darkModeToggles.forEach(button => {
+      button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+      const icon = button.querySelector('.material-symbols-outlined');
+      if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+    });
+  };
+
+  const applyDarkModePreference = (isDark, { store = true } = {}) => {
+    const shouldEnable = Boolean(isDark);
+    document.documentElement.classList.toggle('dark', shouldEnable);
+    updateDarkModeToggleState(shouldEnable);
+    if (!store || typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(DARK_MODE_STORAGE_KEY, shouldEnable ? 'true' : 'false');
+    } catch (error) {
+      console.warn('Não foi possível salvar a preferência de tema:', error);
+    }
+  };
+
+  const setupDarkMode = () => {
+    const storedPreference = getStoredDarkModePreference();
+    const prefersDark = storedPreference ?? (darkModeMediaQuery?.matches ?? false);
+    applyDarkModePreference(prefersDark, { store: storedPreference !== null });
+
+    if (darkModeToggles.length) {
+      darkModeToggles.forEach(button => {
+        button.addEventListener('click', () => {
+          const isDark = document.documentElement.classList.contains('dark');
+          applyDarkModePreference(!isDark);
+        });
+      });
+    }
+
+    if (darkModeMediaQuery) {
+      darkModeMediaQuery.addEventListener('change', event => {
+        if (getStoredDarkModePreference() !== null) return;
+        applyDarkModePreference(event.matches, { store: false });
+      });
+    }
   };
 
   const updateAllUserNames = name => {
@@ -2030,7 +2176,13 @@ document.addEventListener('DOMContentLoaded', () => {
   setupImagePreview('edit-image', 'edit-image-preview');
   setupMenuNavigation();
   setupUserMenus();
+  setupDarkMode();
+  updateCashierDashboard();
   registerImageFallbacks(document);
+
+  if (typeof window !== 'undefined') {
+    window.setCashierDashboardMetrics = setCashierDashboardMetrics;
+  }
 
   // Login animation ------------------------------------------------------------
   document.body.addEventListener('mousemove', event => {
