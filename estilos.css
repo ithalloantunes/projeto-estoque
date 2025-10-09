@@ -25,6 +25,19 @@ body {
     min-height: 100dvh;
 }
 
+.theme-stock {
+    --module-primary: #6D28D9;
+    --module-primary-dark: #4C1D95;
+    --module-surface: rgba(255, 255, 255, 0.1);
+}
+
+.theme-cashier {
+    --module-primary: #16539c;
+    --module-primary-dark: #0b3a6c;
+    --module-surface: rgba(13, 51, 96, 0.28);
+    background: #f2f6fb;
+}
+
 body.sidebar-locked {
     overflow: hidden;
     position: relative;
@@ -53,6 +66,20 @@ body.sidebar-locked {
     backdrop-filter: blur(8px);
     pointer-events: none;
     max-height: 100dvh;
+}
+
+.theme-stock .app-sidebar {
+    background: linear-gradient(180deg, #6D28D9 0%, #5B21B6 100%);
+}
+
+.theme-cashier .app-sidebar {
+    background: linear-gradient(180deg, #16539c 0%, #0f3c73 100%);
+}
+
+.theme-cashier .mobile-menu-toggle,
+.theme-cashier .mobile-menu-close {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .app-sidebar nav {
@@ -100,6 +127,34 @@ body.sidebar-locked {
 .mobile-menu-close:focus-visible {
     outline: 3px solid rgba(255, 255, 255, 0.55);
     outline-offset: 2px;
+}
+
+.module-switch-btn {
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    color: rgba(255, 255, 255, 0.75);
+    background: transparent;
+}
+
+.module-switch-btn span.material-icons {
+    font-size: 1.25rem;
+}
+
+.module-switch-btn.is-active {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 8px 20px rgba(17, 24, 39, 0.25);
+}
+
+.theme-cashier .module-switch-btn.is-active {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.module-switch-btn:not(.is-active):hover {
+    transform: translateY(-1px);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
 }
 
 @media (min-width: 640px) {
