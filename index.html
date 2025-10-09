@@ -100,8 +100,8 @@
                 <div class="hidden md:block space-y-2">
                     <h2 class="text-2xl font-bold text-text-light dark:text-text-dark">A energia que você precisa!</h2>
                     <p class="text-secondary-text-light dark:text-secondary-text-dark">Faça login e peça o melhor açaí da região.</p>
-                </div>
-            </div>
+                      </div>
+                  </div>
         </div>
         <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 bg-surface-light dark:bg-surface-dark">
             <div class="w-full max-w-md space-y-10">
@@ -248,6 +248,10 @@
                         <a data-page="cashier-reports-page" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-black/10 transition-colors text-gray-600" href="#">
                             <span class="material-symbols-outlined">bar_chart</span>
                             <span class="font-medium">Relatórios</span>
+                        </a>
+                        <a data-page="cashier-settings-page" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-black/10 transition-colors text-gray-600" href="#">
+                            <span class="material-symbols-outlined">settings</span>
+                            <span class="font-medium">Configurações</span>
                         </a>
                     </nav>
                 </div>
@@ -873,6 +877,154 @@
                             </div>
                         </main>
                     </div>
+                    <div id="cashier-settings-page" class="cashier-page hidden flex flex-col flex-1 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                        <header class="flex items-center justify-between p-6 border-b border-border-color">
+                            <div>
+                                <h2 class="text-2xl font-bold">Configurações</h2>
+                                <p class="text-sm text-subtle-light dark:text-subtle-dark">Gerencie as configurações do seu sistema.</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                        <span class="user-name-display font-medium hidden md:block"></span>
+                                        <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                        <a href="#" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                        <div class="border-t border-border-color"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                    </div>
+                                </div>
+                                <button class="dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" type="button">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </button>
+                            </div>
+                        </header>
+                        <main class="flex-1 px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 py-8 overflow-y-auto">
+                            <div class="mx-auto max-w-4xl">
+                                <div class="mb-8">
+                                    <h1 class="text-3xl font-bold text-text-light dark:text-text-dark">Configurações Avançadas</h1>
+                                    <p class="mt-1 text-subtle-light dark:text-subtle-dark">Gerencie o logotipo da empresa, categorias de movimento, limites de caixa, métodos de pagamento e backup de dados.</p>
+                                </div>
+                                <div class="space-y-12">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <div class="md:col-span-1">
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Logotipo da Empresa</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Atualize o logotipo da sua empresa.</p>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <div class="rounded-lg border border-border-color bg-surface-light dark:bg-surface-dark p-4">
+                                                <div id="cashier-settings-logo-preview" class="aspect-[16/9] w-full bg-center bg-no-repeat bg-cover rounded" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw');"></div>
+                                                <div class="mt-4 flex justify-start">
+                                                    <input type="file" id="cashier-settings-logo-upload" class="hidden" accept="image/*">
+                                                    <button id="cashier-settings-change-logo-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Alterar Logotipo</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <div class="md:col-span-1">
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Categorias de Movimento</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina categorias para receitas e despesas.</p>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <div class="overflow-hidden rounded-lg border border-border-color">
+                                                <table class="min-w-full divide-y divide-border-color">
+                                                    <thead class="bg-primary/10 dark:bg-primary/20">
+                                                        <tr>
+                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Nome da Categoria</th>
+                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Tipo</th>
+                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Status</th>
+                                                            <th scope="col" class="relative px-6 py-3"><span class="sr-only">Ações</span></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="cashier-settings-categories-body" class="divide-y divide-border-color bg-surface-light dark:bg-surface-dark"></tbody>
+                                                </table>
+                                            </div>
+                                            <div class="mt-4 flex justify-start">
+                                                <button id="cashier-settings-add-category-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Adicionar Categoria</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <div class="md:col-span-1">
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Limites de Caixa</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina o limite máximo de dinheiro para transações.</p>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label for="cashier-settings-cash-limit" class="block text-sm font-medium text-subtle-light dark:text-subtle-dark">Limite Máximo de Caixa</label>
+                                            <div class="mt-1 flex items-center gap-2">
+                                                <input id="cashier-settings-cash-limit" name="cash-limit" type="text" placeholder="R$ 1.000,00" class="block w-full rounded border border-border-color bg-surface-light dark:bg-surface-dark shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
+                                                <button id="cashier-settings-save-cash-limit-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Salvar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <div class="md:col-span-1">
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Métodos de Pagamento</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Ative ou desative os métodos de pagamento disponíveis.</p>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <div class="overflow-hidden rounded-lg border border-border-color">
+                                                <table class="min-w-full divide-y divide-border-color">
+                                                    <thead class="bg-primary/10 dark:bg-primary/20">
+                                                        <tr>
+                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Método de Pagamento</th>
+                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Status</th>
+                                                            <th scope="col" class="relative px-6 py-3"><span class="sr-only">Ações</span></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="cashier-settings-payment-methods-body" class="divide-y divide-border-color bg-surface-light dark:bg-surface-dark"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <div class="md:col-span-1">
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Gerenciamento de Dados</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Faça backup e exporte os dados do seu sistema.</p>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <div class="flex flex-col sm:flex-row gap-4">
+                                                <button id="cashier-settings-backup-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40">Fazer Backup dos Dados</button>
+                                                <button id="cashier-settings-export-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40" type="button" disabled>Exportar Dados</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    <div id="cashier-category-modal" class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+                        <div class="bg-background-light dark:bg-background-dark rounded-lg shadow-xl w-full max-w-lg border border-border-color">
+                            <div class="p-6 border-b border-border-color/60">
+                                <h3 id="cashier-category-modal-title" class="text-lg font-semibold text-text-light dark:text-text-dark">Adicionar Categoria</h3>
+                            </div>
+                            <form id="cashier-category-form">
+                                <input type="hidden" id="cashier-category-id" name="id">
+                                <div class="p-6 space-y-4">
+                                    <div>
+                                        <label for="cashier-category-name" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Nome da Categoria</label>
+                                        <input id="cashier-category-name" name="name" type="text" required placeholder="ex: Vendas Online" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary">
+                                    </div>
+                                    <div>
+                                        <label for="cashier-category-type" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Tipo</label>
+                                        <select id="cashier-category-type" name="type" required class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary">
+                                            <option>Receita</option>
+                                            <option>Despesa</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="px-6 py-4 bg-gray-50 dark:bg-background-dark/60 flex justify-end gap-3 rounded-b-lg">
+                                    <button type="button" id="cashier-category-cancel-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancelar</button>
+                                    <button type="submit" class="px-4 py-2 bg-success text-white font-medium rounded-lg hover:bg-success/90 transition-colors">Salvar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="cashier-settings-toast" class="fixed top-5 right-5 bg-success text-white px-6 py-3 rounded-lg shadow-xl text-sm font-medium transition-transform duration-300 translate-x-full opacity-0 pointer-events-none"></div>
                 </div>
             </div>
         </div>

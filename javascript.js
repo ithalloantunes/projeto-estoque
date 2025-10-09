@@ -179,6 +179,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierAnalysisList = document.getElementById('cashier-analysis-list');
   const cashierCashFlowRadios = document.querySelectorAll('input[name="cashier-cashflow"]');
   const cashierAnalysisRadios = document.querySelectorAll('input[name="cashier-analysis"]');
+  const cashierSettingsLogoPreview = document.getElementById('cashier-settings-logo-preview');
+  const cashierSettingsLogoUpload = document.getElementById('cashier-settings-logo-upload');
+  const cashierSettingsChangeLogoBtn = document.getElementById('cashier-settings-change-logo-btn');
+  const cashierSettingsCategoriesBody = document.getElementById('cashier-settings-categories-body');
+  const cashierSettingsAddCategoryBtn = document.getElementById('cashier-settings-add-category-btn');
+  const cashierSettingsCashLimitInput = document.getElementById('cashier-settings-cash-limit');
+  const cashierSettingsSaveCashLimitBtn = document.getElementById('cashier-settings-save-cash-limit-btn');
+  const cashierSettingsPaymentMethodsBody = document.getElementById('cashier-settings-payment-methods-body');
+  const cashierSettingsBackupBtn = document.getElementById('cashier-settings-backup-btn');
+  const cashierCategoryModal = document.getElementById('cashier-category-modal');
+  const cashierCategoryForm = document.getElementById('cashier-category-form');
+  const cashierCategoryTitle = document.getElementById('cashier-category-modal-title');
+  const cashierCategoryIdInput = document.getElementById('cashier-category-id');
+  const cashierCategoryNameInput = document.getElementById('cashier-category-name');
+  const cashierCategoryTypeInput = document.getElementById('cashier-category-type');
+  const cashierCategoryCancelBtn = document.getElementById('cashier-category-cancel-btn');
+  const cashierSettingsToast = document.getElementById('cashier-settings-toast');
 
   // Avatar do usuário (existem várias instâncias na interface)
   const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
@@ -318,6 +335,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!link) return;
     highlightCashierMenuItem(link);
     switchCashierPage(link.dataset.page);
+  };
+
+  const openCashierSettingsPage = () => {
+    switchToCashierModule();
+    const settingsMenuLink = cashierMenu?.querySelector('a[data-page="cashier-settings-page"]');
+    if (settingsMenuLink) {
+      activateCashierMenuItem(settingsMenuLink);
+    } else {
+      switchCashierPage('cashier-settings-page');
+    }
   };
 
   const clearMainMenuHighlight = () => {
@@ -678,6 +705,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let cashierReportsInitialized = false;
   let cashierSelectedAnalysis = 'expenses';
   let cashierSelectedCashFlowPeriod = 'monthly';
+  let cashierSettingsState = null;
+  let cashierSettingsToastTimeoutId = null;
 
   const resolveColorValue = (() => {
     const canvas = document.createElement('canvas');
@@ -1578,6 +1607,385 @@ document.addEventListener('DOMContentLoaded', () => {
           updateCashierAnalysisView(cashierSelectedAnalysis);
         });
       });
+    }
+  };
+
+  // Configurações do Caixa ------------------------------------------------------
+  const CASHIER_SETTINGS_STORAGE_KEY = 'acaiStock_cashier_settings';
+  const DEFAULT_CASHIER_SETTINGS = Object.freeze({
+    logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw',
+    cashLimit: '',
+    categories: [
+      { id: 'category-1', name: 'Vendas', type: 'Receita', status: 'Ativo' },
+      { id: 'category-2', name: 'Despesas Operacionais', type: 'Despesa', status: 'Ativo' },
+      { id: 'category-3', name: 'Reforços', type: 'Receita', status: 'Ativo' },
+    ],
+    paymentMethods: [
+      { id: 'payment-1', name: 'Dinheiro', status: 'Ativo' },
+      { id: 'payment-2', name: 'Cartão de Crédito', status: 'Ativo' },
+      { id: 'payment-3', name: 'Pagamento Móvel', status: 'Inativo' },
+    ],
+  });
+
+  const cloneDefaultCashierSettings = () => ({
+    logo: DEFAULT_CASHIER_SETTINGS.logo,
+    cashLimit: DEFAULT_CASHIER_SETTINGS.cashLimit,
+    categories: DEFAULT_CASHIER_SETTINGS.categories.map(category => ({ ...category })),
+    paymentMethods: DEFAULT_CASHIER_SETTINGS.paymentMethods.map(method => ({ ...method })),
+  });
+
+  const normalizeCashierCategory = category => {
+    if (!category || typeof category !== 'object') return null;
+    const name = typeof category.name === 'string' ? category.name.trim() : '';
+    if (!name) return null;
+    const type = category.type === 'Despesa' ? 'Despesa' : 'Receita';
+    const status = category.status === 'Inativo' ? 'Inativo' : 'Ativo';
+    const id = typeof category.id === 'string' && category.id.trim()
+      ? category.id
+      : `category-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    return { id, name, type, status };
+  };
+
+  const normalizeCashierPaymentMethod = method => {
+    if (!method || typeof method !== 'object') return null;
+    const name = typeof method.name === 'string' ? method.name.trim() : '';
+    if (!name) return null;
+    const status = method.status === 'Inativo' ? 'Inativo' : 'Ativo';
+    const id = typeof method.id === 'string' && method.id.trim()
+      ? method.id
+      : `payment-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    return { id, name, status };
+  };
+
+  const loadCashierSettingsFromStorage = () => {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return cloneDefaultCashierSettings();
+    }
+    try {
+      const raw = window.localStorage.getItem(CASHIER_SETTINGS_STORAGE_KEY);
+      if (!raw) return cloneDefaultCashierSettings();
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return cloneDefaultCashierSettings();
+      const next = cloneDefaultCashierSettings();
+      if (typeof parsed.logo === 'string' && parsed.logo.trim()) {
+        next.logo = parsed.logo;
+      }
+      if (typeof parsed.cashLimit === 'string') {
+        next.cashLimit = parsed.cashLimit;
+      }
+      if (Array.isArray(parsed.categories)) {
+        const normalizedCategories = parsed.categories.map(normalizeCashierCategory).filter(Boolean);
+        if (normalizedCategories.length) {
+          next.categories = normalizedCategories;
+        }
+      }
+      if (Array.isArray(parsed.paymentMethods)) {
+        const normalizedMethods = parsed.paymentMethods.map(normalizeCashierPaymentMethod).filter(Boolean);
+        if (normalizedMethods.length) {
+          next.paymentMethods = normalizedMethods;
+        }
+      }
+      return next;
+    } catch (error) {
+      console.warn('Não foi possível carregar as configurações do caixa:', error);
+      return cloneDefaultCashierSettings();
+    }
+  };
+
+  const saveCashierSettingsToStorage = settings => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(CASHIER_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    } catch (error) {
+      console.warn('Não foi possível salvar as configurações do caixa:', error);
+    }
+  };
+
+  const showCashierSettingsToast = message => {
+    if (!cashierSettingsToast) return;
+    cashierSettingsToast.textContent = message;
+    cashierSettingsToast.style.transform = 'translateX(0)';
+    cashierSettingsToast.style.opacity = '1';
+    if (typeof window !== 'undefined') {
+      if (cashierSettingsToastTimeoutId) {
+        window.clearTimeout(cashierSettingsToastTimeoutId);
+      }
+      cashierSettingsToastTimeoutId = window.setTimeout(() => {
+        cashierSettingsToast.style.transform = '';
+        cashierSettingsToast.style.opacity = '';
+      }, 3000);
+    }
+  };
+
+  const setCashierSettingsLogo = logo => {
+    if (!cashierSettingsLogoPreview) return;
+    if (logo) {
+      cashierSettingsLogoPreview.style.backgroundImage = `url('${logo}')`;
+    } else {
+      cashierSettingsLogoPreview.style.backgroundImage = '';
+    }
+  };
+
+  const renderCashierSettingsCategories = () => {
+    if (!cashierSettingsCategoriesBody) return;
+    cashierSettingsCategoriesBody.innerHTML = '';
+    const categories = Array.isArray(cashierSettingsState?.categories) ? cashierSettingsState.categories : [];
+    if (!categories.length) {
+      const emptyRow = document.createElement('tr');
+      const emptyCell = document.createElement('td');
+      emptyCell.colSpan = 4;
+      emptyCell.className = 'px-6 py-4 text-sm text-subtle-light dark:text-subtle-dark';
+      emptyCell.textContent = 'Nenhuma categoria cadastrada.';
+      emptyRow.appendChild(emptyCell);
+      cashierSettingsCategoriesBody.appendChild(emptyRow);
+      return;
+    }
+    categories.forEach(category => {
+      const row = document.createElement('tr');
+      const nameCell = document.createElement('td');
+      nameCell.className = 'whitespace-nowrap px-6 py-4 text-sm font-medium text-text-light dark:text-text-dark';
+      nameCell.textContent = category.name;
+      const typeCell = document.createElement('td');
+      typeCell.className = 'whitespace-nowrap px-6 py-4 text-sm text-subtle-light dark:text-subtle-dark';
+      typeCell.textContent = category.type;
+      const statusCell = document.createElement('td');
+      statusCell.className = 'whitespace-nowrap px-6 py-4 text-sm';
+      const statusBadge = document.createElement('span');
+      statusBadge.className = `inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${category.status === 'Ativo'
+        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`;
+      statusBadge.textContent = category.status;
+      statusCell.appendChild(statusBadge);
+      const actionsCell = document.createElement('td');
+      actionsCell.className = 'whitespace-nowrap px-6 py-4 text-right text-sm font-medium';
+      const editButton = document.createElement('button');
+      editButton.type = 'button';
+      editButton.className = 'text-primary hover:text-primary/80';
+      editButton.textContent = 'Editar';
+      editButton.addEventListener('click', () => openCashierCategoryModal(category));
+      actionsCell.appendChild(editButton);
+      row.append(nameCell, typeCell, statusCell, actionsCell);
+      cashierSettingsCategoriesBody.appendChild(row);
+    });
+  };
+
+  const renderCashierSettingsPaymentMethods = () => {
+    if (!cashierSettingsPaymentMethodsBody) return;
+    cashierSettingsPaymentMethodsBody.innerHTML = '';
+    const methods = Array.isArray(cashierSettingsState?.paymentMethods) ? cashierSettingsState.paymentMethods : [];
+    if (!methods.length) {
+      const emptyRow = document.createElement('tr');
+      const emptyCell = document.createElement('td');
+      emptyCell.colSpan = 3;
+      emptyCell.className = 'px-6 py-4 text-sm text-subtle-light dark:text-subtle-dark';
+      emptyCell.textContent = 'Nenhum método de pagamento cadastrado.';
+      emptyRow.appendChild(emptyCell);
+      cashierSettingsPaymentMethodsBody.appendChild(emptyRow);
+      return;
+    }
+    methods.forEach(method => {
+      const row = document.createElement('tr');
+      const nameCell = document.createElement('td');
+      nameCell.className = 'whitespace-nowrap px-6 py-4 text-sm font-medium text-text-light dark:text-text-dark';
+      nameCell.textContent = method.name;
+      const statusCell = document.createElement('td');
+      statusCell.className = 'whitespace-nowrap px-6 py-4 text-sm';
+      const badge = document.createElement('span');
+      badge.className = `inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${method.status === 'Ativo'
+        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`;
+      badge.textContent = method.status;
+      statusCell.appendChild(badge);
+      const actionsCell = document.createElement('td');
+      actionsCell.className = 'whitespace-nowrap px-6 py-4 text-right text-sm font-medium';
+      const toggleButton = document.createElement('button');
+      toggleButton.type = 'button';
+      const isActive = method.status === 'Ativo';
+      toggleButton.className = isActive ? 'text-danger hover:text-danger/80' : 'text-success hover:text-success/80';
+      toggleButton.textContent = isActive ? 'Desativar' : 'Ativar';
+      toggleButton.addEventListener('click', () => {
+        if (!cashierSettingsState) {
+          cashierSettingsState = loadCashierSettingsFromStorage();
+        }
+        const nextMethods = cashierSettingsState.paymentMethods.map(item => (
+          item.id === method.id
+            ? { ...item, status: item.status === 'Ativo' ? 'Inativo' : 'Ativo' }
+            : item
+        ));
+        cashierSettingsState = { ...cashierSettingsState, paymentMethods: nextMethods };
+        saveCashierSettingsToStorage(cashierSettingsState);
+        renderCashierSettingsPaymentMethods();
+        showCashierSettingsToast('Status do método atualizado.');
+      });
+      actionsCell.appendChild(toggleButton);
+      row.append(nameCell, statusCell, actionsCell);
+      cashierSettingsPaymentMethodsBody.appendChild(row);
+    });
+  };
+
+  const updateCashierSettingsCashLimitInput = () => {
+    if (!cashierSettingsCashLimitInput) return;
+    cashierSettingsCashLimitInput.value = cashierSettingsState?.cashLimit || '';
+  };
+
+  const updateCashierSettingsUI = () => {
+    if (!cashierSettingsState) return;
+    setCashierSettingsLogo(cashierSettingsState.logo);
+    updateCashierSettingsCashLimitInput();
+    renderCashierSettingsCategories();
+    renderCashierSettingsPaymentMethods();
+  };
+
+  const openCashierCategoryModal = (category = null) => {
+    if (!cashierCategoryForm) return;
+    cashierCategoryForm.reset();
+    if (cashierCategoryIdInput) cashierCategoryIdInput.value = category?.id || '';
+    if (cashierCategoryNameInput) cashierCategoryNameInput.value = category?.name || '';
+    if (cashierCategoryTypeInput) cashierCategoryTypeInput.value = category?.type || 'Receita';
+    if (cashierCategoryTitle) {
+      cashierCategoryTitle.textContent = category ? 'Editar Categoria' : 'Adicionar Categoria';
+    }
+    openModal('cashier-category-modal');
+  };
+
+  const closeCashierCategoryModal = () => closeModal('cashier-category-modal');
+
+  const handleCashierCategorySubmit = event => {
+    event.preventDefault();
+    if (!cashierCategoryForm) return;
+    const formData = new FormData(cashierCategoryForm);
+    const id = (formData.get('id') || '').toString().trim();
+    const name = (formData.get('name') || '').toString().trim();
+    const type = formData.get('type') === 'Despesa' ? 'Despesa' : 'Receita';
+    if (!name) {
+      showCashierSettingsToast('Informe um nome válido para a categoria.');
+      return;
+    }
+    if (!cashierSettingsState) {
+      cashierSettingsState = loadCashierSettingsFromStorage();
+    }
+    const categories = Array.isArray(cashierSettingsState.categories)
+      ? [...cashierSettingsState.categories]
+      : [];
+    if (id) {
+      const index = categories.findIndex(category => category.id === id);
+      if (index !== -1) {
+        categories[index] = { ...categories[index], name, type };
+      } else {
+        categories.push({ id, name, type, status: 'Ativo' });
+      }
+    } else {
+      categories.push({
+        id: `category-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+        name,
+        type,
+        status: 'Ativo',
+      });
+    }
+    cashierSettingsState = { ...cashierSettingsState, categories };
+    saveCashierSettingsToStorage(cashierSettingsState);
+    renderCashierSettingsCategories();
+    closeCashierCategoryModal();
+    showCashierSettingsToast(id ? 'Categoria atualizada com sucesso!' : 'Categoria adicionada com sucesso!');
+  };
+
+  const handleCashierSettingsCashLimitSave = () => {
+    if (!cashierSettingsCashLimitInput) return;
+    if (!cashierSettingsState) {
+      cashierSettingsState = loadCashierSettingsFromStorage();
+    }
+    cashierSettingsState = {
+      ...cashierSettingsState,
+      cashLimit: cashierSettingsCashLimitInput.value.trim(),
+    };
+    saveCashierSettingsToStorage(cashierSettingsState);
+    showCashierSettingsToast('Limite de caixa salvo com sucesso!');
+  };
+
+  const handleCashierSettingsBackup = () => {
+    if (!cashierSettingsState) {
+      cashierSettingsState = loadCashierSettingsFromStorage();
+    }
+    try {
+      const data = JSON.stringify(cashierSettingsState, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'backup_configuracoes.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showCashierSettingsToast('Backup dos dados iniciado.');
+    } catch (error) {
+      console.warn('Não foi possível gerar o backup das configurações:', error);
+      showCashierSettingsToast('Não foi possível gerar o backup agora.');
+    }
+  };
+
+  const handleCashierSettingsLogoChange = event => {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showCashierSettingsToast('Selecione um arquivo de imagem válido.');
+      event.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const result = typeof e.target?.result === 'string' ? e.target.result : null;
+      if (!result) return;
+      if (!cashierSettingsState) {
+        cashierSettingsState = loadCashierSettingsFromStorage();
+      }
+      cashierSettingsState = { ...cashierSettingsState, logo: result };
+      setCashierSettingsLogo(result);
+      saveCashierSettingsToStorage(cashierSettingsState);
+      showCashierSettingsToast('Logotipo alterado com sucesso!');
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  };
+
+  const initializeCashierSettings = () => {
+    if (
+      !cashierSettingsLogoPreview
+      && !cashierSettingsCategoriesBody
+      && !cashierSettingsPaymentMethodsBody
+      && !cashierSettingsCashLimitInput
+    ) {
+      return;
+    }
+    cashierSettingsState = loadCashierSettingsFromStorage();
+    updateCashierSettingsUI();
+    if (cashierSettingsChangeLogoBtn && cashierSettingsLogoUpload) {
+      cashierSettingsChangeLogoBtn.addEventListener('click', () => cashierSettingsLogoUpload.click());
+      cashierSettingsLogoUpload.addEventListener('change', handleCashierSettingsLogoChange);
+    }
+    if (cashierSettingsAddCategoryBtn) {
+      cashierSettingsAddCategoryBtn.addEventListener('click', () => openCashierCategoryModal());
+    }
+    if (cashierCategoryCancelBtn) {
+      cashierCategoryCancelBtn.addEventListener('click', () => {
+        closeCashierCategoryModal();
+      });
+    }
+    if (cashierCategoryModal) {
+      cashierCategoryModal.addEventListener('click', event => {
+        if (event.target === cashierCategoryModal) {
+          closeCashierCategoryModal();
+        }
+      });
+    }
+    if (cashierCategoryForm) {
+      cashierCategoryForm.addEventListener('submit', handleCashierCategorySubmit);
+    }
+    if (cashierSettingsSaveCashLimitBtn) {
+      cashierSettingsSaveCashLimitBtn.addEventListener('click', handleCashierSettingsCashLimitSave);
+    }
+    if (cashierSettingsBackupBtn) {
+      cashierSettingsBackupBtn.addEventListener('click', handleCashierSettingsBackup);
     }
   };
 
@@ -3009,6 +3417,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  const setupSettingsLinks = () => {
+    document.querySelectorAll('.settings-link').forEach(link => {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        openCashierSettingsPage();
+        document.querySelectorAll('.user-dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+      });
+    });
+  };
+
   // Perfil ---------------------------------------------------------------------
   const openProfileModal = () => {
     const fallbackSrc = userAvatarImgs[0]?.src || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
@@ -3209,6 +3627,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMenuNavigation();
   setupCashierMenuNavigation();
   setupUserMenus();
+  setupSettingsLinks();
+  initializeCashierSettings();
   initializeCashierMovementsModule();
   setupDarkMode();
   updateCashierDashboard();
