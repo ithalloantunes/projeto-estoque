@@ -25,6 +25,14 @@ body {
     min-height: 100dvh;
 }
 
+.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
+}
+
 .theme-stock {
     --module-primary: #6D28D9;
     --module-primary-dark: #4C1D95;
@@ -35,7 +43,7 @@ body {
     --module-primary: #16539c;
     --module-primary-dark: #0b3a6c;
     --module-surface: rgba(13, 51, 96, 0.28);
-    background: #f2f6fb;
+    background: #f6f7f8;
 }
 
 body.sidebar-locked {
@@ -70,10 +78,22 @@ body.sidebar-locked {
 
 .theme-stock .app-sidebar {
     background: linear-gradient(180deg, #6D28D9 0%, #5B21B6 100%);
+    color: #fff;
 }
 
 .theme-cashier .app-sidebar {
-    background: linear-gradient(180deg, #16539c 0%, #0f3c73 100%);
+    background: #ffffff;
+    color: #1f2937;
+    border-right: 1px solid rgba(22, 83, 156, 0.2);
+    box-shadow: none;
+}
+
+.theme-cashier #cashier-sidebar-content h1 {
+    color: #16539c;
+}
+
+.theme-cashier #cashier-sidebar-content nav a {
+    color: #4b5563;
 }
 
 .theme-cashier .mobile-menu-toggle,
@@ -129,6 +149,17 @@ body.sidebar-locked {
     outline-offset: 2px;
 }
 
+.module-switch-container {
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.theme-cashier .module-switch-container {
+    background: rgba(22, 83, 156, 0.08);
+    border: 1px solid rgba(22, 83, 156, 0.15);
+}
+
 .module-switch-btn {
     transition: all 0.2s ease;
     border: 1px solid transparent;
@@ -136,7 +167,8 @@ body.sidebar-locked {
     background: transparent;
 }
 
-.module-switch-btn span.material-icons {
+.module-switch-btn span.material-icons,
+.module-switch-btn span.material-symbols-outlined {
     font-size: 1.25rem;
 }
 
@@ -147,14 +179,27 @@ body.sidebar-locked {
     box-shadow: 0 8px 20px rgba(17, 24, 39, 0.25);
 }
 
+.theme-cashier .module-switch-btn {
+    color: #4b5563;
+    border-color: transparent;
+}
+
 .theme-cashier .module-switch-btn.is-active {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(22, 83, 156, 0.85);
+    color: #fff;
+    border-color: rgba(22, 83, 156, 0.85);
+    box-shadow: none;
 }
 
 .module-switch-btn:not(.is-active):hover {
     transform: translateY(-1px);
     color: #fff;
     background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-cashier .module-switch-btn:not(.is-active):hover {
+    color: #16539c;
+    background: rgba(22, 83, 156, 0.12);
 }
 
 @media (min-width: 640px) {
