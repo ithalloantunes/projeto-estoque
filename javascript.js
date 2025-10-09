@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let profileImageFile = null;
   let isRefreshingAllData = false;
   const ACTIVE_PAGE_STORAGE_KEY = 'acaiStock_active_page';
+  const ACTIVE_MODULE_STORAGE_KEY = 'acaiStock_active_module';
   const SESSION_STORAGE_KEY = 'acaiStock_session';
   const AUTO_REFRESH_INTERVAL_MS = 60_000;
   let autoRefreshIntervalId = null;
@@ -33,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let pendingRealtimeOptions = {};
   let isSessionExpiryHandled = false;
   let isProcessingLogout = false;
+  let activeModule = 'stock';
+  const bodyElement = document.body;
 
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
@@ -55,6 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
   const mobileMenuToggles = document.querySelectorAll('.mobile-menu-toggle');
   const mobileMenuCloseButtons = document.querySelectorAll('.mobile-menu-close');
+  const stockSidebarContent = document.getElementById('stock-sidebar-content');
+  const cashierSidebarContent = document.getElementById('cashier-sidebar-content');
+  const moduleStockBtn = document.getElementById('module-stock-btn');
+  const moduleCashierBtn = document.getElementById('module-cashier-btn');
+  const stockModuleContainer = document.getElementById('stock-module');
+  const cashierModuleContainer = document.getElementById('cashier-module');
   const stockMenuItem = document.getElementById('stock-menu-item');
   const pageContents = document.querySelectorAll('.page-content');
   const addProductLink = document.getElementById('add-product-link');
@@ -189,6 +198,78 @@ document.addEventListener('DOMContentLoaded', () => {
       closeMobileSidebar(true);
     }
   });
+
+  const setModuleButtonState = moduleName => {
+    const isStock = moduleName === 'stock';
+    moduleStockBtn?.classList.toggle('is-active', isStock);
+    moduleCashierBtn?.classList.toggle('is-active', !isStock);
+  };
+
+  const applyModuleVisibility = moduleName => {
+    const showCashier = moduleName === 'cashier';
+    stockModuleContainer?.classList.toggle('hidden', showCashier);
+    cashierModuleContainer?.classList.toggle('hidden', !showCashier);
+    stockSidebarContent?.classList.toggle('hidden', showCashier);
+    cashierSidebarContent?.classList.toggle('hidden', !showCashier);
+    bodyElement.classList.toggle('theme-stock', !showCashier);
+    bodyElement.classList.toggle('theme-cashier', showCashier);
+    activeModule = moduleName;
+  };
+
+  const storeActiveModule = moduleName => {
+    activeModule = moduleName;
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(ACTIVE_MODULE_STORAGE_KEY, moduleName);
+    } catch (error) {
+      console.warn('Não foi possível salvar o módulo selecionado:', error);
+    }
+  };
+
+  const getStoredActiveModule = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      return window.localStorage.getItem(ACTIVE_MODULE_STORAGE_KEY);
+    } catch (error) {
+      console.warn('Não foi possível recuperar o módulo selecionado:', error);
+      return null;
+    }
+  };
+
+  const switchToStockModule = ({ skipStore } = {}) => {
+    applyModuleVisibility('stock');
+    setModuleButtonState('stock');
+    if (!skipStore) {
+      storeActiveModule('stock');
+    }
+  };
+
+  const clearMainMenuHighlight = () => {
+    if (!mainMenu) return;
+    mainMenu.querySelectorAll('a').forEach(item => {
+      item.classList.remove('bg-white/20', 'text-white');
+      item.classList.add('text-white/70', 'hover:bg-white/10');
+    });
+  };
+
+  const switchToCashierModule = ({ skipStore } = {}) => {
+    applyModuleVisibility('cashier');
+    setModuleButtonState('cashier');
+    clearMainMenuHighlight();
+    if (!skipStore) {
+      storeActiveModule('cashier');
+    }
+  };
+
+  const restoreStoredModule = () => {
+    const storedModule = getStoredActiveModule();
+    if (storedModule === 'cashier') {
+      switchToCashierModule({ skipStore: true });
+      return 'cashier';
+    }
+    switchToStockModule({ skipStore: true });
+    return 'stock';
+  };
 
   mainMenu?.addEventListener('click', event => {
     if (!(event.target instanceof HTMLElement)) return;
@@ -574,6 +655,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginContainer.classList.add('hidden');
     loginContainer.style.display = 'none';
     appContainer.classList.remove('hidden');
+    const restoredModule = restoreStoredModule();
     if (photo) {
       try {
         localStorage.setItem(`profilePhoto_${currentUser}`, photo);
@@ -583,7 +665,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     await initProfilePhoto();
     toggleAdminFeatures(userRole === 'admin');
-    restoreStoredPage();
+    if (restoredModule === 'stock') {
+      restoreStoredPage();
+    }
     stopAutoRefresh();
     await refreshAllData({ force: true });
     if (userRole === 'admin' && isPageVisible('approve-page') && usersDataDirty) {
@@ -608,6 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginContainer.style.display = 'flex';
     loginContainer.classList.remove('hidden');
     appContainer.classList.add('hidden');
+    switchToStockModule({ skipStore: true });
   };
 
   const handleLogin = async event => {
@@ -1697,6 +1782,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeLink = document.getElementById('home-menu-item');
     if (homeLink) activateMenuItem(homeLink);
   };
+
+  moduleStockBtn?.addEventListener('click', () => {
+    if (activeModule === 'stock') {
+      restoreStoredPage();
+      return;
+    }
+    switchToStockModule();
+    restoreStoredPage();
+  });
+
+  moduleCashierBtn?.addEventListener('click', () => {
+    if (activeModule === 'cashier') return;
+    switchToCashierModule();
+  });
 
   const stopAutoRefresh = () => {
     if (autoRefreshIntervalId) {
