@@ -69,6 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const moduleCashierBtn = document.getElementById('module-cashier-btn');
   const stockModuleContainer = document.getElementById('stock-module');
   const cashierModuleContainer = document.getElementById('cashier-module');
+  const cashierMenu = document.getElementById('cashier-menu');
+  const cashierPages = document.querySelectorAll('#cashier-module .cashier-page');
   const stockMenuItem = document.getElementById('stock-menu-item');
   const pageContents = document.querySelectorAll('.page-content');
   const addProductLink = document.getElementById('add-product-link');
@@ -163,6 +165,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const stockByProductCanvas = document.getElementById('stock-by-product-chart');
   const stockByTypeCanvas = document.getElementById('stock-by-type-chart');
+  const cashierPaymentMethodsCanvas = document.getElementById('cashier-payment-methods-chart');
+  const cashierCashFlowCanvas = document.getElementById('cashier-cash-flow-chart');
+  const cashierPaymentMethodsList = document.getElementById('cashier-payment-methods-list');
+  const cashierAnalysisList = document.getElementById('cashier-analysis-list');
+  const cashierCashFlowRadios = document.querySelectorAll('input[name="cashier-cashflow"]');
+  const cashierAnalysisRadios = document.querySelectorAll('input[name="cashier-analysis"]');
 
   // Avatar do usuário (existem várias instâncias na interface)
   const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
@@ -276,6 +284,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const highlightCashierMenuItem = link => {
+    if (!cashierMenu) return;
+    cashierMenu.querySelectorAll('a[data-page]').forEach(item => {
+      item.classList.remove('bg-[#16539c]', 'text-white');
+      item.classList.add('text-gray-600');
+    });
+    if (link) {
+      link.classList.add('bg-[#16539c]', 'text-white');
+      link.classList.remove('text-gray-600');
+    }
+  };
+
+  const switchCashierPage = pageId => {
+    if (!pageId) return;
+    cashierPages.forEach(page => {
+      if (!page) return;
+      page.classList.toggle('hidden', page.id !== pageId);
+    });
+  };
+
+  const activateCashierMenuItem = link => {
+    if (!link) return;
+    highlightCashierMenuItem(link);
+    switchCashierPage(link.dataset.page);
+  };
+
   const clearMainMenuHighlight = () => {
     if (!mainMenu) return;
     mainMenu.querySelectorAll('a').forEach(item => {
@@ -288,6 +322,14 @@ document.addEventListener('DOMContentLoaded', () => {
     applyModuleVisibility('cashier');
     setModuleButtonState('cashier');
     clearMainMenuHighlight();
+    const currentActive = cashierMenu?.querySelector('a[data-page].bg-[#16539c]')
+      || cashierMenu?.querySelector('a[data-page].text-white');
+    if (currentActive) {
+      switchCashierPage(currentActive.dataset.page);
+    } else {
+      const defaultLink = cashierMenu?.querySelector('a[data-page="cashier-dashboard-page"]');
+      if (defaultLink) activateCashierMenuItem(defaultLink);
+    }
     if (!skipStore) {
       storeActiveModule('cashier');
     }
@@ -572,6 +614,554 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCashierDashboard();
   };
 
+  const CASHIER_ENTRY_TYPES = new Set(['entrada', 'adicao', 'reposicao', 'venda', 'reforco', 'aporte', 'deposito', 'recebimento']);
+  const CASHIER_EXPENSE_TYPES = new Set(['saida', 'exclusao', 'baixa', 'despesa', 'retirada', 'pagamento', 'pagamentodespesa', 'pagamento_despesa', 'custo', 'fechamento']);
+  const CASHIER_REINFORCEMENT_TYPES = new Set(['reforco', 'aporte', 'suprimento', 'reabertura']);
+
+  const DEFAULT_CASHIER_REPORTS_DATA = {
+    paymentMethods: [
+      { label: 'Dinheiro', value: 40 },
+      { label: 'Cartão de Crédito', value: 20 },
+      { label: 'Cartão de Débito', value: 35 },
+      { label: 'Online', value: 5 },
+    ],
+    cashFlow: {
+      daily: {
+        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+        values: [24, 18, 20, 22, 17, 25, 28],
+      },
+      weekly: {
+        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+        values: [120, 150, 110, 180],
+      },
+      monthly: {
+        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
+        values: [180, 50, 100, 200, 80, 120, 240],
+      },
+    },
+    comparative: {
+      expenses: [
+        { label: 'Aluguel', value: 6000 },
+        { label: 'Serviços', value: 4800 },
+        { label: 'Suprimentos', value: 7800 },
+        { label: 'Marketing', value: 5200 },
+        { label: 'Salários', value: 3100 },
+      ],
+      reinforcements: [
+        { label: 'Balcão', value: 4500 },
+        { label: 'Delivery', value: 3200 },
+        { label: 'Eventos', value: 1800 },
+        { label: 'Parceiros', value: 1400 },
+      ],
+      categories: [
+        { label: 'Açaí', value: 9200 },
+        { label: 'Bebidas', value: 3400 },
+        { label: 'Complementos', value: 2600 },
+        { label: 'Merchandising', value: 1500 },
+      ],
+    },
+  };
+
+  let cashierPaymentMethodsChart = null;
+  let cashierCashFlowChart = null;
+  let cachedCashierReportsData = null;
+  let cashierReportsInitialized = false;
+  let cashierSelectedAnalysis = 'expenses';
+  let cashierSelectedCashFlowPeriod = 'monthly';
+
+  const resolveColorValue = (() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const ctx = canvas.getContext('2d');
+    return color => {
+      if (!ctx) return color;
+      ctx.fillStyle = '#16539c';
+      ctx.fillStyle = color;
+      return ctx.fillStyle;
+    };
+  })();
+
+  const hexToRgb = hex => {
+    if (!hex) return { r: 22, g: 83, b: 156 };
+    let normalized = hex.replace('#', '');
+    if (normalized.length === 3) {
+      normalized = normalized.split('').map(char => char + char).join('');
+    }
+    const intValue = Number.parseInt(normalized, 16);
+    if (Number.isNaN(intValue)) return { r: 22, g: 83, b: 156 };
+    return {
+      r: (intValue >> 16) & 255,
+      g: (intValue >> 8) & 255,
+      b: intValue & 255,
+    };
+  };
+
+  const parseColorToRgb = color => {
+    if (!color) return { r: 22, g: 83, b: 156 };
+    const resolved = resolveColorValue(color);
+    if (resolved.startsWith('#')) {
+      return hexToRgb(resolved);
+    }
+    const match = resolved.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (match) {
+      return {
+        r: Number(match[1]),
+        g: Number(match[2]),
+        b: Number(match[3]),
+      };
+    }
+    return { r: 22, g: 83, b: 156 };
+  };
+
+  const mixColorWithWhite = (rgb, weight = 1) => {
+    const clampedWeight = Math.max(0, Math.min(1, weight));
+    const whitePortion = 1 - clampedWeight;
+    const mix = component => Math.round(component * clampedWeight + 255 * whitePortion);
+    return `rgb(${mix(rgb.r)}, ${mix(rgb.g)}, ${mix(rgb.b)})`;
+  };
+
+  const rgbaFromRgb = (rgb, alpha) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${Math.max(0, Math.min(1, alpha))})`;
+
+  const normalizeText = value => {
+    if (!value) return '';
+    return value
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  };
+
+  const parseMovementAmount = movement => {
+    const candidates = [
+      movement?.valor,
+      movement?.valorTotal,
+      movement?.total,
+      movement?.montante,
+      movement?.amount,
+      movement?.quantidade,
+      movement?.qtd,
+      movement?.value,
+    ];
+    for (const candidate of candidates) {
+      const numeric = Number(candidate);
+      if (Number.isFinite(numeric) && Math.abs(numeric) > 0) {
+        return Math.abs(numeric);
+      }
+    }
+    return 0;
+  };
+
+  const parseMovementDate = movement => {
+    if (!movement?.data) return null;
+    const parsed = new Date(movement.data);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const getWeekInfo = date => {
+    if (!(date instanceof Date)) {
+      return { key: 'sem-data', label: 'Sem data' };
+    }
+    const clone = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = clone.getUTCDay() || 7; // 1 (Mon) - 7 (Sun)
+    clone.setUTCDate(clone.getUTCDate() - day + 1);
+    const weekStart = new Date(clone);
+    const weekEnd = new Date(clone);
+    weekEnd.setUTCDate(weekStart.getUTCDate() + 6);
+    const weekNumber = (() => {
+      const tempDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      tempDate.setUTCDate(tempDate.getUTCDate() + 4 - (tempDate.getUTCDay() || 7));
+      const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
+      return Math.ceil(((tempDate - yearStart) / 86400000 + 1) / 7);
+    })();
+    const startLabel = weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    const endLabel = weekEnd.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    return {
+      key: `${weekStart.getUTCFullYear()}-W${String(weekNumber).padStart(2, '0')}`,
+      label: `Sem ${weekNumber}`,
+      rangeLabel: `${startLabel} - ${endLabel}`,
+    };
+  };
+
+  const ensureCashFlowBucket = (collection, key, label, fallback = 'Sem dados') => {
+    if (!collection[key]) {
+      collection[key] = { label: label || fallback, entries: 0, expenses: 0 };
+    } else if (label) {
+      collection[key].label = label;
+    }
+    return collection[key];
+  };
+
+  const buildSortedFlow = (collection, { limit } = {}) => {
+    const entries = Object.entries(collection)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([, data]) => ({ ...data }));
+    const trimmed = typeof limit === 'number' ? entries.slice(-limit) : entries;
+    return {
+      labels: trimmed.map(item => item.label),
+      values: trimmed.map(item => Number((item.entries - item.expenses).toFixed(2))),
+    };
+  };
+
+  const mergeDatasetWithDefault = (computed, defaults) => {
+    if (!computed) return defaults;
+    return {
+      paymentMethods: computed.paymentMethods?.length ? computed.paymentMethods : defaults.paymentMethods,
+      cashFlow: {
+        daily: computed.cashFlow?.daily?.labels?.length ? computed.cashFlow.daily : defaults.cashFlow.daily,
+        weekly: computed.cashFlow?.weekly?.labels?.length ? computed.cashFlow.weekly : defaults.cashFlow.weekly,
+        monthly: computed.cashFlow?.monthly?.labels?.length ? computed.cashFlow.monthly : defaults.cashFlow.monthly,
+      },
+      comparative: {
+        expenses: computed.comparative?.expenses?.length ? computed.comparative.expenses : defaults.comparative.expenses,
+        reinforcements: computed.comparative?.reinforcements?.length ? computed.comparative.reinforcements : defaults.comparative.reinforcements,
+        categories: computed.comparative?.categories?.length ? computed.comparative.categories : defaults.comparative.categories,
+      },
+    };
+  };
+
+  const computeCashierReportsFromMovements = (movements = []) => {
+    if (!Array.isArray(movements) || !movements.length) return null;
+    const paymentTotals = new Map();
+    const expensesTotals = new Map();
+    const reinforcementTotals = new Map();
+    const categoriesTotals = new Map();
+    const dailyBuckets = {};
+    const weeklyBuckets = {};
+    const monthlyBuckets = {};
+
+    movements.forEach(movement => {
+      const amount = parseMovementAmount(movement);
+      if (!(amount > 0)) return;
+
+      const rawType = normalizeText(movement?.tipoOperacao ?? movement?.tipoMovimentacao ?? movement?.tipo);
+      let isEntry = CASHIER_ENTRY_TYPES.has(rawType);
+      let isExpense = CASHIER_EXPENSE_TYPES.has(rawType);
+      let isReinforcement = CASHIER_REINFORCEMENT_TYPES.has(rawType);
+
+      if (!isEntry && !isExpense) {
+        if (rawType.includes('entrada')) {
+          isEntry = true;
+        } else if (rawType.includes('saida')) {
+          isExpense = true;
+        }
+      }
+
+      if (!isEntry && !isExpense && typeof movement?.quantidadeAnterior === 'number' && typeof movement?.quantidadeAtual === 'number') {
+        const diff = Number(movement.quantidadeAtual) - Number(movement.quantidadeAnterior);
+        if (diff > 0) isEntry = true;
+        if (diff < 0) isExpense = true;
+      }
+
+      const paymentMethod = (() => {
+        const candidates = [movement?.formaPagamento, movement?.metodoPagamento, movement?.paymentMethod, movement?.metodo, movement?.pagamento];
+        const found = candidates.find(value => typeof value === 'string' && value.trim().length > 0);
+        if (found) {
+          const text = found.toString().trim();
+          return text.charAt(0).toUpperCase() + text.slice(1);
+        }
+        return isExpense ? 'Despesas' : 'Dinheiro';
+      })();
+
+      const category = (() => {
+        const candidates = [movement?.categoria, movement?.category, movement?.motivo, movement?.descricao, movement?.tipoDespesa];
+        const found = candidates.find(value => typeof value === 'string' && value.trim().length > 0);
+        if (found) return found.trim();
+        if (isExpense) return 'Operacionais';
+        if (isEntry) return 'Vendas';
+        return 'Outros';
+      })();
+
+      const reinforcementCategory = (() => {
+        const candidates = [movement?.origem, movement?.fonte, movement?.categoriaReforco, movement?.origemRecurso];
+        const found = candidates.find(value => typeof value === 'string' && value.trim().length > 0);
+        if (found) return found.trim();
+        return category;
+      })();
+
+      const date = parseMovementDate(movement);
+
+      if (isEntry) {
+        paymentTotals.set(paymentMethod, (paymentTotals.get(paymentMethod) || 0) + amount);
+        categoriesTotals.set(category, (categoriesTotals.get(category) || 0) + amount);
+      }
+
+      if (isExpense) {
+        expensesTotals.set(category, (expensesTotals.get(category) || 0) + amount);
+      }
+
+      if (isReinforcement && !isEntry) {
+        reinforcementTotals.set(reinforcementCategory, (reinforcementTotals.get(reinforcementCategory) || 0) + amount);
+      }
+
+      if (date) {
+        const dayKey = date.toISOString().slice(0, 10);
+        const dayLabel = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+        const dayBucket = ensureCashFlowBucket(dailyBuckets, dayKey, dayLabel);
+        if (isEntry) dayBucket.entries += amount;
+        if (isExpense) dayBucket.expenses += amount;
+
+        const weekInfo = getWeekInfo(date);
+        const weekBucket = ensureCashFlowBucket(weeklyBuckets, weekInfo.key, weekInfo.label);
+        if (isEntry) weekBucket.entries += amount;
+        if (isExpense) weekBucket.expenses += amount;
+        if (weekInfo.rangeLabel) weekBucket.rangeLabel = weekInfo.rangeLabel;
+
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const monthLabel = date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+        const monthBucket = ensureCashFlowBucket(monthlyBuckets, monthKey, monthLabel);
+        if (isEntry) monthBucket.entries += amount;
+        if (isExpense) monthBucket.expenses += amount;
+      }
+    });
+
+    if (!paymentTotals.size && !expensesTotals.size && !categoriesTotals.size && !reinforcementTotals.size) {
+      return null;
+    }
+
+    const normalizeMap = map => Array.from(map.entries()).map(([label, value]) => ({ label, value: Number(value) || 0 }));
+
+    return {
+      paymentMethods: normalizeMap(paymentTotals),
+      cashFlow: {
+        daily: buildSortedFlow(dailyBuckets, { limit: 7 }),
+        weekly: buildSortedFlow(weeklyBuckets, { limit: 8 }),
+        monthly: buildSortedFlow(monthlyBuckets, { limit: 6 }),
+      },
+      comparative: {
+        expenses: normalizeMap(expensesTotals),
+        reinforcements: normalizeMap(reinforcementTotals),
+        categories: normalizeMap(categoriesTotals),
+      },
+    };
+  };
+
+  const renderCashierPaymentMethodsList = items => {
+    if (!cashierPaymentMethodsList) return;
+    cashierPaymentMethodsList.innerHTML = '';
+    const values = Array.isArray(items) ? items : [];
+    const total = values.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+    if (!values.length || total <= 0) {
+      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</li>';
+      return;
+    }
+
+    values.forEach((item, index) => {
+      const amount = Number(item.value) || 0;
+      const percentage = Math.round((amount / total) * 100);
+      const lighten = Math.max(25, 80 - index * 15);
+      const indicator = index === 0
+        ? '<span class="size-2.5 rounded-full bg-primary"></span>'
+        : `<span class="size-2.5 rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) ${lighten}%, white)"></span>`;
+      cashierPaymentMethodsList.insertAdjacentHTML('beforeend', `
+        <li class="flex items-center justify-between gap-4">
+          <span class="flex items-center gap-2">
+            ${indicator}
+            <span class="flex flex-col leading-tight">
+              <span class="font-medium">${item.label}</span>
+              <span class="text-xs text-subtle-light dark:text-subtle-dark">${formatCurrencyBRL(amount)}</span>
+            </span>
+          </span>
+          <span class="font-semibold">${percentage}%</span>
+        </li>
+      `);
+    });
+  };
+
+  const updateCashierAnalysisView = (view = cashierSelectedAnalysis) => {
+    if (!cashierAnalysisList) return;
+    cashierSelectedAnalysis = view;
+    cashierAnalysisList.innerHTML = '';
+    if (!cachedCashierReportsData) {
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      return;
+    }
+    const dataset = cachedCashierReportsData.comparative?.[view] || [];
+    if (!dataset.length) {
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      return;
+    }
+    const sorted = [...dataset].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
+    const maxValue = Math.max(...sorted.map(item => Number(item.value) || 0), 0);
+    if (maxValue <= 0) {
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      return;
+    }
+    cashierAnalysisList.innerHTML = sorted.map(item => {
+      const value = Number(item.value) || 0;
+      const percent = Math.max(4, Math.round((value / maxValue) * 100));
+      return `
+        <div class="grid grid-cols-[minmax(0,180px)_1fr] items-center gap-4">
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">${item.label}</span>
+            <span class="text-xs text-subtle-light/80 dark:text-subtle-dark/80">${formatCurrencyBRL(value)}</span>
+          </div>
+          <div class="h-3 w-full rounded bg-primary/10 dark:bg-primary/25">
+            <div class="h-full rounded bg-primary" style="width: ${percent}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  const updateCashierReportsCharts = (dataset, period = cashierSelectedCashFlowPeriod) => {
+    if (!cashierPaymentMethodsCanvas || !cashierCashFlowCanvas) return;
+    const resolvedPeriod = period || 'monthly';
+    const rootStyles = getComputedStyle(document.documentElement);
+    const primaryColor = rootStyles.getPropertyValue('--color-primary')?.trim() || '#16539c';
+    const textColor = document.documentElement.classList.contains('dark') ? '#ffffff' : '#111821';
+    const subtleColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.6)' : 'rgba(17, 24, 33, 0.6)';
+    const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(17, 24, 33, 0.08)';
+    const borderColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.15)' : 'rgba(17, 24, 33, 0.12)';
+    const primaryRgb = parseColorToRgb(primaryColor);
+
+    const paymentData = Array.isArray(dataset?.paymentMethods) ? dataset.paymentMethods : [];
+    const paymentLabels = paymentData.map(item => item.label);
+    const paymentValues = paymentData.map(item => Number(item.value) || 0);
+    const paymentColors = paymentData.map((_, index) => {
+      const weight = index === 0 ? 1 : Math.max(0.25, 0.75 - index * 0.15);
+      return mixColorWithWhite(primaryRgb, weight);
+    });
+
+    if (cashierPaymentMethodsChart) {
+      cashierPaymentMethodsChart.destroy();
+    }
+    cashierPaymentMethodsChart = new Chart(cashierPaymentMethodsCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: paymentLabels,
+        datasets: [{
+          data: paymentValues,
+          backgroundColor: paymentColors,
+          borderWidth: 0,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '75%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: context => {
+                const label = context.label || '';
+                const value = context.parsed || 0;
+                return `${label}: ${formatCurrencyBRL(value)}`;
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const cashFlowData = dataset?.cashFlow?.[resolvedPeriod] || dataset?.cashFlow?.monthly || { labels: [], values: [] };
+    const flowLabels = Array.isArray(cashFlowData.labels) ? cashFlowData.labels : [];
+    const flowValues = Array.isArray(cashFlowData.values) ? cashFlowData.values.map(value => Number(value) || 0) : [];
+    const context = cashierCashFlowCanvas.getContext('2d');
+    const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
+    gradient.addColorStop(0, rgbaFromRgb(primaryRgb, 0.55));
+    gradient.addColorStop(1, rgbaFromRgb(primaryRgb, 0));
+
+    if (cashierCashFlowChart) {
+      cashierCashFlowChart.destroy();
+    }
+
+    cashierCashFlowChart = new Chart(cashierCashFlowCanvas, {
+      type: 'line',
+      data: {
+        labels: flowLabels,
+        datasets: [{
+          label: 'Fluxo de Caixa',
+          data: flowValues,
+          borderColor: mixColorWithWhite(primaryRgb, 1),
+          backgroundColor: gradient,
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: mixColorWithWhite(primaryRgb, 1),
+          pointBorderWidth: 0,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: context => formatCurrencyBRL(context.parsed.y),
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: subtleColor },
+            grid: { display: false },
+            border: { color: borderColor },
+          },
+          y: {
+            ticks: {
+              color: subtleColor,
+              callback: value => formatCurrencyBRL(value),
+            },
+            grid: { color: gridColor },
+            border: { color: borderColor },
+          },
+        },
+      },
+    });
+  };
+
+  const refreshCashierReportsCharts = () => {
+    if (!cachedCashierReportsData) return;
+    updateCashierReportsCharts(cachedCashierReportsData, cashierSelectedCashFlowPeriod);
+  };
+
+  const renderCashierReports = (movements = movementsData) => {
+    const computed = computeCashierReportsFromMovements(movements);
+    const dataset = mergeDatasetWithDefault(computed, DEFAULT_CASHIER_REPORTS_DATA);
+    dataset.paymentMethods = [...(dataset.paymentMethods || [])].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
+    dataset.comparative.expenses = [...(dataset.comparative.expenses || [])].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
+    dataset.comparative.reinforcements = [...(dataset.comparative.reinforcements || [])].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
+    dataset.comparative.categories = [...(dataset.comparative.categories || [])].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
+
+    cachedCashierReportsData = dataset;
+
+    const activeCashFlowRadio = Array.from(cashierCashFlowRadios).find(radio => radio.checked);
+    if (activeCashFlowRadio) {
+      cashierSelectedCashFlowPeriod = activeCashFlowRadio.value;
+    }
+    const activeAnalysisRadio = Array.from(cashierAnalysisRadios).find(radio => radio.checked);
+    if (activeAnalysisRadio) {
+      cashierSelectedAnalysis = activeAnalysisRadio.value;
+    }
+
+    renderCashierPaymentMethodsList(dataset.paymentMethods);
+    updateCashierReportsCharts(dataset, cashierSelectedCashFlowPeriod);
+    updateCashierAnalysisView(cashierSelectedAnalysis);
+
+    if (!cashierReportsInitialized) {
+      cashierReportsInitialized = true;
+      cashierCashFlowRadios.forEach(radio => {
+        radio.addEventListener('change', event => {
+          if (!event.target.checked) return;
+          cashierSelectedCashFlowPeriod = event.target.value;
+          refreshCashierReportsCharts();
+        });
+      });
+      cashierAnalysisRadios.forEach(radio => {
+        radio.addEventListener('change', event => {
+          if (!event.target.checked) return;
+          cashierSelectedAnalysis = event.target.value;
+          updateCashierAnalysisView(cashierSelectedAnalysis);
+        });
+      });
+    }
+  };
+
   const getStoredDarkModePreference = () => {
     if (typeof window === 'undefined' || !window.localStorage) return null;
     try {
@@ -608,12 +1198,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const storedPreference = getStoredDarkModePreference();
     const prefersDark = storedPreference ?? (darkModeMediaQuery?.matches ?? false);
     applyDarkModePreference(prefersDark, { store: storedPreference !== null });
+    refreshCashierReportsCharts();
 
     if (darkModeToggles.length) {
       darkModeToggles.forEach(button => {
         button.addEventListener('click', () => {
           const isDark = document.documentElement.classList.contains('dark');
           applyDarkModePreference(!isDark);
+          refreshCashierReportsCharts();
         });
       });
     }
@@ -622,6 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
       darkModeMediaQuery.addEventListener('change', event => {
         if (getStoredDarkModePreference() !== null) return;
         applyDarkModePreference(event.matches, { store: false });
+        refreshCashierReportsCharts();
       });
     }
   };
@@ -1052,6 +1645,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await authenticatedJsonFetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`);
       movementsData = Array.isArray(data) ? data : [];
       renderMovimentacoes();
+      renderCashierReports();
     } catch (err) {
       console.error('Erro ao carregar movimentações:', err);
       alert('Erro ao carregar movimentações: ' + err.message);
@@ -1911,6 +2505,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  const setupCashierMenuNavigation = () => {
+    if (!cashierMenu) return;
+    cashierMenu.addEventListener('click', event => {
+      const link = event.target.closest('a[data-page]');
+      if (!link) return;
+      event.preventDefault();
+      activateCashierMenuItem(link);
+      if (!isDesktopViewport()) {
+        closeMobileSidebar(true);
+      }
+    });
+    const defaultLink = cashierMenu.querySelector('a[data-page="cashier-dashboard-page"]');
+    if (defaultLink) {
+      highlightCashierMenuItem(defaultLink);
+      switchCashierPage(defaultLink.dataset.page);
+    }
+  };
+
   const restoreStoredPage = () => {
     const storedPage = getStoredActivePage();
     if (storedPage) {
@@ -2175,7 +2787,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setupImagePreview('add-image', 'add-image-preview');
   setupImagePreview('edit-image', 'edit-image-preview');
   setupMenuNavigation();
+  setupCashierMenuNavigation();
   setupUserMenus();
+  renderCashierReports();
   setupDarkMode();
   updateCashierDashboard();
   registerImageFallbacks(document);
