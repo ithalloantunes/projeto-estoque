@@ -8,19 +8,6 @@
     --font-size-heading-lg: clamp(2rem, 1.6rem + 1.5vw, 3rem);
     --font-size-heading-md: clamp(1.25rem, 1.1rem + 0.7vw, 1.75rem);
     --surface-radius: 0.95rem;
-    --color-primary: #16539c;
-    --color-secondary: #3b82f6;
-    --color-danger: #ef4444;
-    --color-success: #10b981;
-    --color-background-light: #f6f7f8;
-    --color-background-dark: #111821;
-    --color-surface-light: #ffffff;
-    --color-surface-dark: #111821;
-    --color-text-light: #111821;
-    --color-text-dark: #ffffff;
-    --color-subtle-light: rgba(17, 24, 33, 0.6);
-    --color-subtle-dark: rgba(255, 255, 255, 0.6);
-    --color-border: rgba(22, 83, 156, 0.2);
     color-scheme: light dark;
 }
 
@@ -49,10 +36,6 @@ body {
     --module-primary-dark: #0b3a6c;
     --module-surface: rgba(13, 51, 96, 0.28);
     background: #f2f6fb;
-}
-
-.font-cashier {
-    font-family: 'Inter', sans-serif;
 }
 
 body.sidebar-locked {

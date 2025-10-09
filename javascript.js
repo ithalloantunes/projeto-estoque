@@ -37,15 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeModule = 'stock';
   const bodyElement = document.body;
 
-  const dispatchCashierSessionEvent = userIdValue => {
-    if (typeof window === 'undefined') return;
-    try {
-      window.dispatchEvent(new CustomEvent('cashier:session', { detail: { userId: userIdValue ?? null } }));
-    } catch (error) {
-      console.warn('Não foi possível notificar o módulo de caixa sobre a sessão:', error);
-    }
-  };
-
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
   const appContainer = document.getElementById('app-container');
@@ -657,7 +648,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUser = username;
     currentUserId = userId;
     userRole = role;
-    dispatchCashierSessionEvent(userId);
     persistSession({ username, userId, role });
     usersDataDirty = true;
     homeGreeting.textContent = `Bem-vindo de volta, ${username}!`;
@@ -788,7 +778,6 @@ document.addEventListener('DOMContentLoaded', () => {
       disconnectSocket();
       currentUser = null;
       currentUserId = null;
-      dispatchCashierSessionEvent(null);
       userRole = null;
       estoqueData = [];
       filteredProducts = [];
