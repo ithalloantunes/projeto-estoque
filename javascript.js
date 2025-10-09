@@ -284,14 +284,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const CASHIER_ACTIVE_CLASS = 'cashier-menu-active';
+
   const highlightCashierMenuItem = link => {
     if (!cashierMenu) return;
     cashierMenu.querySelectorAll('a[data-page]').forEach(item => {
-      item.classList.remove('bg-[#16539c]', 'text-white');
+      item.classList.remove('bg-[#16539c]', 'text-white', CASHIER_ACTIVE_CLASS);
       item.classList.add('text-gray-600');
     });
     if (link) {
-      link.classList.add('bg-[#16539c]', 'text-white');
+      link.classList.add('bg-[#16539c]', 'text-white', CASHIER_ACTIVE_CLASS);
       link.classList.remove('text-gray-600');
     }
   };
@@ -322,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyModuleVisibility('cashier');
     setModuleButtonState('cashier');
     clearMainMenuHighlight();
-    const currentActive = cashierMenu?.querySelector('a[data-page].bg-[#16539c]')
+    const currentActive = cashierMenu?.querySelector(`a[data-page].${CASHIER_ACTIVE_CLASS}`)
       || cashierMenu?.querySelector('a[data-page].text-white');
     if (currentActive) {
       switchCashierPage(currentActive.dataset.page);
