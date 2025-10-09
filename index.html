@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="estilos.css" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script>
@@ -17,20 +18,23 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6D28D9',
-                        secondary: '#9333ea',
-                        danger: '#EF4444',
-                        "background-light": "#FDF7F4",
-                        "background-dark": "#1F2937",
-                        "surface-light": "#FFFFFF",
-                        "surface-dark": "#374151",
-                        "text-light": "#111827",
-                        "text-dark": "#F9FAFB",
-                        "subtle-light": "#6B7280",
-                        "subtle-dark": "#D1D5DB"
+                        primary: 'var(--color-primary)',
+                        secondary: 'var(--color-secondary)',
+                        danger: 'var(--color-danger)',
+                        success: 'var(--color-success)',
+                        "background-light": "var(--color-background-light)",
+                        "background-dark": "var(--color-background-dark)",
+                        "surface-light": "var(--color-surface-light)",
+                        "surface-dark": "var(--color-surface-dark)",
+                        "text-light": "var(--color-text-light)",
+                        "text-dark": "var(--color-text-dark)",
+                        "subtle-light": "var(--color-subtle-light)",
+                        "subtle-dark": "var(--color-subtle-dark)",
+                        "border-color": "var(--color-border)"
                     },
                     fontFamily: {
                         display: ["Poppins", "sans-serif"],
+                        cashier: ["Inter", "sans-serif"],
                     },
                     borderRadius: {
                         'DEFAULT': '0.75rem',
@@ -571,25 +575,95 @@
                 </div>
                 </div>
                 <div id="cashier-module" class="hidden flex-1 overflow-y-auto">
-                    <div class="flex-1 w-full p-8 space-y-6">
-                        <header class="flex flex-col gap-2">
-                            <h2 class="text-2xl font-bold">Gerenciar Caixa</h2>
-                            <p class="text-subtle-light dark:text-subtle-dark max-w-2xl">Em breve você poderá acompanhar o fluxo de caixa, registrar transações e controlar saídas diretamente por aqui.</p>
+                    <div id="cashier-dashboard-page" class="flex flex-col flex-1 min-h-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                        <header class="flex items-center justify-between p-6 border-b border-border-color">
+                            <div>
+                                <h2 class="text-2xl font-bold">Painel</h2>
+                                <p class="text-sm text-subtle-light dark:text-subtle-dark">Visão geral financeira em tempo real</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                        <span class="user-name-display font-medium hidden md:block"></span>
+                                        <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                        <a href="#" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                        <div class="border-t border-border-color"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                    </div>
+                                </div>
+                                <button class="dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" aria-pressed="false" type="button">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </button>
+                            </div>
                         </header>
-                        <div class="grid gap-6 lg:grid-cols-2">
-                            <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm p-6 border border-white/10">
-                                <h3 class="text-lg font-semibold mb-2">Resumo rápido</h3>
-                                <p class="text-subtle-light dark:text-subtle-dark">Mantenha-se atento aos principais indicadores do seu caixa. Essa seção trará métricas importantes assim que o módulo estiver disponível.</p>
-                            </section>
-                            <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm p-6 border border-white/10">
-                                <h3 class="text-lg font-semibold mb-2">Próximos passos</h3>
-                                <ul class="list-disc pl-5 space-y-2 text-subtle-light dark:text-subtle-dark">
-                                    <li>Cadastro de entradas e saídas do caixa.</li>
-                                    <li>Visualização do saldo em tempo real.</li>
-                                    <li>Relatórios detalhados por período.</li>
-                                </ul>
-                            </section>
-                        </div>
+                        <main class="flex-1 p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                                <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Caixa Total</h3>
+                                        <div class="p-2 bg-blue-500/20 rounded-lg">
+                                            <span class="material-symbols-outlined text-blue-500">account_balance_wallet</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p id="cashier-kpi-total" class="text-4xl font-bold">R$ 0,00</p>
+                                        <p class="text-sm font-semibold flex items-center gap-1 text-success" data-kpi-change="total">
+                                            <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="total">arrow_upward</span>
+                                            <span data-kpi-change-text="total">0% vs mês passado</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Receita Total</h3>
+                                        <div class="p-2 bg-green-500/20 rounded-lg">
+                                            <span class="material-symbols-outlined text-green-500">trending_up</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p id="cashier-kpi-revenue" class="text-4xl font-bold">R$ 0,00</p>
+                                        <p class="text-sm font-semibold flex items-center gap-1 text-success" data-kpi-change="revenue">
+                                            <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="revenue">arrow_upward</span>
+                                            <span data-kpi-change-text="revenue">0% vs mês passado</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Despesas Totais</h3>
+                                        <div class="p-2 bg-red-500/20 rounded-lg">
+                                            <span class="material-symbols-outlined text-red-500">trending_down</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p id="cashier-kpi-expenses" class="text-4xl font-bold">R$ 0,00</p>
+                                        <p class="text-sm font-semibold flex items-center gap-1 text-danger" data-kpi-change="expenses">
+                                            <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="expenses">arrow_downward</span>
+                                            <span data-kpi-change-text="expenses">0% vs mês passado</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Lucro Líquido</h3>
+                                        <div class="p-2 bg-purple-500/20 rounded-lg">
+                                            <span class="material-symbols-outlined text-purple-500">paid</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p id="cashier-kpi-profit" class="text-4xl font-bold">R$ 0,00</p>
+                                        <p class="text-sm font-semibold flex items-center gap-1 text-success" data-kpi-change="profit">
+                                            <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="profit">arrow_upward</span>
+                                            <span data-kpi-change-text="profit">0% vs mês passado</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
                     </div>
                 </div>
             </div>
