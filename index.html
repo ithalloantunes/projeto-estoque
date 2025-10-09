@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="estilos.css" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -30,6 +32,7 @@
                     },
                     fontFamily: {
                         display: ["Poppins", "sans-serif"],
+                        cashier: ["Inter", "sans-serif"],
                     },
                     borderRadius: {
                         'DEFAULT': '0.75rem',
@@ -569,25 +572,441 @@
                     </div>
                 </div>
                 </div>
-                <div id="cashier-module" class="hidden flex-1 overflow-y-auto">
-                    <div class="flex-1 w-full p-8 space-y-6">
-                        <header class="flex flex-col gap-2">
-                            <h2 class="text-2xl font-bold">Gerenciar Caixa</h2>
-                            <p class="text-subtle-light dark:text-subtle-dark max-w-2xl">Em breve você poderá acompanhar o fluxo de caixa, registrar transações e controlar saídas diretamente por aqui.</p>
-                        </header>
-                        <div class="grid gap-6 lg:grid-cols-2">
-                            <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm p-6 border border-white/10">
-                                <h3 class="text-lg font-semibold mb-2">Resumo rápido</h3>
-                                <p class="text-subtle-light dark:text-subtle-dark">Mantenha-se atento aos principais indicadores do seu caixa. Essa seção trará métricas importantes assim que o módulo estiver disponível.</p>
-                            </section>
-                            <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm p-6 border border-white/10">
-                                <h3 class="text-lg font-semibold mb-2">Próximos passos</h3>
-                                <ul class="list-disc pl-5 space-y-2 text-subtle-light dark:text-subtle-dark">
-                                    <li>Cadastro de entradas e saídas do caixa.</li>
-                                    <li>Visualização do saldo em tempo real.</li>
-                                    <li>Relatórios detalhados por período.</li>
+                <div id="cashier-module" class="hidden flex-1 overflow-hidden bg-background-light dark:bg-background-dark">
+                    <div id="cashier-module-shell" class="flex min-h-full w-full font-cashier text-text-light dark:text-text-dark">
+                        <aside class="w-64 shrink-0 bg-surface-light dark:bg-surface-dark border-r border-white/10 dark:border-border-color flex flex-col">
+                            <div class="p-6">
+                                <h1 class="text-2xl font-bold text-primary">CashFlow</h1>
+                            </div>
+                            <nav id="cashier-main-menu" class="flex-grow px-4">
+                                <ul class="space-y-2">
+                                    <li>
+                                        <a data-page="cashier-dashboard-page" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary text-white" href="#">
+                                            <span class="material-symbols-outlined">dashboard</span>
+                                            <span>Painel</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a data-page="cashier-movements-page" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" href="#">
+                                            <span class="material-symbols-outlined">swap_horiz</span>
+                                            <span>Movimentos</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a data-page="cashier-reports-page" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" href="#">
+                                            <span class="material-symbols-outlined">bar_chart</span>
+                                            <span>Relatórios</span>
+                                        </a>
+                                    </li>
                                 </ul>
-                            </section>
+                            </nav>
+                            <div class="mt-auto p-4">
+                                <p class="px-4 py-2 text-xs text-subtle-light dark:text-subtle-dark">© 2025 AçaíStock</p>
+                            </div>
+                        </aside>
+                        <div id="cashier-main-content" class="flex-1 flex flex-col min-h-full">
+                            <div id="cashier-dashboard-page" class="cashier-page-content flex flex-col flex-1">
+                                <header class="flex items-center justify-between p-6 border-b border-border-color">
+                                    <div>
+                                        <h2 class="text-2xl font-bold">Painel</h2>
+                                        <p class="text-sm text-subtle-light dark:text-subtle-dark">Visão geral financeira em tempo real</p>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div class="relative">
+                                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                                <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                                <span class="user-name-display font-medium hidden md:block"></span>
+                                                <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                            </button>
+                                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                                <a href="#" data-page="cashier-settings-page" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                                <div class="border-t border-border-color"></div>
+                                                <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                            </div>
+                                        </div>
+                                        <button class="cashier-dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                            <span class="material-symbols-outlined">dark_mode</span>
+                                        </button>
+                                    </div>
+                                </header>
+                                <main class="flex-1 p-6 bg-background-light dark:bg-background-dark">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                                        <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Caixa Total</h3>
+                                                <div class="p-2 bg-blue-500/20 rounded-lg">
+                                                    <span class="material-symbols-outlined text-blue-500">account_balance_wallet</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p id="cashier-kpi-total" class="text-4xl font-bold">R$0,00</p>
+                                                <p class="text-sm text-green-500 font-semibold flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-sm">arrow_upward</span>
+                                                    +12% vs mês passado
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Receita Total</h3>
+                                                <div class="p-2 bg-green-500/20 rounded-lg">
+                                                    <span class="material-symbols-outlined text-green-500">trending_up</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p id="cashier-kpi-revenue" class="text-4xl font-bold">R$0,00</p>
+                                                <p class="text-sm text-green-500 font-semibold flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-sm">arrow_upward</span>
+                                                    +8% vs mês passado
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Despesas Totais</h3>
+                                                <div class="p-2 bg-red-500/20 rounded-lg">
+                                                    <span class="material-symbols-outlined text-red-500">trending_down</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p id="cashier-kpi-expenses" class="text-4xl font-bold">R$0,00</p>
+                                                <p class="text-sm text-red-500 font-semibold flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-sm">arrow_downward</span>
+                                                    -5% vs mês passado
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Lucro Líquido</h3>
+                                                <div class="p-2 bg-purple-500/20 rounded-lg">
+                                                    <span class="material-symbols-outlined text-purple-500">paid</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p id="cashier-kpi-profit" class="text-4xl font-bold">R$0,00</p>
+                                                <p class="text-sm text-green-500 font-semibold flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-sm">arrow_upward</span>
+                                                    +15% vs mês passado
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </main>
+                            </div>
+                            <div id="cashier-movements-page" class="cashier-page-content hidden flex-1 flex-col">
+                                <header class="flex items-center justify-between p-6 border-b border-border-color">
+                                    <div>
+                                        <h2 class="text-2xl font-bold">Movimentações</h2>
+                                        <p class="text-sm text-subtle-light dark:text-subtle-dark">Histórico de entradas e saídas</p>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div class="relative">
+                                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                                <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                                <span class="user-name-display font-medium hidden md:block"></span>
+                                                <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                            </button>
+                                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                                <a href="#" data-page="cashier-settings-page" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                                <div class="border-t border-border-color"></div>
+                                                <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                            </div>
+                                        </div>
+                                        <button class="cashier-dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                            <span class="material-symbols-outlined">dark_mode</span>
+                                        </button>
+                                    </div>
+                                </header>
+                                <main class="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                                    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+                                        <h1 class="text-3xl font-bold text-text-light dark:text-text-dark">Movimentações Financeiras</h1>
+                                        <button class="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors" id="register-movement-btn">
+                                            <span class="material-symbols-outlined">add</span>
+                                            <span>Registrar Movimentação</span>
+                                        </button>
+                                    </div>
+                                    <div class="bg-surface-light dark:bg-surface-dark/50 p-4 rounded-lg border border-border-color mb-8">
+                                        <div id="cashier-filter-buttons" class="flex flex-wrap items-center gap-4">
+                                            <button data-filter="all" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium">
+                                                <span>Todos</span>
+                                            </button>
+                                            <button data-filter="Entrada" class="flex items-center gap-2 px-4 py-2 bg-surface-light dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <span>Entradas</span>
+                                            </button>
+                                            <button data-filter="Saída" class="flex items-center gap-2 px-4 py-2 bg-surface-light dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <span>Saídas</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="bg-surface-light dark:bg-surface-dark/50 rounded-lg border border-border-color overflow-hidden">
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                <thead class="text-xs text-gray-700 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700/50">
+                                                    <tr>
+                                                        <th class="px-6 py-3" scope="col">Data/Hora</th>
+                                                        <th class="px-6 py-3" scope="col">Tipo</th>
+                                                        <th class="px-6 py-3" scope="col">Categoria</th>
+                                                        <th class="px-6 py-3 text-right" scope="col">Valor</th>
+                                                        <th class="px-6 py-3" scope="col">Funcionário</th>
+                                                        <th class="px-6 py-3" scope="col">Observações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="cashier-movements-table-body"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </main>
+                            </div>
+                            <div id="cashier-reports-page" class="cashier-page-content hidden flex-1 flex-col">
+                                <header class="flex items-center justify-between p-6 border-b border-border-color">
+                                    <div>
+                                        <h2 class="text-2xl font-bold">Relatórios Financeiros</h2>
+                                        <p class="text-sm text-subtle-light dark:text-subtle-dark">Analise seu desempenho financeiro.</p>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div class="relative">
+                                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                                <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                                <span class="user-name-display font-medium hidden md:block"></span>
+                                                <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                            </button>
+                                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                                <a href="#" data-page="cashier-settings-page" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                                <div class="border-t border-border-color"></div>
+                                                <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                            </div>
+                                        </div>
+                                        <button class="cashier-dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                            <span class="material-symbols-outlined">dark_mode</span>
+                                        </button>
+                                    </div>
+                                </header>
+                                <main class="flex-1 px-4 py-8 sm:px-6 lg:px-8 overflow-y-auto">
+                                    <div class="mx-auto max-w-7xl space-y-8">
+                                        <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                            <div>
+                                                <h2 class="text-3xl font-bold text-text-light dark:text-text-dark">Visão Geral Financeira</h2>
+                                                <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Analise seu desempenho financeiro com relatórios e insights detalhados.</p>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button class="flex items-center gap-2 rounded bg-surface-light px-4 py-2 text-sm font-medium text-text-light shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-surface-dark dark:text-text-dark dark:ring-gray-600 dark:hover:bg-primary/20">
+                                                    <span class="material-symbols-outlined text-base">download</span>
+                                                    Exportar
+                                                </button>
+                                                <button class="flex items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90">
+                                                    <span class="material-symbols-outlined text-base">add</span>
+                                                    Novo Relatório
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                            <div class="rounded-lg border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/50 lg:col-span-1">
+                                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Formas de Pagamento</h3>
+                                                <div class="mt-4 flex h-64 items-center justify-center">
+                                                    <canvas id="payment-methods-chart"></canvas>
+                                                </div>
+                                                <ul class="mt-4 space-y-2 text-sm">
+                                                    <li class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-primary"></span>Dinheiro</span> <span class="font-semibold">40%</span></li>
+                                                    <li class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2.5 rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 60%, white)"></span>Cartão de Crédito</span> <span class="font-semibold">20%</span></li>
+                                                    <li class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2.5 rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 40%, white)"></span>Cartão de Débito</span> <span class="font-semibold">35%</span></li>
+                                                    <li class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2.5 rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 20%, white)"></span>Online</span> <span class="font-semibold">5%</span></li>
+                                                </ul>
+                                            </div>
+                                            <div class="rounded-lg border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/50 lg:col-span-2">
+                                                <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                                    <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Análise de Fluxo de Caixa</h3>
+                                                    <div class="flex items-center rounded bg-background-light p-1 dark:bg-background-dark">
+                                                        <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                            <input class="sr-only" name="cashflow" type="radio" value="Daily">
+                                                            Diário
+                                                        </label>
+                                                        <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                            <input class="sr-only" name="cashflow" type="radio" value="Weekly">
+                                                            Semanal
+                                                        </label>
+                                                        <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                            <input checked class="sr-only" name="cashflow" type="radio" value="Monthly">
+                                                            Mensal
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-4 h-72">
+                                                    <canvas id="cash-flow-chart"></canvas>
+                                                </div>
+                                            </div>
+                                            <div class="rounded-lg border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/50 lg:col-span-3">
+                                                <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                                    <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Análise Comparativa</h3>
+                                                    <div class="flex items-center rounded bg-background-light p-1 dark:bg-background-dark">
+                                                        <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                            <input checked class="sr-only" name="analysis" type="radio" value="Expenses">
+                                                            Despesas
+                                                        </label>
+                                                        <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                            <input class="sr-only" name="analysis" type="radio" value="Reinforcements">
+                                                            Reforços
+                                                        </label>
+                                                        <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                            <input class="sr-only" name="analysis" type="radio" value="Categories">
+                                                            Categorias
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-6 space-y-4">
+                                                    <div class="grid grid-cols-[80px_1fr] items-center gap-4">
+                                                        <span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Aluguel</span>
+                                                        <div class="h-4 w-full rounded bg-primary/10 dark:bg-primary/20">
+                                                            <div class="h-full rounded bg-primary" style="width: 60%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="grid grid-cols-[80px_1fr] items-center gap-4">
+                                                        <span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Serviços</span>
+                                                        <div class="h-4 w-full rounded bg-primary/10 dark:bg-primary/20">
+                                                            <div class="h-full rounded bg-primary" style="width: 60%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="grid grid-cols-[80px_1fr] items-center gap-4">
+                                                        <span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Suprimentos</span>
+                                                        <div class="h-4 w-full rounded bg-primary/10 dark:bg-primary/20">
+                                                            <div class="h-full rounded bg-primary" style="width: 100%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="grid grid-cols-[80px_1fr] items-center gap-4">
+                                                        <span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Marketing</span>
+                                                        <div class="h-4 w-full rounded bg-primary/10 dark:bg-primary/20">
+                                                            <div class="h-full rounded bg-primary" style="width: 70%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="grid grid-cols-[80px_1fr] items-center gap-4">
+                                                        <span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Salários</span>
+                                                        <div class="h-4 w-full rounded bg-primary/10 dark:bg-primary/20">
+                                                            <div class="h-full rounded bg-primary" style="width: 40%"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </main>
+                            </div>
+                            <div id="cashier-settings-page" class="cashier-page-content hidden flex-1 flex-col">
+                                <header class="flex items-center justify-between p-6 border-b border-border-color">
+                                    <div>
+                                        <h2 class="text-2xl font-bold">Configurações</h2>
+                                        <p class="text-sm text-subtle-light dark:text-subtle-dark">Gerencie as configurações do seu sistema.</p>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div class="relative">
+                                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                                <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                                <span class="user-name-display font-medium hidden md:block"></span>
+                                                <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                            </button>
+                                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                                <a href="#" data-page="cashier-settings-page" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                                <div class="border-t border-border-color"></div>
+                                                <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                            </div>
+                                        </div>
+                                        <button class="cashier-dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                            <span class="material-symbols-outlined">dark_mode</span>
+                                        </button>
+                                    </div>
+                                </header>
+                                <main class="flex-1 px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 py-8 overflow-y-auto">
+                                    <div class="mx-auto max-w-4xl space-y-12">
+                                        <section class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                                            <div class="md:col-span-1">
+                                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Logotipo da Empresa</h3>
+                                                <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Atualize o logotipo da sua empresa.</p>
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <div class="rounded-lg border border-border-color bg-surface-light dark:bg-surface-dark p-4">
+                                                    <div id="logo-preview" class="aspect-[16/9] w-full bg-center bg-no-repeat bg-cover rounded"></div>
+                                                    <div class="mt-4 flex justify-start">
+                                                        <input type="file" id="logo-upload-input" class="hidden" accept="image/*">
+                                                        <button id="change-logo-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Alterar Logotipo</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                            <div class="md:col-span-1">
+                                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Categorias de Movimento</h3>
+                                                <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina categorias para receitas e despesas.</p>
+                                            </div>
+                                            <div class="md:col-span-2 space-y-4">
+                                                <div class="overflow-hidden rounded-lg border border-border-color">
+                                                    <table class="min-w-full divide-y divide-border-color">
+                                                        <thead class="bg-primary/10 dark:bg-primary/20">
+                                                            <tr>
+                                                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark" scope="col">Nome da Categoria</th>
+                                                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark" scope="col">Tipo</th>
+                                                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark" scope="col">Status</th>
+                                                                <th class="relative px-6 py-3" scope="col"><span class="sr-only">Ações</span></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="movement-categories-table-body" class="divide-y divide-border-color bg-surface-light dark:bg-surface-dark"></tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="flex justify-start">
+                                                    <button id="add-category-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Adicionar Categoria</button>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                            <div class="md:col-span-1">
+                                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Limites de Caixa</h3>
+                                                <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina o limite máximo de dinheiro para transações.</p>
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <label class="block text-sm font-medium text-subtle-light dark:text-subtle-dark" for="cash-limit">Limite Máximo de Caixa</label>
+                                                <div class="mt-1 flex items-center gap-2">
+                                                    <input class="block w-full rounded border-border-color bg-surface-light dark:bg-surface-dark shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="cash-limit" name="cash-limit" placeholder="R$1.000,00" type="text">
+                                                    <button id="save-cash-limit-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Salvar</button>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                            <div class="md:col-span-1">
+                                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Métodos de Pagamento</h3>
+                                                <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Ative ou desative os métodos de pagamento disponíveis.</p>
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <div class="overflow-hidden rounded-lg border border-border-color">
+                                                    <table class="min-w-full divide-y divide-border-color">
+                                                        <thead class="bg-primary/10 dark:bg-primary/20">
+                                                            <tr>
+                                                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark" scope="col">Método de Pagamento</th>
+                                                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark" scope="col">Status</th>
+                                                                <th class="relative px-6 py-3" scope="col"><span class="sr-only">Ações</span></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="payment-methods-table-body" class="divide-y divide-border-color bg-surface-light dark:bg-surface-dark"></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                            <div class="md:col-span-1">
+                                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Gerenciamento de Dados</h3>
+                                                <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Faça backup e exporte os dados do seu sistema.</p>
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <div class="flex flex-col sm:flex-row gap-4">
+                                                    <button id="backup-data-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40">Fazer Backup dos Dados</button>
+                                                    <button class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40">Exportar Dados</button>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                </main>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -758,12 +1177,82 @@
         </div>
     </div>
 
+    <div id="cashier-movement-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 dark:bg-opacity-80 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-background-light dark:bg-background-dark rounded-lg shadow-xl w-full max-w-lg">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Registrar Nova Movimentação</h3>
+            </div>
+            <form id="cashier-movement-form">
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="movement-type">Tipo</label>
+                        <select class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary" id="movement-type" name="type" required>
+                            <option value="Entrada">Entrada</option>
+                            <option value="Saída">Saída</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="movement-category">Categoria</label>
+                        <select class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary" id="movement-category" name="category" required></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="movement-value">Valor</label>
+                        <input class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary" id="movement-value" name="value" placeholder="ex: 500,00" type="number" step="0.01" min="0" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="movement-employee">Funcionário</label>
+                        <input class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary" id="movement-employee" name="employee" type="text" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="movement-observations">Observações</label>
+                        <textarea class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary" id="movement-observations" name="observations" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-background-dark/50 flex justify-end gap-3 rounded-b-lg">
+                    <button type="button" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" id="cancel-movement-btn">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-success text-white font-medium rounded-lg hover:bg-success/90 transition-colors">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="category-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 dark:bg-opacity-80 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-background-light dark:bg-background-dark rounded-lg shadow-xl w-full max-w-lg">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 id="category-modal-title" class="text-lg font-medium text-gray-900 dark:text-white">Adicionar Categoria</h3>
+            </div>
+            <form id="category-form">
+                <input type="hidden" id="category-id" name="id">
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="category-name">Nome da Categoria</label>
+                        <input class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary" id="category-name" name="name" placeholder="ex: Vendas Online" type="text" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="category-type">Tipo</label>
+                        <select class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary" id="category-type" name="type" required>
+                            <option value="Receita">Receita</option>
+                            <option value="Despesa">Despesa</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-background-dark/50 flex justify-end gap-3 rounded-b-lg">
+                    <button type="button" data-close-modal="category-modal" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-success text-white font-medium rounded-lg hover:bg-success/90 transition-colors">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-notification" class="fixed top-5 right-5 bg-success text-white px-6 py-3 rounded-lg shadow-xl text-sm font-medium transition-transform transform translate-x-[150%]"></div>
+
     <div id="loader" class="fixed inset-0 bg-black bg-opacity-30 z-[60] flex items-center justify-center hidden">
         <div class="loader h-16 w-16 rounded-full border-4 border-t-4 border-gray-200"></div>
     </div>
 
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js" onerror="this.onerror=null;this.src='vendor/chart.umd.min.js';"></script>
     <script src="/socket.io/socket.io.js" defer></script>
+    <script type="module" src="cashier-module.js" defer></script>
     <script defer src="javascript.js"></script>
 </body>
 </html>
