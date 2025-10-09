@@ -575,7 +575,7 @@
                 </div>
                 </div>
                 <div id="cashier-module" class="hidden flex-1 overflow-y-auto">
-                    <div id="cashier-dashboard-page" class="flex flex-col flex-1 min-h-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                    <div id="cashier-dashboard-page" class="cashier-page flex flex-col flex-1 min-h-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
                         <header class="flex items-center justify-between p-6 border-b border-border-color">
                             <div>
                                 <h2 class="text-2xl font-bold">Painel</h2>
@@ -660,6 +660,140 @@
                                             <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="profit">arrow_upward</span>
                                             <span data-kpi-change-text="profit">0% vs mês passado</span>
                                         </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    <div id="cashier-movements-page" class="cashier-page hidden flex flex-col flex-1 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                        <header class="flex items-center justify-between p-6 border-b border-border-color">
+                            <div>
+                                <h2 class="text-2xl font-bold">Movimentos de Caixa</h2>
+                                <p class="text-sm text-subtle-light dark:text-subtle-dark">Acompanhe entradas, saídas e reforços registrados.</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                        <span class="user-name-display font-medium hidden md:block"></span>
+                                        <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                        <a href="#" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                        <div class="border-t border-border-color"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                    </div>
+                                </div>
+                                <button class="dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" aria-pressed="false" type="button">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </button>
+                            </div>
+                        </header>
+                        <main class="flex-1 p-6">
+                            <div class="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border-color bg-surface-light/50 p-10 text-center dark:border-border-color/60 dark:bg-surface-dark/50">
+                                <span class="material-symbols-outlined text-4xl text-primary">pending</span>
+                                <div class="space-y-1">
+                                    <h3 class="text-lg font-semibold">Em breve</h3>
+                                    <p class="text-sm text-subtle-light dark:text-subtle-dark max-w-md">
+                                        A área de movimentos do caixa está em desenvolvimento. Enquanto isso, utilize o painel e os relatórios para acompanhar o desempenho financeiro.
+                                    </p>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    <div id="cashier-reports-page" class="cashier-page hidden flex flex-col flex-1 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                        <header class="flex items-center justify-between p-6 border-b border-border-color">
+                            <div>
+                                <h2 class="text-2xl font-bold">Relatórios Financeiros</h2>
+                                <p class="text-sm text-subtle-light dark:text-subtle-dark">Analise o desempenho e descubra oportunidades de melhoria.</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                        <span class="user-name-display font-medium hidden md:block"></span>
+                                        <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                        <a href="#" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                        <div class="border-t border-border-color"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                    </div>
+                                </div>
+                                <button class="dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" aria-pressed="false" type="button">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </button>
+                            </div>
+                        </header>
+                        <main class="flex-1 px-4 py-8 sm:px-6 lg:px-8 overflow-y-auto">
+                            <div class="mx-auto flex w-full max-w-7xl flex-col gap-8">
+                                <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                    <div>
+                                        <h3 class="text-3xl font-bold">Visão Geral Financeira</h3>
+                                        <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Acompanhe indicadores-chave, fluxo de caixa e a distribuição de gastos do seu caixa.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button class="flex items-center gap-2 rounded bg-surface-light px-4 py-2 text-sm font-medium text-text-light shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-surface-dark dark:text-text-dark dark:ring-gray-600 dark:hover:bg-primary/20">
+                                            <span class="material-symbols-outlined text-base">download</span>
+                                            Exportar
+                                        </button>
+                                        <button class="flex items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90">
+                                            <span class="material-symbols-outlined text-base">add</span>
+                                            Novo Relatório
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                    <div class="rounded-xl border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/60 lg:col-span-1">
+                                        <h4 class="text-lg font-semibold">Formas de Pagamento</h4>
+                                        <div class="mt-4 flex h-64 items-center justify-center">
+                                            <canvas id="cashier-payment-methods-chart"></canvas>
+                                        </div>
+                                        <ul id="cashier-payment-methods-list" class="mt-4 space-y-2 text-sm"></ul>
+                                    </div>
+                                    <div class="rounded-xl border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/60 lg:col-span-2">
+                                        <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                            <h4 class="text-lg font-semibold">Análise de Fluxo de Caixa</h4>
+                                            <div class="flex items-center rounded bg-background-light p-1 dark:bg-background-dark">
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                    <input class="sr-only" name="cashier-cashflow" type="radio" value="daily">
+                                                    Diário
+                                                </label>
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                    <input class="sr-only" name="cashier-cashflow" type="radio" value="weekly">
+                                                    Semanal
+                                                </label>
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                    <input class="sr-only" name="cashier-cashflow" type="radio" value="monthly" checked>
+                                                    Mensal
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 h-72">
+                                            <canvas id="cashier-cash-flow-chart"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="rounded-xl border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/60 lg:col-span-3">
+                                        <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                            <h4 class="text-lg font-semibold">Análise Comparativa</h4>
+                                            <div class="flex items-center rounded bg-background-light p-1 dark:bg-background-dark">
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                    <input class="sr-only" name="cashier-analysis" type="radio" value="expenses" checked>
+                                                    Despesas
+                                                </label>
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                    <input class="sr-only" name="cashier-analysis" type="radio" value="reinforcements">
+                                                    Reforços
+                                                </label>
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-gray-600 has-[:checked]:bg-primary has-[:checked]:text-white dark:text-gray-400">
+                                                    <input class="sr-only" name="cashier-analysis" type="radio" value="categories">
+                                                    Categorias
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div id="cashier-analysis-list" class="mt-6 space-y-4"></div>
                                     </div>
                                 </div>
                             </div>
