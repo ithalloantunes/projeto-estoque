@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let estoqueData = [];
   let filteredProducts = [];
   let movementsData = [];
+  let cashierMovementsData = [];
+  let cashierActiveMovementFilter = 'all';
   let currentPage = 1;
   const itemsPerPage = 8;
   let currentView = 'grid';
@@ -122,6 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const movFim = document.getElementById('mov-fim');
   const filtrarMovBtn = document.getElementById('filtrar-mov-btn');
   const movimentacoesTableBody = document.getElementById('movimentacoes-table-body');
+  const cashierMovementsTableBody = document.getElementById('cashier-movements-table-body');
+  const cashierFilterButtons = document.getElementById('cashier-filter-buttons');
+  const cashierRegisterMovementBtn = document.getElementById('register-movement-btn');
+  const cashierMovementModal = document.getElementById('cashier-movement-modal');
+  const cashierMovementForm = document.getElementById('cashier-movement-form');
+  const cashierCancelMovementBtn = document.getElementById('cancel-movement-btn');
 
   const pendingUsersList = document.getElementById('pending-users-list');
   const activeUsersList = document.getElementById('active-users-list');
@@ -822,6 +830,415 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
+  const CASHIER_MOVEMENTS_STORAGE_KEY = 'acaiStock_cashier_movements';
+
+  const DEFAULT_CASHIER_MOVEMENTS = [
+    {
+      id: 'cashier-1',
+      data: '2024-01-15T10:30:00-03:00',
+      tipo: 'Entrada',
+      categoria: 'Vendas',
+      valor: 500,
+      funcionario: 'Emily Carter',
+      observacoes: 'Venda em dinheiro',
+      formaPagamento: 'Dinheiro',
+    },
+    {
+      id: 'cashier-2',
+      data: '2024-01-15T12:45:00-03:00',
+      tipo: 'Saída',
+      categoria: 'Despesas',
+      valor: 150,
+      funcionario: 'Emily Carter',
+      observacoes: 'Compra de suprimentos',
+      formaPagamento: 'Pix',
+    },
+    {
+      id: 'cashier-3',
+      data: '2024-01-16T09:15:00-03:00',
+      tipo: 'Entrada',
+      categoria: 'Vendas',
+      valor: 750,
+      funcionario: 'David Lee',
+      observacoes: 'Venda no cartão de crédito',
+      formaPagamento: 'Cartão de crédito',
+    },
+    {
+      id: 'cashier-4',
+      data: '2024-02-02T18:20:00-03:00',
+      tipo: 'Entrada',
+      categoria: 'Reforço de Caixa',
+      valor: 300,
+      funcionario: 'Sophia Clark',
+      observacoes: 'Reforço para fechamento do turno',
+      formaPagamento: 'Dinheiro',
+    },
+  ];
+
+  const sortCashierMovements = (movements = []) => {
+    return [...movements]
+      .filter(item => item)
+      .sort((a, b) => {
+        const dateA = a?.data ? new Date(a.data) : null;
+        const dateB = b?.data ? new Date(b.data) : null;
+        const timeA = dateA && !Number.isNaN(dateA.getTime()) ? dateA.getTime() : 0;
+        const timeB = dateB && !Number.isNaN(dateB.getTime()) ? dateB.getTime() : 0;
+        return timeB - timeA;
+      });
+  };
+
+  const normalizeCashierMovement = movement => {
+    if (!movement || typeof movement !== 'object') return null;
+    const toTrimmedString = value => (typeof value === 'string' ? value.trim() : '');
+    const generateId = () => `cashier-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+
+    const id = toTrimmedString(movement.id) || generateId();
+    const rawDate = movement.data || movement.date || movement.createdAt || movement.timestamp;
+    const parsedDate = rawDate ? new Date(rawDate) : null;
+    const isoDate = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : new Date().toISOString();
+
+    const type = toTrimmedString(movement.tipo) || toTrimmedString(movement.type) || 'Entrada';
+    const category = toTrimmedString(movement.categoria) || toTrimmedString(movement.category) || 'Outros';
+    const employee = toTrimmedString(movement.funcionario)
+      || toTrimmedString(movement.employee)
+      || toTrimmedString(movement.colaborador)
+      || toTrimmedString(movement.responsavel)
+      || 'Equipe';
+    const observations = toTrimmedString(movement.observacoes)
+      || toTrimmedString(movement.observacao)
+      || toTrimmedString(movement.notes)
+      || toTrimmedString(movement.descricao)
+      || toTrimmedString(movement.description);
+
+    const amountCandidates = [movement.valor, movement.value, movement.amount, movement.total, movement.montante];
+    let numericValue = 0;
+    for (const candidate of amountCandidates) {
+      const parsed = Number(candidate);
+      if (Number.isFinite(parsed)) {
+        numericValue = Math.abs(parsed);
+        if (numericValue > 0) break;
+      }
+    }
+    const sanitizedValue = Math.round(Math.abs(numericValue) * 100) / 100;
+
+    const normalizedType = normalizeText(type) || 'entrada';
+    const paymentMethod = toTrimmedString(movement.formaPagamento)
+      || toTrimmedString(movement.metodoPagamento)
+      || toTrimmedString(movement.metodo)
+      || toTrimmedString(movement.paymentMethod)
+      || (normalizedType === 'saida' ? 'Despesas' : 'Dinheiro');
+
+    return {
+      id,
+      data: isoDate,
+      tipo: type || 'Entrada',
+      categoria: category || 'Outros',
+      valor: Number.isFinite(sanitizedValue) ? sanitizedValue : 0,
+      funcionario: employee || 'Equipe',
+      observacoes: observations,
+      formaPagamento: paymentMethod,
+    };
+  };
+
+  const loadCashierMovementsFromStorage = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      const raw = window.localStorage.getItem(CASHIER_MOVEMENTS_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return null;
+      return sortCashierMovements(parsed.map(normalizeCashierMovement).filter(Boolean));
+    } catch (error) {
+      console.warn('Não foi possível carregar as movimentações de caixa salvas:', error);
+      return null;
+    }
+  };
+
+  const saveCashierMovementsToStorage = movements => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(
+        CASHIER_MOVEMENTS_STORAGE_KEY,
+        JSON.stringify(sortCashierMovements(movements))
+      );
+    } catch (error) {
+      console.warn('Não foi possível salvar as movimentações de caixa:', error);
+    }
+  };
+
+  const getFilteredCashierMovements = () => {
+    const normalizedFilter = normalizeText(cashierActiveMovementFilter);
+    const sorted = sortCashierMovements(cashierMovementsData);
+    if (!normalizedFilter || normalizedFilter === 'all') {
+      return sorted;
+    }
+    return sorted.filter(movement => normalizeText(movement?.tipo) === normalizedFilter);
+  };
+
+  const CASHIER_FILTER_ACTIVE_CLASSES = ['bg-primary', 'text-white', 'border', 'border-transparent', 'shadow-sm', 'transition-colors'];
+  const CASHIER_FILTER_INACTIVE_CLASSES = [
+    'bg-surface-light',
+    'dark:bg-gray-800',
+    'border',
+    'border-gray-300',
+    'dark:border-gray-600',
+    'text-gray-700',
+    'dark:text-gray-300',
+    'hover:bg-gray-50',
+    'dark:hover:bg-gray-700',
+    'transition-colors',
+  ];
+
+  const setActiveCashierMovementFilterButton = (filter = 'all') => {
+    if (!cashierFilterButtons) return;
+    const target = filter || 'all';
+    cashierFilterButtons.querySelectorAll('button[data-filter]').forEach(button => {
+      const isActive = button.dataset.filter === target;
+      button.classList.remove(...CASHIER_FILTER_ACTIVE_CLASSES, ...CASHIER_FILTER_INACTIVE_CLASSES);
+      if (isActive) {
+        button.classList.add(...CASHIER_FILTER_ACTIVE_CLASSES);
+      } else {
+        button.classList.add(...CASHIER_FILTER_INACTIVE_CLASSES);
+      }
+    });
+  };
+
+  const renderCashierMovementsTable = () => {
+    if (!cashierMovementsTableBody) return;
+    cashierMovementsTableBody.innerHTML = '';
+    const movements = getFilteredCashierMovements();
+    if (!movements.length) {
+      const emptyRow = document.createElement('tr');
+      emptyRow.className = 'bg-white dark:bg-surface-dark/40';
+      const td = document.createElement('td');
+      td.colSpan = 6;
+      td.className = 'px-6 py-6 text-center text-sm text-subtle-light dark:text-subtle-dark';
+      td.textContent = 'Nenhuma movimentação encontrada.';
+      emptyRow.appendChild(td);
+      cashierMovementsTableBody.appendChild(emptyRow);
+      return;
+    }
+
+    movements.forEach(movement => {
+      const tr = document.createElement('tr');
+      tr.className = 'bg-white dark:bg-surface-dark/40 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors';
+
+      const formattedDate = (() => {
+        if (!movement?.data) return '-';
+        const parsed = new Date(movement.data);
+        if (Number.isNaN(parsed.getTime())) return '-';
+        return parsed.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).replace(',', '');
+      })();
+
+      const normalizedType = normalizeText(movement?.tipo);
+      const typeClass = normalizedType === 'saida' ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success';
+      const valueClass = normalizedType === 'saida' ? 'text-danger' : 'text-success';
+
+      const dateCell = document.createElement('td');
+      dateCell.className = 'px-6 py-4 text-sm font-medium text-text-light dark:text-white whitespace-nowrap';
+      dateCell.textContent = formattedDate;
+
+      const typeCell = document.createElement('td');
+      typeCell.className = 'px-6 py-4';
+      const typeBadge = document.createElement('span');
+      typeBadge.className = `px-2 py-1 text-xs font-semibold rounded-full ${typeClass}`;
+      typeBadge.textContent = movement?.tipo || '-';
+      typeCell.appendChild(typeBadge);
+
+      const categoryCell = document.createElement('td');
+      categoryCell.className = 'px-6 py-4 text-sm';
+      categoryCell.textContent = movement?.categoria || '—';
+
+      const valueCell = document.createElement('td');
+      valueCell.className = `px-6 py-4 text-right text-sm font-semibold ${valueClass}`;
+      valueCell.textContent = formatCurrencyBRL(movement?.valor || 0);
+
+      const employeeCell = document.createElement('td');
+      employeeCell.className = 'px-6 py-4 text-sm';
+      employeeCell.textContent = movement?.funcionario || '—';
+
+      const observationsCell = document.createElement('td');
+      observationsCell.className = 'px-6 py-4 text-sm max-w-xs';
+      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : '—';
+
+      tr.appendChild(dateCell);
+      tr.appendChild(typeCell);
+      tr.appendChild(categoryCell);
+      tr.appendChild(valueCell);
+      tr.appendChild(employeeCell);
+      tr.appendChild(observationsCell);
+      cashierMovementsTableBody.appendChild(tr);
+    });
+  };
+
+  const recalculateCashierDashboardFromMovements = () => {
+    if (!Array.isArray(cashierMovementsData)) {
+      updateCashierDashboard();
+      return;
+    }
+
+    const now = new Date();
+    const currentKey = `${now.getFullYear()}-${now.getMonth()}`;
+    const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const previousKey = `${previousDate.getFullYear()}-${previousDate.getMonth()}`;
+
+    const totals = {
+      current: { entries: 0, expenses: 0 },
+      previous: { entries: 0, expenses: 0 },
+    };
+
+    cashierMovementsData.forEach(movement => {
+      const amount = parseMovementAmount(movement);
+      if (!(amount > 0)) return;
+      const parsedDate = parseMovementDate(movement) || (movement?.data ? new Date(movement.data) : null);
+      if (!parsedDate || Number.isNaN(parsedDate.getTime())) return;
+      const key = `${parsedDate.getFullYear()}-${parsedDate.getMonth()}`;
+      const bucket = key === currentKey ? totals.current : key === previousKey ? totals.previous : null;
+      if (!bucket) return;
+      const type = normalizeText(movement?.tipo);
+      if (CASHIER_ENTRY_TYPES.has(type) || type.includes('entrada')) {
+        bucket.entries += amount;
+      } else if (CASHIER_EXPENSE_TYPES.has(type) || type.includes('saida')) {
+        bucket.expenses += amount;
+      }
+    });
+
+    const calculateChange = (current, previous, { invertTrend = false } = {}) => {
+      const currentValue = Number(current) || 0;
+      const previousValue = Number(previous) || 0;
+      let change = 0;
+      if (previousValue > 0) {
+        change = ((currentValue - previousValue) / previousValue) * 100;
+      } else if (currentValue > 0) {
+        change = 100;
+      }
+      if (!Number.isFinite(change)) change = 0;
+      const rounded = Math.round(change);
+      const isPositive = rounded >= 0;
+      const trend = invertTrend
+        ? (isPositive ? 'down' : 'up')
+        : (isPositive ? 'up' : 'down');
+      return { change: rounded, trend };
+    };
+
+    const revenue = totals.current.entries;
+    const expenses = totals.current.expenses;
+    const profit = revenue - expenses;
+
+    const previousRevenue = totals.previous.entries;
+    const previousExpenses = totals.previous.expenses;
+    const previousProfit = previousRevenue - previousExpenses;
+
+    setCashierDashboardMetrics({
+      total: { value: profit, ...calculateChange(profit, previousProfit) },
+      revenue: { value: revenue, ...calculateChange(revenue, previousRevenue) },
+      expenses: { value: expenses, ...calculateChange(expenses, previousExpenses, { invertTrend: true }) },
+      profit: { value: profit, ...calculateChange(profit, previousProfit) },
+    });
+  };
+
+  const openCashierMovementModal = () => openModal('cashier-movement-modal');
+  const closeCashierMovementModal = () => closeModal('cashier-movement-modal');
+
+  const handleCashierMovementSubmit = event => {
+    event.preventDefault();
+    if (!cashierMovementForm) return;
+
+    const formData = new FormData(cashierMovementForm);
+    const type = (formData.get('type') || 'Entrada').toString();
+    const category = (formData.get('category') || '').toString().trim() || 'Outros';
+    const employee = (formData.get('employee') || '').toString().trim() || 'Equipe';
+    const observations = (formData.get('observations') || '').toString().trim();
+
+    const rawValue = formData.get('value');
+    const numericValue = typeof rawValue === 'string'
+      ? Number.parseFloat(rawValue.replace(',', '.'))
+      : Number(rawValue);
+    if (!Number.isFinite(numericValue) || numericValue <= 0) {
+      alert('Informe um valor válido para a movimentação.');
+      return;
+    }
+    const sanitizedValue = Math.round(Math.abs(numericValue) * 100) / 100;
+
+    const normalizedType = normalizeText(type);
+    const defaultPayment = normalizedType === 'saida' ? 'Despesas' : 'Dinheiro';
+
+    const newMovement = {
+      id: `cashier-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      data: new Date().toISOString(),
+      tipo: type,
+      categoria: category,
+      valor: sanitizedValue,
+      funcionario: employee,
+      observacoes: observations,
+      formaPagamento: defaultPayment,
+    };
+
+    cashierMovementsData = sortCashierMovements([newMovement, ...cashierMovementsData]);
+    saveCashierMovementsToStorage(cashierMovementsData);
+    setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
+    renderCashierMovementsTable();
+    recalculateCashierDashboardFromMovements();
+    renderCashierReports(cashierMovementsData);
+    cashierMovementForm.reset();
+    closeCashierMovementModal();
+  };
+
+  const initializeCashierMovementsModule = () => {
+    if (!cashierMovementsTableBody && !cashierMovementForm && !cashierFilterButtons) return;
+
+    const storedMovements = loadCashierMovementsFromStorage();
+    if (storedMovements && storedMovements.length) {
+      cashierMovementsData = storedMovements;
+    } else {
+      cashierMovementsData = sortCashierMovements(
+        DEFAULT_CASHIER_MOVEMENTS.map(normalizeCashierMovement).filter(Boolean)
+      );
+      saveCashierMovementsToStorage(cashierMovementsData);
+    }
+
+    setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
+    renderCashierMovementsTable();
+    recalculateCashierDashboardFromMovements();
+    renderCashierReports(cashierMovementsData);
+
+    if (cashierFilterButtons) {
+      cashierFilterButtons.addEventListener('click', event => {
+        const button = event.target.closest('button[data-filter]');
+        if (!button) return;
+        cashierActiveMovementFilter = button.dataset.filter || 'all';
+        setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
+        renderCashierMovementsTable();
+      });
+    }
+
+    if (cashierRegisterMovementBtn) {
+      cashierRegisterMovementBtn.addEventListener('click', () => {
+        cashierMovementForm?.reset();
+        openCashierMovementModal();
+      });
+    }
+
+    if (cashierCancelMovementBtn) {
+      cashierCancelMovementBtn.addEventListener('click', () => {
+        cashierMovementForm?.reset();
+        closeCashierMovementModal();
+      });
+    }
+
+    if (cashierMovementModal) {
+      cashierMovementModal.addEventListener('click', event => {
+        if (event.target === cashierMovementModal) {
+          closeCashierMovementModal();
+        }
+      });
+    }
+
+    if (cashierMovementForm) {
+      cashierMovementForm.addEventListener('submit', handleCashierMovementSubmit);
+    }
+  };
+
   const computeCashierReportsFromMovements = (movements = []) => {
     if (!Array.isArray(movements) || !movements.length) return null;
     const paymentTotals = new Map();
@@ -1122,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCashierReportsCharts(cachedCashierReportsData, cashierSelectedCashFlowPeriod);
   };
 
-  const renderCashierReports = (movements = movementsData) => {
+  const renderCashierReports = (movements = cashierMovementsData) => {
     const computed = computeCashierReportsFromMovements(movements);
     const dataset = mergeDatasetWithDefault(computed, DEFAULT_CASHIER_REPORTS_DATA);
     dataset.paymentMethods = [...(dataset.paymentMethods || [])].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
@@ -1647,7 +2064,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await authenticatedJsonFetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`);
       movementsData = Array.isArray(data) ? data : [];
       renderMovimentacoes();
-      renderCashierReports();
+      renderCashierReports(cashierMovementsData);
+      recalculateCashierDashboardFromMovements();
     } catch (err) {
       console.error('Erro ao carregar movimentações:', err);
       alert('Erro ao carregar movimentações: ' + err.message);
@@ -2791,7 +3209,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMenuNavigation();
   setupCashierMenuNavigation();
   setupUserMenus();
-  renderCashierReports();
+  initializeCashierMovementsModule();
   setupDarkMode();
   updateCashierDashboard();
   registerImageFallbacks(document);
