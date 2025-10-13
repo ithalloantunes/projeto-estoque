@@ -557,22 +557,24 @@
                                     <button id="filtrar-mov-btn" class="w-full md:w-auto px-4 py-2 bg-primary text-white rounded-lg">Filtrar</button>
                                 </div>
                             </div>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                                    <thead class="bg-gray-50 dark:bg-gray-800">
-                                        <tr>
-                                            <th class="px-4 py-2 text-left font-medium">Data</th>
-                                            <th class="px-4 py-2 text-left font-medium">Usuário</th>
-                                            <th class="px-4 py-2 text-left font-medium">Produto</th>
-                                            <th class="px-4 py-2 text-left font-medium">Tipo</th>
-                                            <th class="px-4 py-2 text-left font-medium">Qtd. Antes</th>
-                                            <th class="px-4 py-2 text-left font-medium">Quantidade</th>
-                                            <th class="px-4 py-2 text-left font-medium">Total Atual</th>
-                                            <th class="px-4 py-2 text-left font-medium">Motivo</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="movimentacoes-table-body" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody>
-                                </table>
+                            <div class="table-wrapper">
+                                <div class="table-scroll">
+                                    <table class="modern-table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Data</th>
+                                                <th scope="col">Usuário</th>
+                                                <th scope="col">Produto</th>
+                                                <th scope="col">Tipo</th>
+                                                <th scope="col">Qtd. Antes</th>
+                                                <th scope="col">Quantidade</th>
+                                                <th scope="col">Total Atual</th>
+                                                <th scope="col">Motivo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="movimentacoes-table-body"></tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -930,18 +932,20 @@
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina categorias para receitas e despesas.</p>
                                         </div>
                                         <div class="md:col-span-2">
-                                            <div class="overflow-hidden rounded-lg border border-border-color">
-                                                <table class="min-w-full divide-y divide-border-color">
-                                                    <thead class="bg-primary/10 dark:bg-primary/20">
-                                                        <tr>
-                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Nome da Categoria</th>
-                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Tipo</th>
-                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Status</th>
-                                                            <th scope="col" class="relative px-6 py-3"><span class="sr-only">Ações</span></th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="cashier-settings-categories-body" class="divide-y divide-border-color bg-surface-light dark:bg-surface-dark"></tbody>
-                                                </table>
+                                            <div class="table-wrapper">
+                                                <div class="table-scroll">
+                                                    <table class="modern-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Nome da Categoria</th>
+                                                                <th scope="col">Tipo</th>
+                                                                <th scope="col">Status</th>
+                                                                <th scope="col"><span class="sr-only">Ações</span></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="cashier-settings-categories-body"></tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                             <div class="mt-4 flex justify-start">
                                                 <button id="cashier-settings-add-category-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Adicionar Categoria</button>
@@ -967,17 +971,19 @@
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Ative ou desative os métodos de pagamento disponíveis.</p>
                                         </div>
                                         <div class="md:col-span-2">
-                                            <div class="overflow-hidden rounded-lg border border-border-color">
-                                                <table class="min-w-full divide-y divide-border-color">
-                                                    <thead class="bg-primary/10 dark:bg-primary/20">
-                                                        <tr>
-                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Método de Pagamento</th>
-                                                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-subtle-light dark:text-subtle-dark">Status</th>
-                                                            <th scope="col" class="relative px-6 py-3"><span class="sr-only">Ações</span></th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="cashier-settings-payment-methods-body" class="divide-y divide-border-color bg-surface-light dark:bg-surface-dark"></tbody>
-                                                </table>
+                                            <div class="table-wrapper">
+                                                <div class="table-scroll">
+                                                    <table class="modern-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Método de Pagamento</th>
+                                                                <th scope="col">Status</th>
+                                                                <th scope="col"><span class="sr-only">Ações</span></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="cashier-settings-payment-methods-body"></tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
