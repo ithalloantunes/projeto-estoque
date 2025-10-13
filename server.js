@@ -10,6 +10,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { Pool } from 'pg';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -29,6 +30,34 @@ const BCRYPT_SALT_ROUNDS = 12;
 
 const sanitizeText = value => typeof value === 'string' ? value.trim() : '';
 const normalizeUsername = value => sanitizeText(value).toLowerCase();
+const sanitizeCost = value => {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return Math.round(parsed * 100) / 100;
+};
+
+const connectionString = sanitizeText(process.env.DATABASE_URL) || sanitizeText(process.env.POSTGRES_URL);
+
+if (!connectionString) {
+  console.error('A variável de ambiente DATABASE_URL é obrigatória para iniciar o servidor.');
+  process.exit(1);
+}
+
+const usesSSL = sanitizeText(process.env.DATABASE_SSL) !== 'disable' && process.env.NODE_ENV === 'production';
+
+const pool = new Pool({
+  connectionString,
+  max: Number.parseInt(process.env.PGPOOL_MAX || '10', 10),
+  ssl: usesSSL ? { rejectUnauthorized: false } : false,
+});
+
+pool.on('error', error => {
+  console.error('Erro inesperado na conexão com o banco de dados:', error);
+});
+
+const query = (text, params = []) => pool.query(text, params);
+const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 const isOriginAllowed = origin => !origin || allowedOrigins.has(origin);
 
@@ -62,14 +91,13 @@ const io = new SocketIOServer(server, {
 
 io.on('connection', socket => {
   socket.on('disconnect', () => {
-    // Intencionalmente vazio: mantemos o listener para facilitar depuração futura.
+    // Listener intencionalmente vazio.
   });
 });
 
 const dataDir     = path.join(__dirname, 'data');
 const usersFile   = path.join(dataDir, 'users.json');
 const estoqueFile = path.join(dataDir, 'estoque.json');
-const movFile     = path.join(dataDir, 'movimentacoes.json');
 const uploadsDir        = path.join(__dirname, 'uploads');
 const productImagesDir  = path.join(uploadsDir, 'products');
 const userImagesDir     = path.join(uploadsDir, 'users');
@@ -82,10 +110,6 @@ ensureDir(dataDir);
 ensureDir(uploadsDir);
 ensureDir(productImagesDir);
 ensureDir(userImagesDir);
-
-if (!fs.existsSync(usersFile))     fs.writeFileSync(usersFile, '[]', 'utf8');
-if (!fs.existsSync(estoqueFile))   fs.writeFileSync(estoqueFile, '[]', 'utf8');
-if (!fs.existsSync(movFile))       fs.writeFileSync(movFile, '[]', 'utf8');
 
 const jwtSecretFile = path.join(dataDir, '.jwt-secret');
 let JWT_SECRET = sanitizeText(process.env.JWT_SECRET);
@@ -169,25 +193,15 @@ const removeStoredFile = relativePath => {
   }
 };
 
-const readJSON = file => {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
-  catch { return []; }
-};
-const writeJSON = (file, data) => {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
-};
-
-const loadUsers = () => readJSON(usersFile);
-const saveUsers = users => writeJSON(usersFile, users);
-
-const ensureUserMetadata = user => {
-  if (!user || !user.username) return user;
-  const lower = normalizeUsername(user.username);
-  if (user.usernameLower === lower) {
-    return user;
-  }
-  return { ...user, usernameLower: lower };
-};
+const mapUserRow = row => ({
+  id: row.id,
+  username: row.username,
+  usernameLower: row.username_lower,
+  passwordHash: row.password_hash,
+  role: row.role,
+  approved: row.approved,
+  photo: row.photo,
+});
 
 const sanitizeUserForResponse = user => ({
   id: user.id,
@@ -197,28 +211,320 @@ const sanitizeUserForResponse = user => ({
   photo: toPublicPath(user.photo) || null,
 });
 
-const refreshStoredUsersMetadata = () => {
-  const users = loadUsers();
-  let updated = false;
-  const sanitized = users.map(user => {
-    const ensured = ensureUserMetadata(user);
-    if (ensured !== user) {
-      updated = true;
+const mapInventoryRow = row => ({
+  id: row.id,
+  produto: row.produto,
+  tipo: row.tipo,
+  lote: row.lote,
+  quantidade: Number(row.quantidade) || 0,
+  validade: row.validade ? (row.validade instanceof Date ? row.validade.toISOString().slice(0, 10) : row.validade) : null,
+  custo: row.custo === null || row.custo === undefined ? null : Number(row.custo),
+  image: row.image,
+});
+
+const mapMovimentacaoRow = row => ({
+  id: row.id,
+  produtoId: row.produto_id,
+  produto: row.produto,
+  tipo: row.tipo,
+  quantidade: Number(row.quantidade) || 0,
+  quantidadeAnterior: row.quantidade_anterior === null || row.quantidade_anterior === undefined ? null : Number(row.quantidade_anterior),
+  quantidadeAtual: row.quantidade_atual === null || row.quantidade_atual === undefined ? null : Number(row.quantidade_atual),
+  motivo: row.motivo,
+  data: row.data instanceof Date ? row.data.toISOString() : row.data,
+  usuario: row.usuario,
+});
+
+const getUserById = async id => {
+  const { rows } = await query(
+    'SELECT id, username, username_lower, password_hash, role, approved, photo FROM users WHERE id = $1 LIMIT 1',
+    [id]
+  );
+  return rows[0] ? mapUserRow(rows[0]) : null;
+};
+
+const getUserByUsernameLower = async usernameLower => {
+  const { rows } = await query(
+    'SELECT id, username, username_lower, password_hash, role, approved, photo FROM users WHERE username_lower = $1 LIMIT 1',
+    [usernameLower]
+  );
+  return rows[0] ? mapUserRow(rows[0]) : null;
+};
+
+const listUsers = async ({ approved } = {}) => {
+  const clauses = [];
+  const params = [];
+  if (approved !== undefined) {
+    clauses.push(`approved = $${params.length + 1}`);
+    params.push(approved);
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const { rows } = await query(
+    `SELECT id, username, username_lower, password_hash, role, approved, photo FROM users ${where} ORDER BY username_lower`,
+    params
+  );
+  return rows.map(mapUserRow);
+};
+
+const insertUser = async user => {
+  await query(
+    `INSERT INTO users (id, username, username_lower, password_hash, role, approved, photo)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [
+      user.id,
+      user.username,
+      user.usernameLower,
+      user.passwordHash,
+      user.role,
+      user.approved,
+      user.photo,
+    ]
+  );
+};
+
+const updateUserApproval = async (id, approved) => {
+  const { rows } = await query(
+    `UPDATE users SET approved = $2 WHERE id = $1 RETURNING id, username, username_lower, password_hash, role, approved, photo`,
+    [id, approved]
+  );
+  return rows[0] ? mapUserRow(rows[0]) : null;
+};
+
+const updateUserPhoto = async (id, photoPath) => {
+  const { rows } = await query(
+    `UPDATE users SET photo = $2 WHERE id = $1 RETURNING id, username, username_lower, password_hash, role, approved, photo`,
+    [id, photoPath]
+  );
+  return rows[0] ? mapUserRow(rows[0]) : null;
+};
+
+const deleteUserById = async id => {
+  const { rows } = await query(
+    'DELETE FROM users WHERE id = $1 RETURNING photo',
+    [id]
+  );
+  return rows[0] ?? null;
+};
+
+const listInventory = async () => {
+  const { rows } = await query(
+    'SELECT id, produto, tipo, lote, quantidade, validade, custo, image FROM inventory ORDER BY produto ASC'
+  );
+  return rows.map(mapInventoryRow);
+};
+
+const getInventoryItemById = async id => {
+  const { rows } = await query(
+    'SELECT id, produto, tipo, lote, quantidade, validade, custo, image FROM inventory WHERE id = $1 LIMIT 1',
+    [id]
+  );
+  return rows[0] ? mapInventoryRow(rows[0]) : null;
+};
+
+const insertInventoryItem = async item => {
+  await query(
+    `INSERT INTO inventory (id, produto, tipo, lote, quantidade, validade, custo, image, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9)`,
+    [
+      item.id,
+      item.produto,
+      item.tipo,
+      item.lote,
+      item.quantidade,
+      item.validade,
+      item.custo,
+      item.image,
+      new Date(),
+    ]
+  );
+};
+
+const updateInventoryItem = async item => {
+  await query(
+    `UPDATE inventory
+        SET produto = $2,
+            tipo = $3,
+            lote = $4,
+            quantidade = $5,
+            validade = $6,
+            custo = $7,
+            image = $8,
+            updated_at = NOW()
+      WHERE id = $1`,
+    [
+      item.id,
+      item.produto,
+      item.tipo,
+      item.lote,
+      item.quantidade,
+      item.validade,
+      item.custo,
+      item.image,
+    ]
+  );
+};
+
+const deleteInventoryItemById = async id => {
+  const { rows } = await query(
+    'DELETE FROM inventory WHERE id = $1 RETURNING id, produto, tipo, lote, quantidade, validade, custo, image',
+    [id]
+  );
+  return rows[0] ? mapInventoryRow(rows[0]) : null;
+};
+
+const insertMovimentacao = async mov => {
+  await query(
+    `INSERT INTO movimentacoes (id, produto_id, produto, tipo, quantidade, quantidade_anterior, quantidade_atual, motivo, data, usuario)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+    [
+      mov.id,
+      mov.produtoId,
+      mov.produto,
+      mov.tipo,
+      mov.quantidade,
+      mov.quantidadeAnterior,
+      mov.quantidadeAtual,
+      mov.motivo,
+      mov.data,
+      mov.usuario,
+    ]
+  );
+};
+
+const listMovimentacoes = async ({ start, end } = {}) => {
+  const clauses = [];
+  const params = [];
+  if (start) {
+    const startDate = new Date(start);
+    if (!Number.isNaN(startDate.getTime())) {
+      clauses.push(`data >= $${params.length + 1}`);
+      params.push(startDate);
     }
-    return ensured;
-  });
-  if (updated) {
-    saveUsers(sanitized);
+  }
+  if (end) {
+    const endDate = new Date(end);
+    if (!Number.isNaN(endDate.getTime())) {
+      clauses.push(`data <= $${params.length + 1}`);
+      params.push(endDate);
+    }
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const { rows } = await query(
+    `SELECT id, produto_id, produto, tipo, quantidade, quantidade_anterior, quantidade_atual, motivo, data, usuario
+       FROM movimentacoes
+       ${where}
+      ORDER BY data DESC, id DESC`,
+    params
+  );
+  return rows.map(mapMovimentacaoRow);
+};
+
+const initializeDatabase = async () => {
+  await query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id UUID PRIMARY KEY,
+      username TEXT NOT NULL,
+      username_lower TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL,
+      approved BOOLEAN NOT NULL DEFAULT FALSE,
+      photo TEXT
+    )
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS inventory (
+      id UUID PRIMARY KEY,
+      produto TEXT NOT NULL,
+      tipo TEXT,
+      lote TEXT,
+      quantidade INTEGER NOT NULL,
+      validade DATE,
+      custo NUMERIC(12,2) NOT NULL,
+      image TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS movimentacoes (
+      id UUID PRIMARY KEY,
+      produto_id UUID,
+      produto TEXT,
+      tipo TEXT NOT NULL,
+      quantidade INTEGER NOT NULL,
+      quantidade_anterior INTEGER,
+      quantidade_atual INTEGER,
+      motivo TEXT,
+      data TIMESTAMPTZ NOT NULL,
+      usuario TEXT
+    )
+  `);
+
+  await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower)');
+  await query('CREATE INDEX IF NOT EXISTS idx_inventory_produto ON inventory(produto)');
+  await query('CREATE INDEX IF NOT EXISTS idx_movimentacoes_data ON movimentacoes(data)');
+
+  await seedUsersFromFile();
+  await seedInventoryFromFile();
+};
+
+const seedUsersFromFile = async () => {
+  if (!fs.existsSync(usersFile)) return;
+  const { rows } = await query('SELECT COUNT(*)::INT AS count FROM users');
+  const currentCount = Number.parseInt(rows[0]?.count ?? '0', 10) || 0;
+  if (currentCount > 0) return;
+  try {
+    const raw = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+    for (const entry of raw) {
+      const username = sanitizeText(entry.username);
+      if (!username) continue;
+      const id = entry.id ? sanitizeText(entry.id) : uuidv4();
+      const passwordSource = entry.passwordHash || entry.password;
+      const passwordHash = passwordSource && passwordSource.startsWith('$2a$')
+        ? passwordSource
+        : bcrypt.hashSync(passwordSource || '12345678', BCRYPT_SALT_ROUNDS);
+      await insertUser({
+        id,
+        username,
+        usernameLower: normalizeUsername(username),
+        passwordHash,
+        role: entry.role || 'user',
+        approved: Boolean(entry.approved),
+        photo: entry.photo ? sanitizeText(entry.photo) : null,
+      });
+    }
+  } catch (error) {
+    console.error('Falha ao importar usuários iniciais:', error);
   }
 };
 
-refreshStoredUsersMetadata();
-
-const sanitizeCost = value => {
-  if (value === undefined || value === null || value === '') return null;
-  const parsed = Number.parseFloat(value);
-  if (!Number.isFinite(parsed) || parsed < 0) return null;
-  return Math.round(parsed * 100) / 100;
+const seedInventoryFromFile = async () => {
+  if (!fs.existsSync(estoqueFile)) return;
+  const { rows } = await query('SELECT COUNT(*)::INT AS count FROM inventory');
+  const currentCount = Number.parseInt(rows[0]?.count ?? '0', 10) || 0;
+  if (currentCount > 0) return;
+  try {
+    const raw = JSON.parse(fs.readFileSync(estoqueFile, 'utf8'));
+    for (const entry of raw) {
+      const quantidade = Number.parseInt(entry.quantidade, 10) || 0;
+      const custo = sanitizeCost(entry.custo);
+      if (custo === null) continue;
+      await insertInventoryItem({
+        id: uuidv4(),
+        produto: sanitizeText(entry.produto) || 'Produto sem nome',
+        tipo: sanitizeText(entry.tipo) || null,
+        lote: sanitizeText(entry.lote) || null,
+        quantidade,
+        validade: entry.validade ? entry.validade : null,
+        custo,
+        image: entry.image ? sanitizeText(entry.image) : null,
+      });
+    }
+  } catch (error) {
+    console.error('Falha ao importar estoque inicial:', error);
+  }
 };
 
 const broadcastDataUpdated = () => {
@@ -233,27 +539,20 @@ const broadcastUserPhotoUpdated = payload => {
   io.emit('userPhotoUpdated', payload);
 };
 
-const logMovimentacao = mov => {
-  const logs = readJSON(movFile);
-  logs.push(mov);
-  writeJSON(movFile, logs);
-};
-
 const createSessionToken = user => jwt.sign({
   userId: user.id,
   role: user.role,
   username: user.username,
 }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = asyncHandler(async (req, res, next) => {
   const token = req.cookies?.[SESSION_COOKIE_NAME];
   if (!token) {
     return res.status(401).json({ error: 'Não autenticado' });
   }
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    const users = loadUsers();
-    const user = users.find(u => u.id === payload.userId);
+    const user = await getUserById(payload.userId);
     if (!user || !user.approved) {
       clearSessionCookie(res);
       return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.' });
@@ -268,7 +567,7 @@ const authMiddleware = (req, res, next) => {
     clearSessionCookie(res);
     return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
   }
-};
+});
 
 const requireAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
@@ -277,8 +576,7 @@ const requireAdmin = (req, res, next) => {
   return next();
 };
 
-// ROTA DE REGISTRO (usuário fica pendente até aprovação)
-app.post('/api/register', (req, res) => {
+app.post('/api/register', asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
@@ -292,30 +590,28 @@ app.post('/api/register', (req, res) => {
     return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
   }
 
-  const users = loadUsers();
   const normalized = normalizeUsername(username);
-  if (users.some(u => normalizeUsername(u.username || '') === normalized)) {
+  const existing = await getUserByUsernameLower(normalized);
+  if (existing) {
     return res.status(400).json({ error: 'Usuário já existe' });
   }
 
   const passwordHash = bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
-  const newUser = ensureUserMetadata({
+  await insertUser({
     id: uuidv4(),
     username,
+    usernameLower: normalized,
     passwordHash,
     role: 'user',
     approved: false,
     photo: null,
   });
 
-  users.push(newUser);
-  saveUsers(users);
   broadcastUsersUpdated();
   res.json({ message: 'Cadastro enviado para aprovação' });
-});
+}));
 
-// ROTA DE LOGIN (agora retorna role)
-app.post('/api/login', (req, res) => {
+app.post('/api/login', asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
@@ -323,31 +619,15 @@ app.post('/api/login', (req, res) => {
     return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
   }
 
-  const users = loadUsers();
   const normalized = normalizeUsername(username);
-  const idx = users.findIndex(u => normalizeUsername(u.username || '') === normalized);
-  if (idx === -1) {
+  const user = await getUserByUsernameLower(normalized);
+  if (!user) {
     return res.status(401).json({ error: 'Credenciais inválidas' });
   }
 
-  let user = users[idx];
-  let passwordMatches = false;
-  if (user.passwordHash) {
-    passwordMatches = bcrypt.compareSync(password, user.passwordHash);
-  } else if (user.password) {
-    passwordMatches = user.password === password;
-    if (passwordMatches) {
-      const passwordHash = bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
-      const updatedUser = ensureUserMetadata({
-        ...user,
-        passwordHash,
-      });
-      delete updatedUser.password;
-      users[idx] = updatedUser;
-      saveUsers(users);
-      user = updatedUser;
-    }
-  }
+  const passwordMatches = user.passwordHash
+    ? bcrypt.compareSync(password, user.passwordHash)
+    : false;
 
   if (!passwordMatches) {
     return res.status(401).json({ error: 'Credenciais inválidas' });
@@ -366,11 +646,10 @@ app.post('/api/login', (req, res) => {
     role: user.role,
     photo: toPublicPath(user.photo),
   });
-});
+}));
 
-app.get('/api/session', authMiddleware, (req, res) => {
-  const users = loadUsers();
-  const user = users.find(u => u.id === req.user.id);
+app.get('/api/session', authMiddleware, asyncHandler(async (req, res) => {
+  const user = await getUserById(req.user.id);
   if (!user || !user.approved) {
     clearSessionCookie(res);
     return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.' });
@@ -381,60 +660,52 @@ app.get('/api/session', authMiddleware, (req, res) => {
     role: user.role,
     photo: toPublicPath(user.photo),
   });
-});
+}));
 
 app.post('/api/logout', (req, res) => {
   clearSessionCookie(res);
   res.json({ message: 'Logout realizado' });
 });
 
-// --- Gestão de usuários ---
-app.get('/api/users/pending', authMiddleware, requireAdmin, (req, res) => {
-  const users = loadUsers().filter(u => !u.approved);
+app.get('/api/users/pending', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  const users = await listUsers({ approved: false });
   res.json(users.map(sanitizeUserForResponse));
-});
+}));
 
-app.get('/api/users', authMiddleware, requireAdmin, (req, res) => {
-  res.json(loadUsers().map(sanitizeUserForResponse));
-});
+app.get('/api/users', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  const users = await listUsers();
+  res.json(users.map(sanitizeUserForResponse));
+}));
 
-app.post('/api/users/:id/approve', authMiddleware, requireAdmin, (req, res) => {
-  const users = loadUsers();
-  const idx   = users.findIndex(u => u.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
-  users[idx].approved = true;
-  users[idx] = ensureUserMetadata(users[idx]);
-  saveUsers(users);
+app.post('/api/users/:id/approve', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  const updated = await updateUserApproval(req.params.id, true);
+  if (!updated) return res.status(404).json({ error: 'Usuário não encontrado' });
   broadcastUsersUpdated();
   res.json({ message: 'Usuário aprovado' });
-});
+}));
 
-app.delete('/api/users/:id', authMiddleware, requireAdmin, (req, res) => {
-  const users = loadUsers();
-  const idx   = users.findIndex(u => u.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
-  users.splice(idx, 1);
-  saveUsers(users);
+app.delete('/api/users/:id', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  const deleted = await deleteUserById(req.params.id);
+  if (!deleted) return res.status(404).json({ error: 'Usuário não encontrado' });
+  if (deleted.photo) removeStoredFile(deleted.photo);
   broadcastUsersUpdated();
   res.json({ message: 'Usuário excluído' });
-});
+}));
 
-app.put('/api/users/:id/photo', authMiddleware, userUpload.single('photo'), (req, res) => {
+app.put('/api/users/:id/photo', authMiddleware, userUpload.single('photo'), asyncHandler(async (req, res) => {
   const { remove } = req.body;
-  const users = loadUsers();
-  const idx   = users.findIndex(u => u.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Usuário não encontrado' });
-  if (req.user.id !== req.params.id && req.user.role !== 'admin') {
+  const userId = req.params.id;
+  const target = await getUserById(userId);
+  if (!target) return res.status(404).json({ error: 'Usuário não encontrado' });
+  if (req.user.id !== userId && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Acesso restrito' });
   }
-  const atual = users[idx];
 
   if (remove === 'true') {
-    if (atual.photo) removeStoredFile(atual.photo);
-    atual.photo = null;
-    saveUsers(users);
+    if (target.photo) removeStoredFile(target.photo);
+    await updateUserPhoto(userId, null);
     broadcastUsersUpdated();
-    broadcastUserPhotoUpdated({ id: atual.id, photo: null });
+    broadcastUserPhotoUpdated({ id: userId, photo: null });
     return res.json({ message: 'Foto removida', photo: null });
   }
 
@@ -443,55 +714,38 @@ app.put('/api/users/:id/photo', authMiddleware, userUpload.single('photo'), (req
     return res.status(400).json({ error: 'Nenhuma imagem enviada' });
   }
 
-  if (atual.photo) removeStoredFile(atual.photo);
-  atual.photo = newPhotoPath;
-  saveUsers(users);
+  if (target.photo) removeStoredFile(target.photo);
+  await updateUserPhoto(userId, newPhotoPath);
   broadcastUsersUpdated();
-  broadcastUserPhotoUpdated({ id: atual.id, photo: toPublicPath(newPhotoPath) });
-  res.json({ message: 'Foto atualizada', photo: toPublicPath(newPhotoPath) });
-});
+  const publicPath = toPublicPath(newPhotoPath);
+  broadcastUserPhotoUpdated({ id: userId, photo: publicPath });
+  res.json({ message: 'Foto atualizada', photo: publicPath });
+}));
 
-app.get('/api/users/:id/photo', authMiddleware, (req, res) => {
+app.get('/api/users/:id/photo', authMiddleware, asyncHandler(async (req, res) => {
   if (req.user.id !== req.params.id && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Acesso restrito' });
   }
-  const users = loadUsers();
-  const user  = users.find(u => u.id === req.params.id);
+  const user = await getUserById(req.params.id);
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
   res.json({ photo: toPublicPath(user.photo) });
-});
+}));
 
-// Rotas de estoque (mantidas iguais ao seu último estado)
-app.get('/api/estoque', authMiddleware, (req, res) => {
-  let estoque = readJSON(estoqueFile);
-  if (!Array.isArray(estoque)) {
-    estoque = Object.entries(estoque).map(([id, item]) => ({ id, ...item }));
-    writeJSON(estoqueFile, estoque);
-  }
+app.get('/api/estoque', authMiddleware, asyncHandler(async (req, res) => {
+  const estoque = await listInventory();
   const response = estoque.map(item => ({
     ...item,
-    image: item?.image ? toPublicPath(item.image) : null
+    image: item?.image ? toPublicPath(item.image) : null,
   }));
   res.json(response);
-});
+}));
 
-// Rota para obter o histórico de movimentações de estoque
-app.get('/api/movimentacoes', authMiddleware, (req, res) => {
-  const logs = readJSON(movFile) || [];
-  const { start, end } = req.query;
-  let filtered = logs;
-  if (start) {
-    const startDate = new Date(start);
-    filtered = filtered.filter(m => new Date(m.data) >= startDate);
-  }
-  if (end) {
-    const endDate = new Date(end);
-    filtered = filtered.filter(m => new Date(m.data) <= endDate);
-  }
-  res.json(filtered);
-});
+app.get('/api/movimentacoes', authMiddleware, asyncHandler(async (req, res) => {
+  const logs = await listMovimentacoes({ start: req.query.start, end: req.query.end });
+  res.json(logs);
+}));
 
-app.post('/api/estoque', authMiddleware, productUpload.single('image'), (req, res) => {
+app.post('/api/estoque', authMiddleware, productUpload.single('image'), asyncHandler(async (req, res) => {
   const uploadedImagePath = getStoredFilePath(req.file);
   const produto = (req.body.produto || '').trim();
   const tipo = (req.body.tipo || '').trim();
@@ -518,23 +772,21 @@ app.post('/api/estoque', authMiddleware, productUpload.single('image'), (req, re
 
   const quantidadeNumerica = Number.parseInt(quantidadeBruta, 10);
   const quantidadeFinal = Number.isNaN(quantidadeNumerica) ? 0 : quantidadeNumerica;
-  const estoque = readJSON(estoqueFile);
   const id = uuidv4();
   const imagePath = uploadedImagePath;
 
-  estoque.push({
+  await insertInventoryItem({
     id,
     produto,
-    tipo,
-    lote,
+    tipo: tipo || null,
+    lote: lote || null,
     quantidade: quantidadeFinal,
-    validade,
+    validade: validade || null,
     custo: custoSanitizado,
-    dataCadastro: new Date().toISOString(),
-    image: imagePath
+    image: imagePath,
   });
 
-  logMovimentacao({
+  await insertMovimentacao({
     id: uuidv4(),
     produtoId: id,
     produto,
@@ -542,35 +794,29 @@ app.post('/api/estoque', authMiddleware, productUpload.single('image'), (req, re
     quantidade: quantidadeFinal,
     quantidadeAnterior: 0,
     quantidadeAtual: quantidadeFinal,
-    data: new Date().toISOString(),
+    motivo: null,
+    data: new Date(),
     usuario: usuario || 'desconhecido'
   });
 
-  writeJSON(estoqueFile, estoque);
   broadcastDataUpdated();
   res.json({
     message: 'Produto adicionado com sucesso',
     id,
     image: toPublicPath(imagePath)
   });
-});
+}));
 
-app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), (req, res) => {
-  const rawId  = req.params.id;
+app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), asyncHandler(async (req, res) => {
+  const itemId = req.params.id;
   const usuario = req.user?.username;
-  const estoque = readJSON(estoqueFile) || [];
   const uploadedImagePath = getStoredFilePath(req.file);
-
-  // Converte para número se for dígitos, senão usa string (UUID)
-  const itemId = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
-
-  const idx = estoque.findIndex(item => item.id === itemId);
-  if (idx === -1) {
+  const atual = await getInventoryItemById(itemId);
+  if (!atual) {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
 
-  const atual = estoque[idx];
   const quantidadeBruta = req.body.quantidade;
   let novaQtd = atual.quantidade;
   if (quantidadeBruta !== undefined) {
@@ -599,84 +845,84 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), (req,
     imagemAtualizada = uploadedImagePath;
   }
 
-  estoque[idx] = {
-    ...atual,
-    produto:    req.body.produto ? req.body.produto.trim() : atual.produto,
-    tipo:       req.body.tipo ? req.body.tipo.trim() : atual.tipo,
-    lote:       req.body.lote ? req.body.lote.trim() : atual.lote,
+  const produtoAtualizado = req.body.produto ? req.body.produto.trim() : atual.produto;
+  const tipoAtualizado = req.body.tipo ? req.body.tipo.trim() : atual.tipo;
+  const loteAtualizado = req.body.lote ? req.body.lote.trim() : atual.lote;
+  const validadeAtualizada = req.body.validade !== undefined ? (req.body.validade || null) : atual.validade;
+
+  await updateInventoryItem({
+    id: itemId,
+    produto: produtoAtualizado,
+    tipo: tipoAtualizado || null,
+    lote: loteAtualizado || null,
     quantidade: novaQtd,
-    validade:   req.body.validade !== undefined ? (req.body.validade || null) : atual.validade,
-    custo:      hasCusto ? custoAtualizado : atual.custo,
-    dataAtualizacao: new Date().toISOString(),
-    image: imagemAtualizada
-  };
+    validade: validadeAtualizada,
+    custo: hasCusto ? custoAtualizado : atual.custo,
+    image: imagemAtualizada,
+  });
+
   const diff = novaQtd - atual.quantidade;
-  logMovimentacao({
+  await insertMovimentacao({
     id: uuidv4(),
     produtoId: itemId,
-    produto: estoque[idx].produto,
+    produto: produtoAtualizado,
     tipo: diff === 0 ? 'edicao' : diff > 0 ? 'entrada' : 'saida',
     quantidade: diff,
     quantidadeAnterior: atual.quantidade,
     quantidadeAtual: novaQtd,
-    data: new Date().toISOString(),
+    motivo: null,
+    data: new Date(),
     usuario: usuario || 'desconhecido'
   });
 
-  writeJSON(estoqueFile, estoque);
   broadcastDataUpdated();
   res.json({
     message: 'Produto atualizado com sucesso',
     image: toPublicPath(imagemAtualizada)
   });
-});
+}));
 
-app.delete('/api/estoque/:id', authMiddleware, (req, res) => {
-  const rawId   = req.params.id;
+app.delete('/api/estoque/:id', authMiddleware, asyncHandler(async (req, res) => {
+  const itemId = req.params.id;
   const { motivo } = req.body;
   if (!motivo) {
     return res.status(400).json({ error: 'Motivo é obrigatório' });
   }
-  const estoque = readJSON(estoqueFile) || [];
 
-  // Converte para número se for dígitos, senão utiliza string (UUID)
-  const itemId = /^\d+$/.test(rawId) ? parseInt(rawId, 10) : rawId;
-
-  const idx = estoque.findIndex(item => item.id === itemId);
-  if (idx === -1) {
+  const removed = await deleteInventoryItemById(itemId);
+  if (!removed) {
     return res.status(404).json({ error: 'Produto não encontrado' });
   }
 
-  const removed = estoque.splice(idx, 1)[0];
   if (removed?.image) {
     removeStoredFile(removed.image);
   }
-  writeJSON(estoqueFile, estoque);
-  logMovimentacao({
+
+  await insertMovimentacao({
     id: uuidv4(),
-    produtoId: itemId,
+    produtoId: removed.id,
     produto: removed.produto,
     tipo: 'exclusao',
     quantidade: removed.quantidade,
     quantidadeAnterior: removed.quantidade,
     quantidadeAtual: 0,
     motivo,
-    data: new Date().toISOString(),
+    data: new Date(),
     usuario: req.user?.username || 'desconhecido'
   });
+
   broadcastDataUpdated();
   res.json({ message: 'Produto excluído com sucesso!' });
-});
+}));
 
-// Rota de resumo de relatorio
-app.get('/api/report/summary', authMiddleware, (req, res) => {
-  const logs = readJSON(movFile) || [];
+app.get('/api/report/summary', authMiddleware, asyncHandler(async (req, res) => {
+  const logs = await listMovimentacoes();
   const sumProd = {};
   const sumDay = {};
   for (const m of logs) {
     const prod = m.produto || 'desconhecido';
     if (!sumProd[prod]) sumProd[prod] = { entradas: 0, saidas: 0 };
-    const q = Math.abs(parseInt(m.quantidade, 10) || 0);
+    const q = Math.abs(Number.parseInt(m.quantidade, 10) || 0);
     if (m.tipo === 'adicao' || m.tipo === 'entrada') sumProd[prod].entradas += q;
     else if (m.tipo === 'saida' || m.tipo === 'exclusao') sumProd[prod].saidas += q;
     if (m.data) {
@@ -685,23 +931,24 @@ app.get('/api/report/summary', authMiddleware, (req, res) => {
     }
   }
   res.json({ porProduto: sumProd, porDia: sumDay });
-});
+}));
 
-// Rota de resumo do estoque atual
-app.get('/api/report/estoque', authMiddleware, (req, res) => {
-  const estoque = readJSON(estoqueFile) || [];
+app.get('/api/report/estoque', authMiddleware, asyncHandler(async (req, res) => {
+  const { rows } = await query('SELECT produto, SUM(quantidade)::INT AS total FROM inventory GROUP BY produto');
   const resumo = {};
-  for (const item of estoque) {
-    const prod = item.produto || 'desconhecido';
-    const qtd  = parseInt(item.quantidade, 10) || 0;
-    resumo[prod] = (resumo[prod] || 0) + qtd;
+  for (const row of rows) {
+    const prod = row.produto || 'desconhecido';
+    resumo[prod] = Number(row.total) || 0;
   }
   res.json(resumo);
-});
+}));
 
-// Rota para exportar movimentacoes em CSV
-app.get('/api/movimentacoes/csv', authMiddleware, (req, res) => {
-  const logs = readJSON(movFile) || [];
+app.get('/api/movimentacoes/csv', authMiddleware, asyncHandler(async (req, res) => {
+  const { rows } = await query(
+    `SELECT id, produto_id, produto, tipo, quantidade, quantidade_anterior, quantidade_atual, motivo, data, usuario
+       FROM movimentacoes
+      ORDER BY data ASC, id ASC`
+  );
   const header = [
     'id',
     'produtoId',
@@ -714,23 +961,23 @@ app.get('/api/movimentacoes/csv', authMiddleware, (req, res) => {
     'data',
     'usuario'
   ];
-  const rows = logs.map(m => [
-    m.id,
-    m.produtoId,
-    m.produto,
-    m.tipo,
-    m.quantidade,
-    m.quantidadeAnterior ?? '',
-    m.quantidadeAtual ?? '',
-    m.motivo ?? '',
-    m.data,
-    m.usuario
+  const rowsCsv = rows.map(row => [
+    row.id,
+    row.produto_id,
+    row.produto,
+    row.tipo,
+    row.quantidade,
+    row.quantidade_anterior ?? '',
+    row.quantidade_atual ?? '',
+    row.motivo ?? '',
+    (row.data instanceof Date ? row.data.toISOString() : row.data),
+    row.usuario
   ].join(','));
-  const csv = `${header.join(',')}` + '\n' + rows.join('\n');
+  const csv = `${header.join(',')}` + '\n' + rowsCsv.join('\n');
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="movimentacoes.csv"');
   res.send(csv);
-});
+}));
 
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -748,7 +995,15 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
 
+const startServer = async () => {
+  await initializeDatabase();
+  server.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+};
+
+startServer().catch(error => {
+  console.error('Não foi possível iniciar o servidor:', error);
+  process.exit(1);
+});
