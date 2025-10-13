@@ -1772,7 +1772,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const emptyRow = document.createElement('tr');
       const emptyCell = document.createElement('td');
       emptyCell.colSpan = 4;
-      emptyCell.className = 'px-6 py-4 text-sm text-subtle-light dark:text-subtle-dark';
+      emptyCell.className = 'text-sm text-subtle-light dark:text-subtle-dark text-center';
       emptyCell.textContent = 'Nenhuma categoria cadastrada.';
       emptyRow.appendChild(emptyCell);
       cashierSettingsCategoriesBody.appendChild(emptyRow);
@@ -1781,21 +1781,21 @@ document.addEventListener('DOMContentLoaded', () => {
     categories.forEach(category => {
       const row = document.createElement('tr');
       const nameCell = document.createElement('td');
-      nameCell.className = 'whitespace-nowrap px-6 py-4 text-sm font-medium text-text-light dark:text-text-dark';
+      nameCell.className = 'whitespace-nowrap font-medium text-text-light dark:text-text-dark';
       nameCell.textContent = category.name;
       const typeCell = document.createElement('td');
-      typeCell.className = 'whitespace-nowrap px-6 py-4 text-sm text-subtle-light dark:text-subtle-dark';
+      typeCell.className = 'whitespace-nowrap text-subtle-light dark:text-subtle-dark';
       typeCell.textContent = category.type;
       const statusCell = document.createElement('td');
-      statusCell.className = 'whitespace-nowrap px-6 py-4 text-sm';
+      statusCell.className = 'whitespace-nowrap';
       const statusBadge = document.createElement('span');
-      statusBadge.className = `inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${category.status === 'Ativo'
-        ? 'bg-success/15 text-success dark:bg-success/25 dark:text-success'
-        : 'bg-background-light text-subtle-light dark:bg-surface-dark dark:text-subtle-dark'}`;
+      statusBadge.className = `status-pill ${category.status === 'Ativo'
+        ? 'status-pill--active'
+        : 'status-pill--inactive'}`;
       statusBadge.textContent = category.status;
       statusCell.appendChild(statusBadge);
       const actionsCell = document.createElement('td');
-      actionsCell.className = 'whitespace-nowrap px-6 py-4 text-right text-sm font-medium';
+      actionsCell.className = 'whitespace-nowrap text-right text-sm font-medium';
       const editButton = document.createElement('button');
       editButton.type = 'button';
       editButton.className = 'text-primary hover:text-primary/80';
@@ -1815,7 +1815,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const emptyRow = document.createElement('tr');
       const emptyCell = document.createElement('td');
       emptyCell.colSpan = 3;
-      emptyCell.className = 'px-6 py-4 text-sm text-subtle-light dark:text-subtle-dark';
+      emptyCell.className = 'text-sm text-subtle-light dark:text-subtle-dark text-center';
       emptyCell.textContent = 'Nenhum método de pagamento cadastrado.';
       emptyRow.appendChild(emptyCell);
       cashierSettingsPaymentMethodsBody.appendChild(emptyRow);
@@ -1824,18 +1824,18 @@ document.addEventListener('DOMContentLoaded', () => {
     methods.forEach(method => {
       const row = document.createElement('tr');
       const nameCell = document.createElement('td');
-      nameCell.className = 'whitespace-nowrap px-6 py-4 text-sm font-medium text-text-light dark:text-text-dark';
+      nameCell.className = 'whitespace-nowrap font-medium text-text-light dark:text-text-dark';
       nameCell.textContent = method.name;
       const statusCell = document.createElement('td');
-      statusCell.className = 'whitespace-nowrap px-6 py-4 text-sm';
+      statusCell.className = 'whitespace-nowrap';
       const badge = document.createElement('span');
-      badge.className = `inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${method.status === 'Ativo'
-        ? 'bg-success/15 text-success dark:bg-success/25 dark:text-success'
-        : 'bg-background-light text-subtle-light dark:bg-surface-dark dark:text-subtle-dark'}`;
+      badge.className = `status-pill ${method.status === 'Ativo'
+        ? 'status-pill--active'
+        : 'status-pill--inactive'}`;
       badge.textContent = method.status;
       statusCell.appendChild(badge);
       const actionsCell = document.createElement('td');
-      actionsCell.className = 'whitespace-nowrap px-6 py-4 text-right text-sm font-medium';
+      actionsCell.className = 'whitespace-nowrap text-right text-sm font-medium';
       const toggleButton = document.createElement('button');
       toggleButton.type = 'button';
       const isActive = method.status === 'Ativo';
@@ -2765,16 +2765,21 @@ document.addEventListener('DOMContentLoaded', () => {
     movimentacoesTableBody.innerHTML = '';
     movementsData.forEach(move => {
       const tr = document.createElement('tr');
-      tr.className = 'bg-white dark:bg-surface-dark';
-      tr.innerHTML = `
-        <td class="px-4 py-2">${move.data ? new Date(move.data).toLocaleString('pt-BR') : '-'}</td>
-        <td class="px-4 py-2">${move.usuario || '-'}</td>
-        <td class="px-4 py-2">${move.produto || '-'}</td>
-        <td class="px-4 py-2">${move.tipo || '-'}</td>
-        <td class="px-4 py-2">${move.quantidadeAnterior ?? ''}</td>
-        <td class="px-4 py-2">${move.quantidade ?? ''}</td>
-        <td class="px-4 py-2">${move.quantidadeAtual ?? ''}</td>
-        <td class="px-4 py-2">${move.motivo || ''}</td>`;
+      const cells = [
+        move.data ? new Date(move.data).toLocaleString('pt-BR') : '-',
+        move.usuario || '-',
+        move.produto || '-',
+        move.tipo || '-',
+        move.quantidadeAnterior ?? '',
+        move.quantidade ?? '',
+        move.quantidadeAtual ?? '',
+        move.motivo || '',
+      ];
+      cells.forEach(value => {
+        const td = document.createElement('td');
+        td.textContent = value;
+        tr.appendChild(td);
+      });
       movimentacoesTableBody.appendChild(tr);
     });
   };

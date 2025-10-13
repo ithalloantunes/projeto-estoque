@@ -455,232 +455,207 @@ h2 {
     background-color: #bbb;
 }
 
-/* ===== MELHORIAS DA INTERFACE DA TABELA ===== */
-
-/* Container da tabela com sombra e bordas arredondadas */
-#stock-table {
-    width: 100%;
-    margin-top: 20px;
-    border-radius: 12px;
+/* ===== TABELAS MODERNAS ===== */
+.table-wrapper {
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
     overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    background: #fff;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-/* Estilo aprimorado da tabela */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    color: #333;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-/* Cabeçalho da tabela com gradiente */
-th {
-    background: linear-gradient(135deg, #6a2f77, #824283);
-    color: #fff;
-    padding: clamp(0.9rem, 0.75rem + 0.5vw, 1.25rem) clamp(0.8rem, 0.6rem + 0.6vw, 1.25rem);
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.95rem;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    border: none;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-/* Efeito hover no cabeçalho */
-th:hover {
-    background: linear-gradient(135deg, #824283, #9d4edd);
-    transform: translateY(-1px);
-}
-
-/* Separador entre colunas do cabeçalho */
-th:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 25%;
-    height: 50%;
-    width: 1px;
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* Células da tabela */
-td {
-    padding: clamp(0.75rem, 0.65rem + 0.35vw, 1rem) clamp(0.7rem, 0.6rem + 0.4vw, 1.05rem);
-    text-align: center;
-    border: none;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-/* Zebra striping - linhas alternadas */
-tbody tr:nth-child(even) {
-    background-color: #fafafa;
-}
-
-tbody tr:nth-child(odd) {
-    background-color: #fff;
-}
-
-/* Hover effect nas linhas */
-tbody tr:hover {
-    background: linear-gradient(90deg, #f8f4ff, #fff);
+.table-wrapper:hover {
+    box-shadow: 0 22px 52px rgba(15, 23, 42, 0.12);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(106, 47, 119, 0.1);
-    border-radius: 8px;
 }
 
-/* Efeito de hover mais suave para células */
-tbody tr:hover td {
-    color: #4c1a57;
+.table-wrapper .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+
+.table-wrapper .table-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrapper .table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-wrapper .table-scroll::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.5);
+    border-radius: 999px;
+}
+
+.table-wrapper .table-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(71, 85, 105, 0.6);
+}
+
+.table-wrapper .modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 100%;
+}
+
+.table-wrapper .modern-table thead th {
+    background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%);
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid #E2E8F0;
+    white-space: nowrap;
+}
+
+.table-wrapper .modern-table thead th:first-child {
+    padding-left: 1.75rem;
+}
+
+.table-wrapper .modern-table thead th:last-child {
+    padding-right: 1.75rem;
+}
+
+.table-wrapper .modern-table tbody tr {
+    background: #ffffff;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.table-wrapper .modern-table tbody tr:not(:first-child) td {
+    border-top: 1px solid #E2E8F0;
+}
+
+.table-wrapper .modern-table tbody td {
+    padding: 1.125rem 1.5rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    color: #1F2937;
+    background: transparent;
 }
 
-/* Coluna de ações alinhada à direita */
-td:last-child {
-    text-align: right;
-    padding-right: 20px;
+.table-wrapper .modern-table tbody td:first-child {
+    padding-left: 1.75rem;
 }
 
-/* ===== BOTÕES DE AÇÃO REDESENHADOS ===== */
-
-/* Container dos botões */
-td:last-child {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    align-items: center;
+.table-wrapper .modern-table tbody td:last-child {
+    padding-right: 1.75rem;
 }
 
-/* Estilo base dos botões */
-td button {
-    padding: clamp(0.45rem, 0.35rem + 0.4vw, 0.65rem) clamp(0.75rem, 0.6rem + 0.5vw, 1.1rem);
-    border: none;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.table-wrapper .modern-table tbody tr:hover {
+    background: #F8FAFF;
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.08);
+}
+
+.table-wrapper .modern-table tbody tr:hover td {
+    color: #0F172A;
+}
+
+.table-wrapper .modern-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.status-pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    min-width: 80px;
-    justify-content: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
     position: relative;
-    overflow: hidden;
 }
 
-/* Efeito de ondulação nos botões */
-td button::before {
+.status-pill::before {
     content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transition: all 0.4s ease;
-    transform: translate(-50%, -50%);
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background-color: currentColor;
+    opacity: 0.7;
 }
 
-td button:active::before {
-    width: 200px;
-    height: 200px;
+.status-pill--active {
+    color: #15803D;
+    background: rgba(34, 197, 94, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.35);
 }
 
-/* Botão Editar */
-td button.edit-btn {
-    background: linear-gradient(135deg, #ff8c00, #ff7b00);
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3);
+.status-pill--inactive {
+    color: #B91C1C;
+    background: rgba(248, 113, 113, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.35);
 }
 
-td button.edit-btn:hover {
-    background: linear-gradient(135deg, #ff7b00, #e66a00);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 140, 0, 0.4);
+.dark .table-wrapper {
+    background: var(--color-surface-dark);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 55px rgba(15, 23, 42, 0.65);
 }
 
-td button.edit-btn:active {
-    transform: translateY(0);
+.dark .table-wrapper:hover {
+    box-shadow: 0 28px 65px rgba(15, 23, 42, 0.75);
 }
 
-/* Ícone do botão editar */
-td button.edit-btn::after {
-    content: '✏️';
-    margin-left: 4px;
+.dark .table-wrapper .table-scroll {
+    scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
 }
 
-/* Botão Excluir */
-td button.delete-btn {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+.dark .table-wrapper .table-scroll::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
 }
 
-td button.delete-btn:hover {
-    background: linear-gradient(135deg, #c0392b, #a93226);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+.dark .table-wrapper .table-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.55);
 }
 
-td button.delete-btn:active {
-    transform: translateY(0);
+.dark .table-wrapper .modern-table thead th {
+    background: linear-gradient(180deg, rgba(148, 163, 184, 0.16) 0%, rgba(148, 163, 184, 0.08) 100%);
+    color: var(--color-text-dark);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Ícone do botão excluir */
-td button.delete-btn::after {
-    content: '🗑️';
-    margin-left: 4px;
+.dark .table-wrapper .modern-table tbody tr {
+    background: transparent;
 }
 
-/* Botões de Salvar e Cancelar (modo edição) */
-td button.save-btn {
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);
+.dark .table-wrapper .modern-table tbody tr:not(:first-child) td {
+    border-top-color: rgba(255, 255, 255, 0.08);
 }
 
-td button.save-btn:hover {
-    background: linear-gradient(135deg, #2ecc71, #58d68d);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+.dark .table-wrapper .modern-table tbody td {
+    color: var(--color-text-dark);
 }
 
-td button.save-btn::after {
-    content: '✅';
-    margin-left: 4px;
+.dark .table-wrapper .modern-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.3);
 }
 
-td button.cancel-btn {
-    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(149, 165, 166, 0.3);
+.dark .table-wrapper .modern-table tbody tr:hover td {
+    color: var(--color-text-dark);
 }
 
-td button.cancel-btn:hover {
-    background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+.dark .status-pill--active {
+    color: #4ADE80;
+    background: rgba(22, 163, 74, 0.18);
+    box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.35);
 }
 
-td button.cancel-btn::after {
-    content: '❌';
-    margin-left: 4px;
+.dark .status-pill--inactive {
+    color: #FCA5A5;
+    background: rgba(248, 113, 113, 0.18);
+    box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.35);
 }
 
 /* ===== CAMPOS DE EDIÇÃO MELHORADOS ===== */
-
 .edit-input {
     width: 100%;
     padding: 8px 12px;
@@ -700,14 +675,11 @@ td button.cancel-btn::after {
 }
 
 /* ===== ESTADOS ESPECIAIS ===== */
-
-/* Linha sendo editada */
 tr.editing {
     background: linear-gradient(90deg, #fff3e0, #fff);
     box-shadow: 0 4px 20px rgba(255, 152, 0, 0.15);
 }
 
-/* Animação de carregamento */
 .loading-row {
     opacity: 0.6;
     pointer-events: none;
@@ -730,7 +702,6 @@ tr.editing {
 }
 
 /* ===== MELHORIAS NA PAGINAÇÃO ===== */
-
 #pagination {
     margin-top: 25px;
     text-align: center;
@@ -768,29 +739,26 @@ tr.editing {
     background: linear-gradient(135deg, #824283, #9d4edd);
 }
 
-/* ===== RESPONSIVIDADE ===== */
-
-@media (max-width: 768px) {
-    table {
-        font-size: 0.8rem;
-    }
-
-    th, td {
-        padding: 12px 8px;
-    }
-
-    td button {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-        min-width: 70px;
-    }
-
-    td:last-child {
-        flex-direction: column;
-        gap: 4px;
-    }
+/* ===== INDICADORES VISUAIS ===== */
+tr[data-low-stock="true"] {
+    background: linear-gradient(90deg, #fff5f5, #fff);
+    border-left: 4px solid #e74c3c;
 }
 
+tr[data-low-stock="true"]:hover {
+    background: linear-gradient(90deg, #ffebee, #fff);
+}
+
+tr[data-expire-soon="true"] {
+    background: linear-gradient(90deg, #fffbf0, #fff);
+    border-left: 4px solid #f39c12;
+}
+
+tr[data-expire-soon="true"]:hover {
+    background: linear-gradient(90deg, #fef9e7, #fff);
+}
+
+/* ===== RESPONSIVIDADE ===== */
 @media (max-width: 1024px) {
     .container {
         flex-direction: column;
@@ -842,10 +810,6 @@ tr.editing {
     #stock-form input {
         flex: 1 1 100%;
     }
-
-    td:last-child {
-        align-items: stretch;
-    }
 }
 
 @media (min-width: 1600px) {
@@ -861,28 +825,6 @@ tr.editing {
     #stock-form input {
         flex: 1 1 clamp(200px, 18vw, 300px);
     }
-}
-
-/* ===== INDICADORES VISUAIS ===== */
-
-/* Destaque para produtos com estoque baixo */
-tr[data-low-stock="true"] {
-    background: linear-gradient(90deg, #fff5f5, #fff);
-    border-left: 4px solid #e74c3c;
-}
-
-tr[data-low-stock="true"]:hover {
-    background: linear-gradient(90deg, #ffebee, #fff);
-}
-
-/* Destaque para produtos próximos do vencimento */
-tr[data-expire-soon="true"] {
-    background: linear-gradient(90deg, #fffbf0, #fff);
-    border-left: 4px solid #f39c12;
-}
-
-tr[data-expire-soon="true"]:hover {
-    background: linear-gradient(90deg, #fef9e7, #fff);
 }
 
 /* ===== ANIMAÇÕES SUAVES ===== */
