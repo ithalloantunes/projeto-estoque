@@ -771,6 +771,46 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/[\u0300-\u036f]/g, '');
   };
 
+  const parseLocaleNumber = rawValue => {
+    if (typeof rawValue === 'number') {
+      return Number.isFinite(rawValue) ? rawValue : Number.NaN;
+    }
+    if (typeof rawValue !== 'string') return Number.NaN;
+    const trimmed = rawValue.trim();
+    if (!trimmed) return Number.NaN;
+
+    const sanitized = trimmed.replace(/\s+/g, '').replace(/[^0-9.,-]/g, '');
+    if (!sanitized) return Number.NaN;
+
+    let hasLeadingMinus = sanitized.startsWith('-');
+    let unsigned = hasLeadingMinus ? sanitized.slice(1) : sanitized;
+    if (!hasLeadingMinus && sanitized.endsWith('-')) {
+      hasLeadingMinus = true;
+      unsigned = sanitized.slice(0, -1);
+    }
+    if (!unsigned) return Number.NaN;
+
+    const commaIndex = unsigned.lastIndexOf(',');
+    const dotIndex = unsigned.lastIndexOf('.');
+    let normalized = unsigned;
+
+    if (commaIndex !== -1 && dotIndex !== -1) {
+      if (commaIndex > dotIndex) {
+        normalized = unsigned.replace(/\./g, '').replace(',', '.');
+      } else {
+        normalized = unsigned.replace(/,/g, '');
+      }
+    } else if (commaIndex !== -1) {
+      normalized = unsigned.replace(/\./g, '').replace(',', '.');
+    } else {
+      normalized = unsigned.replace(/,/g, '');
+    }
+
+    const numeric = Number.parseFloat(normalized);
+    if (!Number.isFinite(numeric)) return Number.NaN;
+    return hasLeadingMinus ? -numeric : numeric;
+  };
+
   const parseMovementAmount = movement => {
     const candidates = [
       movement?.valor,
@@ -783,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
       movement?.value,
     ];
     for (const candidate of candidates) {
-      const numeric = Number(candidate);
+      const numeric = parseLocaleNumber(candidate);
       if (Number.isFinite(numeric) && Math.abs(numeric) > 0) {
         return Math.abs(numeric);
       }
@@ -942,7 +982,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const amountCandidates = [movement.valor, movement.value, movement.amount, movement.total, movement.montante];
     let numericValue = 0;
     for (const candidate of amountCandidates) {
-      const parsed = Number(candidate);
+      const parsed = parseLocaleNumber(candidate);
       if (Number.isFinite(parsed)) {
         numericValue = Math.abs(parsed);
         if (numericValue > 0) break;
@@ -1180,9 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const observations = (formData.get('observations') || '').toString().trim();
 
     const rawValue = formData.get('value');
-    const numericValue = typeof rawValue === 'string'
-      ? Number.parseFloat(rawValue.replace(',', '.'))
-      : Number(rawValue);
+    const numericValue = parseLocaleNumber(rawValue);
     if (!Number.isFinite(numericValue) || numericValue <= 0) {
       alert('Informe um valor válido para a movimentação.');
       return;
