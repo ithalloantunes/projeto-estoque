@@ -22,14 +22,26 @@ Aplicação web para gerenciamento de estoque com autenticação, controle de pr
 ## Configurando o banco no Render
 
 1. Crie um novo **PostgreSQL** em *Render → Databases* escolhendo a versão 17.
-2. Após o provisionamento, copie a variável `DATABASE_URL` fornecida pelo Render.
-3. Crie um novo serviço *Web Service* apontando para este repositório.
-4. Defina as seguintes variáveis de ambiente no serviço:
-   - `DATABASE_URL` com o valor copiado do banco.
-   - `NODE_ENV=production` para habilitar cookies seguros.
-5. Faça o deploy. Na primeira execução a aplicação cria automaticamente as tabelas (`users`, `inventory`, `movimentacoes`) e importa os dados iniciais existentes nos arquivos `data/users.json` e `data/estoque.json` caso o banco esteja vazio.
+2. No painel do banco, abra a aba **Connections** e copie o valor de **Internal Database URL** (ex.: `postgres://usuario:senha@dpg-xxxxx.internal:5432/nome`)
+   - Use a URL interna para que a comunicação ocorra dentro da rede privada do Render, evitando exposição pública e garantindo TLS automático.
+3. Crie um novo serviço *Web Service* apontando para este repositório (botão **New → Web Service**).
+4. Na tela de criação (ou em **Settings → Environment** após o deploy):
+   - Adicione a variável `DATABASE_URL` com a URL interna copiada.
+   - Adicione `NODE_ENV=production` para habilitar cookies seguros e SSL no banco.
+   - Opcional: ajuste `PGPOOL_MAX` caso queira controlar o número máximo de conexões simultâneas.
+5. Clique em **Advanced → Add a Database** e selecione o banco criado (isto apenas preenche automaticamente `DATABASE_URL`; faça manualmente se preferir).
+6. Faça o deploy. Na primeira execução a aplicação cria automaticamente as tabelas (`users`, `inventory`, `movimentacoes`) e importa os dados iniciais existentes nos arquivos `data/users.json` e `data/estoque.json` caso o banco esteja vazio.
 
 > **Importante:** o Render exige conexão segura; não altere `DATABASE_SSL` em produção. Localmente, caso esteja usando um PostgreSQL sem TLS, defina `DATABASE_SSL=disable`.
+
+### Testando a conexão dentro do Render
+
+Para verificar se o web service está conversando com o banco:
+
+1. Abra o serviço no Render e vá em **Shell**.
+2. Execute `printenv DATABASE_URL` para garantir que a variável está definida.
+3. Rode `node --eval "import('./server.js')"` para iniciar a aplicação manualmente; a mensagem `Servidor rodando na porta ...` indica que a conexão foi estabelecida.
+4. Confira os logs em **Logs**: qualquer erro de credencial ou SSL aparecerá ali.
 
 ## Executando localmente
 
