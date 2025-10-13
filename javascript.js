@@ -888,7 +888,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
-  const CASHIER_MOVEMENTS_STORAGE_KEY = 'acaiStock_cashier_movements';
+  const CASHIER_MOVEMENTS_STORAGE_KEY = 'acaiStock_cashier_movements_v2';
+  const LEGACY_CASHIER_MOVEMENTS_STORAGE_KEYS = Object.freeze([
+    'acaiStock_cashier_movements'
+  ]);
 
   const sortCashierMovements = (movements = []) => {
     return [...movements]
@@ -953,6 +956,19 @@ document.addEventListener('DOMContentLoaded', () => {
       observacoes: observations,
       formaPagamento: paymentMethod,
     };
+  };
+
+  const purgeLegacyCashierMovementsStorage = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      LEGACY_CASHIER_MOVEMENTS_STORAGE_KEYS.forEach(key => {
+        if (key !== CASHIER_MOVEMENTS_STORAGE_KEY) {
+          window.localStorage.removeItem(key);
+        }
+      });
+    } catch (error) {
+      console.warn('Não foi possível limpar movimentações antigas do caixa:', error);
+    }
   };
 
   const loadCashierMovementsFromStorage = () => {
@@ -1200,6 +1216,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const initializeCashierMovementsModule = () => {
     if (!cashierMovementsTableBody && !cashierMovementForm && !cashierFilterButtons) return;
 
+    purgeLegacyCashierMovementsStorage();
     const storedMovements = loadCashierMovementsFromStorage();
     cashierMovementsData = Array.isArray(storedMovements) ? storedMovements : [];
 
