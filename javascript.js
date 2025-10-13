@@ -1790,8 +1790,8 @@ document.addEventListener('DOMContentLoaded', () => {
       statusCell.className = 'whitespace-nowrap px-6 py-4 text-sm';
       const statusBadge = document.createElement('span');
       statusBadge.className = `inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${category.status === 'Ativo'
-        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`;
+        ? 'bg-success/15 text-success dark:bg-success/25 dark:text-success'
+        : 'bg-background-light text-subtle-light dark:bg-surface-dark dark:text-subtle-dark'}`;
       statusBadge.textContent = category.status;
       statusCell.appendChild(statusBadge);
       const actionsCell = document.createElement('td');
@@ -1830,8 +1830,8 @@ document.addEventListener('DOMContentLoaded', () => {
       statusCell.className = 'whitespace-nowrap px-6 py-4 text-sm';
       const badge = document.createElement('span');
       badge.className = `inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${method.status === 'Ativo'
-        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`;
+        ? 'bg-success/15 text-success dark:bg-success/25 dark:text-success'
+        : 'bg-background-light text-subtle-light dark:bg-surface-dark dark:text-subtle-dark'}`;
       badge.textContent = method.status;
       statusCell.appendChild(badge);
       const actionsCell = document.createElement('td');
