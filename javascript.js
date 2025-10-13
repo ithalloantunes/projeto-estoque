@@ -1,39 +1,6 @@
 const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 const isLocalEnvironment = /127\.0\.0\.1|localhost/.test(currentOrigin);
-const configuredApiBaseUrl = typeof window !== 'undefined' && window.APP_CONFIG && typeof window.APP_CONFIG.apiBaseUrl === 'string'
-  ? window.APP_CONFIG.apiBaseUrl.trim()
-  : '';
-const sanitizedConfiguredApiBaseUrl = configuredApiBaseUrl.replace(/\/+$/, '');
-const BASE_URL = isLocalEnvironment ? '' : sanitizedConfiguredApiBaseUrl;
-const API_BASE_PATH = '/api';
-
-const buildApiUrl = (endpoint, params = {}) => {
-  const sanitizedEndpoint = endpoint.replace(/^\/+/, '');
-  const basePath = `${API_BASE_PATH}/${sanitizedEndpoint}`;
-  const baseUrl = BASE_URL ? new URL(basePath, BASE_URL) : new URL(basePath, window.location.origin);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === '') return;
-    baseUrl.searchParams.set(key, value);
-  });
-  if (BASE_URL) {
-    return baseUrl.href;
-  }
-  return `${baseUrl.pathname}${baseUrl.search}`;
-};
-
-const API_ENDPOINTS = {
-  login: () => buildApiUrl('login.php'),
-  register: () => buildApiUrl('register.php'),
-  logout: () => buildApiUrl('logout.php'),
-  session: () => buildApiUrl('session.php'),
-  estoque: () => buildApiUrl('estoque.php'),
-  movimentacoes: params => buildApiUrl('movimentacoes.php', params),
-  movimentacoesCsv: () => buildApiUrl('movimentacoes.php', { format: 'csv' }),
-  relatorioResumo: params => buildApiUrl('relatorios.php', { tipo: 'summary', ...params }),
-  relatorioEstoque: () => buildApiUrl('relatorios.php', { tipo: 'estoque' }),
-  usuarios: params => buildApiUrl('usuarios.php', params),
-  usuarioFoto: id => buildApiUrl('usuarios.php', { foto: 1, id }),
-};
+const BASE_URL = isLocalEnvironment ? '' : 'https://projeto-estoque-o1x5.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Estado global
@@ -2134,7 +2101,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     try {
-      const data = await authenticatedJsonFetch(API_ENDPOINTS.usuarioFoto(currentUserId));
+      const data = await authenticatedJsonFetch(`${BASE_URL}/api/users/${currentUserId}/photo`);
       if (data.photo) {
         const resolved = getFullImageUrl(data.photo);
         updateAllAvatars(resolved);
@@ -2160,9 +2127,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentUserId || !file) return null;
     const formData = new FormData();
     formData.append('photo', file);
-    formData.append('_method', 'PUT');
-    const data = await authenticatedJsonFetch(API_ENDPOINTS.usuarioFoto(currentUserId), {
-      method: 'POST',
+    const data = await authenticatedJsonFetch(`${BASE_URL}/api/users/${currentUserId}/photo`, {
+      method: 'PUT',
       body: formData
     });
     return data.photo || null;
@@ -2299,7 +2265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     try {
       showLoader();
-      const res = await fetch(API_ENDPOINTS.login(), {
+      const res = await fetch(`${BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -2333,7 +2299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     try {
       showLoader();
-      const res = await fetch(API_ENDPOINTS.register(), {
+      const res = await fetch(`${BASE_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -2359,7 +2325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (!skipRequest) {
         try {
-          await fetch(API_ENDPOINTS.logout(), {
+          await fetch(`${BASE_URL}/api/logout`, {
             method: 'POST',
             credentials: 'include'
           });
@@ -2471,7 +2437,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const { silent = false, onLoaded } = options;
     try {
       if (!silent) showLoader();
-      const data = await authenticatedJsonFetch(API_ENDPOINTS.estoque());
+      const data = await authenticatedJsonFetch(`${BASE_URL}/api/estoque`);
       const raw = Array.isArray(data)
         ? data
         : Object.entries(data || {}).map(([id, item]) => ({ id, ...item }));
@@ -2493,8 +2459,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadMovimentacoes = async (start, end, options = {}) => {
     const { silent = false } = options;
     try {
+      const params = new URLSearchParams();
+      if (start) params.append('start', start);
+      if (end) params.append('end', end);
       if (!silent) showLoader();
-      const data = await authenticatedJsonFetch(API_ENDPOINTS.movimentacoes({ start, end }));
+      const data = await authenticatedJsonFetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`);
       movementsData = Array.isArray(data) ? data : [];
       renderMovimentacoes();
       renderCashierReports(cashierMovementsData);
@@ -2510,10 +2479,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadReports = async (start, end, options = {}) => {
     const { silent = false } = options;
     try {
+      const params = new URLSearchParams();
+      if (start) params.append('start', start);
+      if (end) params.append('end', end);
       if (!silent) showLoader();
       const [summaryData, stockData] = await Promise.all([
-        authenticatedJsonFetch(API_ENDPOINTS.relatorioResumo({ start, end })),
-        authenticatedJsonFetch(API_ENDPOINTS.relatorioEstoque())
+        authenticatedJsonFetch(`${BASE_URL}/api/report/summary?${params.toString()}`),
+        authenticatedJsonFetch(`${BASE_URL}/api/report/estoque`)
       ]);
       await renderReports(summaryData, stockData);
     } catch (err) {
@@ -3031,8 +3003,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (!silent) showLoader();
       const [pendingRes, activeRes] = await Promise.all([
-        authenticatedJsonFetch(API_ENDPOINTS.usuarios({ status: 'pending' })),
-        authenticatedJsonFetch(API_ENDPOINTS.usuarios({ status: 'active' }))
+        authenticatedJsonFetch(`${BASE_URL}/api/users/pending`),
+        authenticatedJsonFetch(`${BASE_URL}/api/users`)
       ]);
       const pendingData = pendingRes;
       const activeData = activeRes;
@@ -3133,7 +3105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('validade', validade ?? '');
       formData.append('custo', String(custoFormatado));
       if (imageFile) formData.append('image', imageFile);
-      await authenticatedJsonFetch(API_ENDPOINTS.estoque(), {
+      await authenticatedJsonFetch(`${BASE_URL}/api/estoque`, {
         method: 'POST',
         body: formData
       });
@@ -3214,10 +3186,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (editForm.elements.removeImage?.checked) {
         formData.append('removeImage', 'true');
       }
-      formData.append('_method', 'PUT');
-      formData.append('id', String(id));
-      await authenticatedJsonFetch(API_ENDPOINTS.estoque(), {
-        method: 'POST',
+      await authenticatedJsonFetch(`${BASE_URL}/api/estoque/${id}`, {
+        method: 'PUT',
         body: formData
       });
       if (editImageInput) editImageInput.value = '';
@@ -3249,13 +3219,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     try {
       showLoader();
-      const formData = new FormData();
-      formData.append('_method', 'DELETE');
-      formData.append('id', String(currentProductId));
-      formData.append('motivo', motivo);
-      await authenticatedJsonFetch(API_ENDPOINTS.estoque(), {
-        method: 'POST',
-        body: formData
+      await authenticatedJsonFetch(`${BASE_URL}/api/estoque/${currentProductId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motivo })
       });
       closeModal('delete-modal');
       await loadStock();
@@ -3273,10 +3240,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const approveUser = async userId => {
     try {
       showLoader();
-      await authenticatedJsonFetch(API_ENDPOINTS.usuarios(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'approve', id: userId })
+      await authenticatedJsonFetch(`${BASE_URL}/api/users/${userId}/approve`, {
+        method: 'POST'
       });
       await renderApprovalPage();
     } catch (err) {
@@ -3289,10 +3254,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const declineUser = async userId => {
     try {
       showLoader();
-      await authenticatedJsonFetch(API_ENDPOINTS.usuarios(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', id: userId })
+      await authenticatedJsonFetch(`${BASE_URL}/api/users/${userId}`, {
+        method: 'DELETE'
       });
       await renderApprovalPage();
     } catch (err) {
@@ -3529,7 +3492,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isRestoringSession = true;
     try {
       showLoader();
-      const res = await fetch(API_ENDPOINTS.session(), { credentials: 'include' });
+      const res = await fetch(`${BASE_URL}/api/session`, { credentials: 'include' });
       if (!res.ok) {
         throw new Error('Sessão não encontrada');
       }
@@ -3579,7 +3542,7 @@ document.addEventListener('DOMContentLoaded', () => {
       openModal('suggestions-modal');
     });
   }
-  if (quickExportBtn) quickExportBtn.addEventListener('click', () => window.open(API_ENDPOINTS.movimentacoesCsv(), '_blank'));
+  if (quickExportBtn) quickExportBtn.addEventListener('click', () => window.open(`${BASE_URL}/api/movimentacoes/csv`, '_blank'));
   if (homeKpiCardTotal) homeKpiCardTotal.addEventListener('click', () => goToStockPageWithFilter('all'));
   if (homeKpiCardLow) homeKpiCardLow.addEventListener('click', () => goToStockPageWithFilter('low_stock'));
   if (homeKpiCardExpiring) homeKpiCardExpiring.addEventListener('click', () => goToStockPageWithFilter('expiring_soon'));
