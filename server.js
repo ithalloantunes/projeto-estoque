@@ -37,6 +37,22 @@ const sanitizeCost = value => {
   return Math.round(parsed * 100) / 100;
 };
 
+const parseBoolean = value => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'sim'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'nao', 'não'].includes(normalized)) return false;
+  }
+  return null;
+};
+
+const sanitizeRole = value => {
+  const normalized = sanitizeText(value).toLowerCase();
+  return normalized === 'admin' ? 'admin' : 'user';
+};
+
 const connectionString = sanitizeText(process.env.DATABASE_URL) || sanitizeText(process.env.POSTGRES_URL);
 
 if (!connectionString) {
@@ -282,6 +298,30 @@ const insertUser = async user => {
   );
 };
 
+const updateUserFromSeed = async (id, user) => {
+  const { rows } = await query(
+    `UPDATE users
+        SET username = $2,
+            username_lower = $3,
+            password_hash = $4,
+            role = $5,
+            approved = $6,
+            photo = $7
+      WHERE id = $1
+  RETURNING id, username, username_lower, password_hash, role, approved, photo`,
+    [
+      id,
+      user.username,
+      user.usernameLower,
+      user.passwordHash,
+      user.role,
+      user.approved,
+      user.photo,
+    ]
+  );
+  return rows[0] ? mapUserRow(rows[0]) : null;
+};
+
 const updateUserApproval = async (id, approved) => {
   const { rows } = await query(
     `UPDATE users SET approved = $2 WHERE id = $1 RETURNING id, username, username_lower, password_hash, role, approved, photo`,
@@ -472,28 +512,58 @@ const initializeDatabase = async () => {
 
 const seedUsersFromFile = async () => {
   if (!fs.existsSync(usersFile)) return;
-  const { rows } = await query('SELECT COUNT(*)::INT AS count FROM users');
-  const currentCount = Number.parseInt(rows[0]?.count ?? '0', 10) || 0;
-  if (currentCount > 0) return;
   try {
     const raw = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
     for (const entry of raw) {
       const username = sanitizeText(entry.username);
       if (!username) continue;
-      const id = entry.id ? sanitizeText(entry.id) : uuidv4();
-      const passwordSource = entry.passwordHash || entry.password;
-      const passwordHash = passwordSource && passwordSource.startsWith('$2a$')
+      const normalized = normalizeUsername(username);
+      const existing = await getUserByUsernameLower(normalized);
+      const passwordHashSource = sanitizeText(entry.passwordHash);
+      const passwordPlainSource = sanitizeText(entry.password);
+      const passwordSource = passwordHashSource || passwordPlainSource || '12345678';
+      const passwordHash = passwordSource.startsWith('$2')
         ? passwordSource
-        : bcrypt.hashSync(passwordSource || '12345678', BCRYPT_SALT_ROUNDS);
-      await insertUser({
-        id,
-        username,
-        usernameLower: normalizeUsername(username),
-        passwordHash,
-        role: entry.role || 'user',
-        approved: Boolean(entry.approved),
-        photo: entry.photo ? sanitizeText(entry.photo) : null,
-      });
+        : (existing?.passwordHash && bcrypt.compareSync(passwordSource, existing.passwordHash))
+          ? existing.passwordHash
+          : bcrypt.hashSync(passwordSource, BCRYPT_SALT_ROUNDS);
+      const role = sanitizeRole(entry.role);
+      const parsedApproved = parseBoolean(entry.approved);
+      const approved = parsedApproved !== null ? parsedApproved : role === 'admin';
+      const providedPhoto = entry.photo ? sanitizeText(entry.photo) : null;
+      if (!existing) {
+        const id = entry.id ? sanitizeText(entry.id) || uuidv4() : uuidv4();
+        await insertUser({
+          id,
+          username,
+          usernameLower: normalized,
+          passwordHash,
+          role,
+          approved,
+          photo: providedPhoto,
+        });
+        continue;
+      }
+
+      const targetPhoto = providedPhoto !== null ? providedPhoto : existing.photo;
+      const needsUpdate =
+        existing.username !== username ||
+        existing.usernameLower !== normalized ||
+        existing.role !== role ||
+        existing.approved !== approved ||
+        existing.passwordHash !== passwordHash ||
+        existing.photo !== targetPhoto;
+
+      if (needsUpdate) {
+        await updateUserFromSeed(existing.id, {
+          username,
+          usernameLower: normalized,
+          passwordHash,
+          role,
+          approved,
+          photo: targetPhoto,
+        });
+      }
     }
   } catch (error) {
     console.error('Falha ao importar usuários iniciais:', error);
