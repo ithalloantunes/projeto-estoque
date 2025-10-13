@@ -602,10 +602,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const DEFAULT_CASHIER_METRICS = {
-    total: { value: 1100, change: 12, trend: 'up' },
-    revenue: { value: 1250, change: 8, trend: 'up' },
-    expenses: { value: 150, change: -5, trend: 'down' },
-    profit: { value: 1100, change: 15, trend: 'up' },
+    total: { value: 0, change: 0, trend: 'up' },
+    revenue: { value: 0, change: 0, trend: 'up' },
+    expenses: { value: 0, change: 0, trend: 'down' },
+    profit: { value: 0, change: 0, trend: 'up' },
   };
 
   let cashierDashboardMetrics = Object.keys(DEFAULT_CASHIER_METRICS).reduce((acc, key) => {
@@ -656,46 +656,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const CASHIER_REINFORCEMENT_TYPES = new Set(['reforco', 'aporte', 'suprimento', 'reabertura']);
 
   const DEFAULT_CASHIER_REPORTS_DATA = {
-    paymentMethods: [
-      { label: 'Dinheiro', value: 40 },
-      { label: 'Cartão de Crédito', value: 20 },
-      { label: 'Cartão de Débito', value: 35 },
-      { label: 'Online', value: 5 },
-    ],
+    paymentMethods: [],
     cashFlow: {
       daily: {
-        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-        values: [24, 18, 20, 22, 17, 25, 28],
+        labels: [],
+        values: [],
       },
       weekly: {
-        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
-        values: [120, 150, 110, 180],
+        labels: [],
+        values: [],
       },
       monthly: {
-        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
-        values: [180, 50, 100, 200, 80, 120, 240],
+        labels: [],
+        values: [],
       },
     },
     comparative: {
-      expenses: [
-        { label: 'Aluguel', value: 6000 },
-        { label: 'Serviços', value: 4800 },
-        { label: 'Suprimentos', value: 7800 },
-        { label: 'Marketing', value: 5200 },
-        { label: 'Salários', value: 3100 },
-      ],
-      reinforcements: [
-        { label: 'Balcão', value: 4500 },
-        { label: 'Delivery', value: 3200 },
-        { label: 'Eventos', value: 1800 },
-        { label: 'Parceiros', value: 1400 },
-      ],
-      categories: [
-        { label: 'Açaí', value: 9200 },
-        { label: 'Bebidas', value: 3400 },
-        { label: 'Complementos', value: 2600 },
-        { label: 'Merchandising', value: 1500 },
-      ],
+      expenses: [],
+      reinforcements: [],
+      categories: [],
     },
   };
 
@@ -883,66 +862,33 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const mergeDatasetWithDefault = (computed, defaults) => {
-    if (!computed) return defaults;
+    const base = defaults || DEFAULT_CASHIER_REPORTS_DATA;
+    const cloneArray = value => (Array.isArray(value)
+      ? value.map(item => (typeof item === 'object' && item !== null ? { ...item } : item))
+      : []);
+    const cloneSegment = segment => ({
+      labels: Array.isArray(segment?.labels) ? [...segment.labels] : [],
+      values: Array.isArray(segment?.values) ? [...segment.values] : [],
+    });
+
+    const source = computed && typeof computed === 'object' ? computed : {};
+
     return {
-      paymentMethods: computed.paymentMethods?.length ? computed.paymentMethods : defaults.paymentMethods,
+      paymentMethods: cloneArray(source.paymentMethods ?? base.paymentMethods),
       cashFlow: {
-        daily: computed.cashFlow?.daily?.labels?.length ? computed.cashFlow.daily : defaults.cashFlow.daily,
-        weekly: computed.cashFlow?.weekly?.labels?.length ? computed.cashFlow.weekly : defaults.cashFlow.weekly,
-        monthly: computed.cashFlow?.monthly?.labels?.length ? computed.cashFlow.monthly : defaults.cashFlow.monthly,
+        daily: cloneSegment(source.cashFlow?.daily ?? base.cashFlow?.daily),
+        weekly: cloneSegment(source.cashFlow?.weekly ?? base.cashFlow?.weekly),
+        monthly: cloneSegment(source.cashFlow?.monthly ?? base.cashFlow?.monthly),
       },
       comparative: {
-        expenses: computed.comparative?.expenses?.length ? computed.comparative.expenses : defaults.comparative.expenses,
-        reinforcements: computed.comparative?.reinforcements?.length ? computed.comparative.reinforcements : defaults.comparative.reinforcements,
-        categories: computed.comparative?.categories?.length ? computed.comparative.categories : defaults.comparative.categories,
+        expenses: cloneArray(source.comparative?.expenses ?? base.comparative?.expenses),
+        reinforcements: cloneArray(source.comparative?.reinforcements ?? base.comparative?.reinforcements),
+        categories: cloneArray(source.comparative?.categories ?? base.comparative?.categories),
       },
     };
   };
 
   const CASHIER_MOVEMENTS_STORAGE_KEY = 'acaiStock_cashier_movements';
-
-  const DEFAULT_CASHIER_MOVEMENTS = [
-    {
-      id: 'cashier-1',
-      data: '2024-01-15T10:30:00-03:00',
-      tipo: 'Entrada',
-      categoria: 'Vendas',
-      valor: 500,
-      funcionario: 'Emily Carter',
-      observacoes: 'Venda em dinheiro',
-      formaPagamento: 'Dinheiro',
-    },
-    {
-      id: 'cashier-2',
-      data: '2024-01-15T12:45:00-03:00',
-      tipo: 'Saída',
-      categoria: 'Despesas',
-      valor: 150,
-      funcionario: 'Emily Carter',
-      observacoes: 'Compra de suprimentos',
-      formaPagamento: 'Pix',
-    },
-    {
-      id: 'cashier-3',
-      data: '2024-01-16T09:15:00-03:00',
-      tipo: 'Entrada',
-      categoria: 'Vendas',
-      valor: 750,
-      funcionario: 'David Lee',
-      observacoes: 'Venda no cartão de crédito',
-      formaPagamento: 'Cartão de crédito',
-    },
-    {
-      id: 'cashier-4',
-      data: '2024-02-02T18:20:00-03:00',
-      tipo: 'Entrada',
-      categoria: 'Reforço de Caixa',
-      valor: 300,
-      funcionario: 'Sophia Clark',
-      observacoes: 'Reforço para fechamento do turno',
-      formaPagamento: 'Dinheiro',
-    },
-  ];
 
   const sortCashierMovements = (movements = []) => {
     return [...movements]
@@ -1255,14 +1201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!cashierMovementsTableBody && !cashierMovementForm && !cashierFilterButtons) return;
 
     const storedMovements = loadCashierMovementsFromStorage();
-    if (storedMovements && storedMovements.length) {
-      cashierMovementsData = storedMovements;
-    } else {
-      cashierMovementsData = sortCashierMovements(
-        DEFAULT_CASHIER_MOVEMENTS.map(normalizeCashierMovement).filter(Boolean)
-      );
-      saveCashierMovementsToStorage(cashierMovementsData);
-    }
+    cashierMovementsData = Array.isArray(storedMovements) ? storedMovements : [];
 
     setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
     renderCashierMovementsTable();
