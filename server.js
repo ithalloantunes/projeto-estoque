@@ -18,13 +18,28 @@ import { seedUsersFromFile as importUsersFromSeed } from './lib/user-seed.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
+const normalizeOrigin = origin => sanitizeText(origin).replace(/\/+$/, '');
+
+const parseAdditionalOrigins = raw => {
+  const sanitized = sanitizeText(raw);
+  if (!sanitized) return [];
+  return sanitized
+    .split(',')
+    .map(entry => normalizeOrigin(entry))
+    .filter(Boolean);
+};
+
 const allowedOrigins = new Set([
-  'https://projeto-estoque-o1x5.onrender.com'
+  normalizeOrigin('https://projeto-estoque-o1x5.onrender.com')
 ]);
 
 if (process.env.NODE_ENV !== 'production') {
-  allowedOrigins.add('http://localhost:3000');
-  allowedOrigins.add('http://127.0.0.1:3000');
+  allowedOrigins.add(normalizeOrigin('http://localhost:3000'));
+  allowedOrigins.add(normalizeOrigin('http://127.0.0.1:3000'));
+}
+
+for (const origin of parseAdditionalOrigins(process.env.CORS_ALLOWED_ORIGINS)) {
+  allowedOrigins.add(origin);
 }
 
 const SESSION_COOKIE_NAME = 'session';
@@ -52,16 +67,27 @@ pool.on('error', error => {
 const query = (text, params = []) => pool.query(text, params);
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-const isOriginAllowed = origin => !origin || allowedOrigins.has(origin);
+const isOriginAllowed = origin => {
+  if (!origin) return true;
+  return allowedOrigins.has(normalizeOrigin(origin));
+};
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+      callback(null, true);
+    } else {
+      const error = new Error('Origem não autorizada pela configuração de CORS.');
+      error.statusCode = 403;
+      callback(error);
+    }
+  },
+  credentials: true
+};
 
 const app = express();
 app.use(cookieParser());
-app.use(cors({
-  origin: (origin, callback) => {
-    callback(null, isOriginAllowed(origin));
-  },
-  credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 app.use((req, res, next) => {
   if (req.path.startsWith('/data')) {
@@ -134,6 +160,40 @@ const clearSessionCookie = res => {
   res.clearCookie(SESSION_COOKIE_NAME, options);
 };
 
+const DEFAULT_MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
+
+const bytesToMegabytes = bytes => Math.round((bytes / (1024 * 1024)) * 100) / 100;
+
+const parseUploadLimit = () => {
+  const bytesRaw = sanitizeText(process.env.UPLOAD_MAX_FILE_SIZE_BYTES);
+  if (bytesRaw) {
+    const parsedBytes = Number.parseInt(bytesRaw, 10);
+    if (Number.isFinite(parsedBytes) && parsedBytes > 0) {
+      return parsedBytes;
+    }
+  }
+  const mbRaw = sanitizeText(process.env.UPLOAD_MAX_FILE_SIZE_MB).replace(',', '.');
+  if (mbRaw) {
+    const parsedMb = Number.parseFloat(mbRaw);
+    if (Number.isFinite(parsedMb) && parsedMb > 0) {
+      return Math.round(parsedMb * 1024 * 1024);
+    }
+  }
+  return DEFAULT_MAX_UPLOAD_SIZE;
+};
+
+const MAX_UPLOAD_SIZE = parseUploadLimit();
+const MAX_UPLOAD_SIZE_MB = bytesToMegabytes(MAX_UPLOAD_SIZE);
+
+const formatMegabytesLabel = value => {
+  if (!Number.isFinite(value)) return '0';
+  const decimals = value >= 1 ? 2 : 1;
+  const normalized = Number.parseFloat(value.toFixed(decimals));
+  return normalized.toString().replace('.', ',');
+};
+
+const MAX_UPLOAD_SIZE_MB_LABEL = formatMegabytesLabel(MAX_UPLOAD_SIZE_MB);
+
 const imageFileFilter = (req, file, cb) => {
   if (!file.mimetype || !file.mimetype.startsWith('image/')) {
     cb(new Error('Arquivo de imagem inválido.'));
@@ -151,15 +211,15 @@ const createStorage = destination => multer.diskStorage({
   }
 });
 
-const productUpload = multer({
-  storage: createStorage(productImagesDir),
-  fileFilter: imageFileFilter
+const createUpload = storage => multer({
+  storage,
+  fileFilter: imageFileFilter,
+  limits: { fileSize: MAX_UPLOAD_SIZE }
 });
 
-const userUpload = multer({
-  storage: createStorage(userImagesDir),
-  fileFilter: imageFileFilter
-});
+const productUpload = createUpload(createStorage(productImagesDir));
+
+const userUpload = createUpload(createStorage(userImagesDir));
 
 const toPublicPath = relativePath => {
   if (!relativePath) return null;
@@ -982,7 +1042,16 @@ app.get('/api/movimentacoes/csv', authMiddleware, asyncHandler(async (req, res) 
 
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: `Arquivo de imagem excede o limite de ${MAX_UPLOAD_SIZE_MB_LABEL} MB.` });
+    }
     return res.status(400).json({ error: err.message });
+  }
+  if (err && err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ error: `Arquivo de imagem excede o limite de ${MAX_UPLOAD_SIZE_MB_LABEL} MB.` });
+  }
+  if (err?.statusCode) {
+    return res.status(err.statusCode).json({ error: err.message || 'Operação não permitida.' });
   }
   if (typeof err.message === 'string' && err.message.toLowerCase().includes('imagem')) {
     return res.status(400).json({ error: err.message });
@@ -996,6 +1065,53 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+let shuttingDown = false;
+
+const closeHttpServer = () => new Promise(resolve => {
+  if (!server.listening) {
+    resolve();
+    return;
+  }
+  server.close(err => {
+    if (err) {
+      console.error('Erro ao encerrar o servidor HTTP:', err);
+    }
+    resolve();
+  });
+});
+
+const shutdown = async signal => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.info(`Sinal ${signal} recebido. Iniciando desligamento gracioso...`);
+  const timeout = setTimeout(() => {
+    console.warn('Tempo limite ao encerrar. Forçando finalização.');
+    process.exit(1);
+  }, 10000);
+  timeout.unref();
+
+  try {
+    await Promise.allSettled([
+      closeHttpServer(),
+      pool.end().catch(error => {
+        console.error('Erro ao encerrar o pool de conexões:', error);
+      })
+    ]);
+  } finally {
+    clearTimeout(timeout);
+    process.exit(0);
+  }
+};
+
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.on(signal, () => {
+    shutdown(signal).catch(error => {
+      console.error('Falha ao encerrar aplicação:', error);
+      process.exit(1);
+    });
+  });
+}
 
 const startServer = async () => {
   await initializeDatabase();

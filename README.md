@@ -18,6 +18,9 @@ Aplicação web para gerenciamento de estoque com autenticação, controle de pr
 | `JWT_SECRET`        | (Opcional) Segredo customizado para assinar os tokens JWT.                                  |
 | `PGPOOL_MAX`        | (Opcional) Número máximo de conexões simultâneas no pool (`10` por padrão).                 |
 | `NODE_ENV`          | Use `production` em produção para habilitar cookies `secure` e SSL no banco.                |
+| `CORS_ALLOWED_ORIGINS` | (Opcional) Lista adicional de origens permitidas, separadas por vírgula.                 |
+| `UPLOAD_MAX_FILE_SIZE_BYTES` | (Opcional) Limite de upload de imagens em bytes (padrão: `5242880`, ou 5 MB).     |
+| `UPLOAD_MAX_FILE_SIZE_MB` | (Opcional) Limite de upload em megabytes. Ignorado se o valor em bytes estiver definido. |
 
 ## Configurando o banco no Render
 
@@ -68,6 +71,8 @@ DATABASE_URL="postgres://usuario:senha@localhost:5432/projeto_estoque" npm run d
 ```
 
 O servidor cria as tabelas automaticamente. O arquivo [`db/schema.sql`](db/schema.sql) contém o esquema completo caso queira aplicar manualmente.
+
+> **Uploads de imagens:** por padrão, o backend limita cada imagem a 5 MB e rejeita origens não autorizadas para CORS. Utilize as variáveis `UPLOAD_MAX_FILE_SIZE_BYTES` ou `UPLOAD_MAX_FILE_SIZE_MB` para ajustar o tamanho máximo e `CORS_ALLOWED_ORIGINS` para liberar novos domínios sem alterar o código.
 
 ## Estrutura principal
 
