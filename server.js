@@ -1,24 +1,34 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import http from 'http';
 import multer from 'multer';
+import rateLimit from 'express-rate-limit';
 import { Server as SocketIOServer } from 'socket.io';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Pool } from 'pg';
 
-import { sanitizeText, normalizeUsername, sanitizeCost, BCRYPT_SALT_ROUNDS } from './lib/utils.js';
+import { sanitizeText, normalizeUsername, sanitizeCost, BCRYPT_SALT_ROUNDS, parsePositiveInt } from './lib/utils.js';
 import { seedUsersFromFile as importUsersFromSeed } from './lib/user-seed.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const normalizeOrigin = origin => sanitizeText(origin).replace(/\/+$/, '');
+
+const sanitizeHostHeader = header => {
+  const sanitized = sanitizeText(header);
+  if (!sanitized) return null;
+  return sanitized.replace(/[^a-zA-Z0-9\-\.:]/g, '');
+};
 
 const parseAdditionalOrigins = raw => {
   const sanitized = sanitizeText(raw);
@@ -33,7 +43,7 @@ const allowedOrigins = new Set([
   normalizeOrigin('https://projeto-estoque-o1x5.onrender.com')
 ]);
 
-if (process.env.NODE_ENV !== 'production') {
+if (!isProduction) {
   allowedOrigins.add(normalizeOrigin('http://localhost:3000'));
   allowedOrigins.add(normalizeOrigin('http://127.0.0.1:3000'));
 }
@@ -41,6 +51,67 @@ if (process.env.NODE_ENV !== 'production') {
 for (const origin of parseAdditionalOrigins(process.env.CORS_ALLOWED_ORIGINS)) {
   allowedOrigins.add(origin);
 }
+
+const RATE_LIMIT_WINDOW_MS = parsePositiveInt(
+  process.env.RATE_LIMIT_WINDOW_MS,
+  15 * 60 * 1000,
+  { min: 1000, max: 60 * 60 * 1000 }
+);
+
+const RATE_LIMIT_MAX_REQUESTS = parsePositiveInt(
+  process.env.RATE_LIMIT_MAX_REQUESTS,
+  300,
+  { min: 25, max: 10000 }
+);
+
+const AUTH_RATE_LIMIT_WINDOW_MS = parsePositiveInt(
+  process.env.AUTH_RATE_LIMIT_WINDOW_MS,
+  15 * 60 * 1000,
+  { min: 1000, max: 60 * 60 * 1000 }
+);
+
+const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = parsePositiveInt(
+  process.env.LOGIN_RATE_LIMIT_MAX_ATTEMPTS,
+  10,
+  { min: 3, max: 100 }
+);
+
+const REGISTER_RATE_LIMIT_MAX_ATTEMPTS = parsePositiveInt(
+  process.env.REGISTER_RATE_LIMIT_MAX_ATTEMPTS,
+  5,
+  { min: 1, max: 50 }
+);
+
+const createRateLimiter = ({ windowMs, max, message }) => rateLimit({
+  windowMs,
+  max,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip: req => req.method === 'OPTIONS',
+  handler: (req, res) => {
+    res.status(429).json({ error: message });
+  }
+});
+
+const apiRateLimiter = createRateLimiter({
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX_REQUESTS,
+  message: 'Muitas solicitações. Tente novamente mais tarde.'
+});
+
+const loginRateLimiter = createRateLimiter({
+  windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+  max: LOGIN_RATE_LIMIT_MAX_ATTEMPTS,
+  message: 'Muitas tentativas de login. Aguarde alguns instantes.'
+});
+
+const registerRateLimiter = createRateLimiter({
+  windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+  max: REGISTER_RATE_LIMIT_MAX_ATTEMPTS,
+  message: 'Muitas tentativas de cadastro. Aguarde alguns instantes.'
+});
+
+const shouldEnforceHttps = isProduction && sanitizeText(process.env.ENFORCE_HTTPS) !== 'disable';
 
 const SESSION_COOKIE_NAME = 'session';
 const JWT_EXPIRATION = '12h';
@@ -52,7 +123,7 @@ if (!connectionString) {
   process.exit(1);
 }
 
-const usesSSL = sanitizeText(process.env.DATABASE_SSL) !== 'disable' && process.env.NODE_ENV === 'production';
+const usesSSL = sanitizeText(process.env.DATABASE_SSL) !== 'disable' && isProduction;
 
 const pool = new Pool({
   connectionString,
@@ -86,17 +157,67 @@ const corsOptions = {
 };
 
 const app = express();
+app.disable('x-powered-by');
+
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'same-site' },
+  referrerPolicy: { policy: 'no-referrer' },
+  hsts: isProduction ? undefined : false,
+}));
+
+if (shouldEnforceHttps) {
+  app.use((req, res, next) => {
+    const forwardedProtoHeader = sanitizeText(req.headers['x-forwarded-proto']).toLowerCase();
+    const forwardedProto = forwardedProtoHeader.split(',')[0];
+    if (req.secure || forwardedProto === 'https') {
+      return next();
+    }
+    const sanitizedHost = sanitizeHostHeader(req.headers.host);
+    if (!sanitizedHost) {
+      return res.status(400).json({ error: 'Host inválido' });
+    }
+    return res.redirect(301, `https://${sanitizedHost}${req.originalUrl}`);
+  });
+}
+
 app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
+
 app.use((req, res, next) => {
   if (req.path.startsWith('/data')) {
     return res.status(404).json({ error: 'Recurso não encontrado' });
   }
   return next();
 });
-app.use(express.static(__dirname));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/api', apiRateLimiter);
+
+app.use('/uploads', createStaticMiddleware('uploads', { cacheControl: 'private, max-age=300, must-revalidate' }));
+app.use('/img', createStaticMiddleware('img'));
+app.use('/vendor', createStaticMiddleware('vendor'));
+
+app.get('/javascript.js', (req, res) => {
+  sendFileWithHeaders(res, path.join(__dirname, 'javascript.js'));
+});
+
+app.get('/estilos.css', (req, res) => {
+  sendFileWithHeaders(res, path.join(__dirname, 'estilos.css'));
+});
+
+app.get('/', (req, res) => {
+  sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL);
+});
+
+app.get('/index.html', (req, res) => {
+  sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL);
+});
 
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
@@ -130,6 +251,34 @@ ensureDir(uploadsDir);
 ensureDir(productImagesDir);
 ensureDir(userImagesDir);
 
+const STATIC_CACHE_CONTROL = 'public, max-age=300, must-revalidate';
+const HTML_CACHE_CONTROL = 'no-store';
+
+const setNoSniffHeader = res => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+};
+
+const sendFileWithHeaders = (res, absolutePath, cacheControl = STATIC_CACHE_CONTROL) => {
+  if (cacheControl) {
+    res.setHeader('Cache-Control', cacheControl);
+  }
+  setNoSniffHeader(res);
+  res.sendFile(absolutePath);
+};
+
+const createStaticMiddleware = (relativePath, { cacheControl = STATIC_CACHE_CONTROL } = {}) => express.static(
+  path.join(__dirname, relativePath),
+  {
+    fallthrough: false,
+    setHeaders: res => {
+      setNoSniffHeader(res);
+      if (cacheControl) {
+        res.setHeader('Cache-Control', cacheControl);
+      }
+    }
+  }
+);
+
 const jwtSecretFile = path.join(dataDir, '.jwt-secret');
 let JWT_SECRET = sanitizeText(process.env.JWT_SECRET);
 if (!JWT_SECRET) {
@@ -145,7 +294,7 @@ if (!JWT_SECRET) {
 const getCookieOptions = () => ({
   httpOnly: true,
   sameSite: 'strict',
-  secure: process.env.NODE_ENV === 'production',
+  secure: isProduction,
   maxAge: 12 * 60 * 60 * 1000,
   path: '/',
 });
@@ -214,7 +363,7 @@ const createStorage = destination => multer.diskStorage({
 const createUpload = storage => multer({
   storage,
   fileFilter: imageFileFilter,
-  limits: { fileSize: MAX_UPLOAD_SIZE }
+  limits: { fileSize: MAX_UPLOAD_SIZE, files: 1 }
 });
 
 const productUpload = createUpload(createStorage(productImagesDir));
@@ -637,7 +786,7 @@ const requireAdmin = (req, res, next) => {
   return next();
 };
 
-app.post('/api/register', asyncHandler(async (req, res) => {
+app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
@@ -672,7 +821,7 @@ app.post('/api/register', asyncHandler(async (req, res) => {
   res.json({ message: 'Cadastro enviado para aprovação' });
 }));
 
-app.post('/api/login', asyncHandler(async (req, res) => {
+app.post('/api/login', loginRateLimiter, asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
@@ -1060,8 +1209,11 @@ app.use((err, req, res, next) => {
   return res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+app.get('*', (req, res, next) => {
+  if (req.path === '/api' || req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Recurso não encontrado' });
+  }
+  return sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL);
 });
 
 const PORT = process.env.PORT || 3000;
