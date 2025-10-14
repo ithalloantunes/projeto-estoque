@@ -113,6 +113,36 @@ const registerRateLimiter = createRateLimiter({
 
 const shouldEnforceHttps = isProduction && sanitizeText(process.env.ENFORCE_HTTPS) !== 'disable';
 
+const STATIC_CACHE_CONTROL = 'public, max-age=300, must-revalidate';
+const HTML_CACHE_CONTROL = 'no-store';
+
+function setNoSniffHeader(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+}
+
+function createStaticMiddleware(relativePath, { cacheControl = STATIC_CACHE_CONTROL } = {}) {
+  return express.static(
+    path.join(__dirname, relativePath),
+    {
+      fallthrough: false,
+      setHeaders: res => {
+        setNoSniffHeader(res);
+        if (cacheControl) {
+          res.setHeader('Cache-Control', cacheControl);
+        }
+      }
+    }
+  );
+}
+
+function sendFileWithHeaders(res, absolutePath, cacheControl = STATIC_CACHE_CONTROL) {
+  if (cacheControl) {
+    res.setHeader('Cache-Control', cacheControl);
+  }
+  setNoSniffHeader(res);
+  res.sendFile(absolutePath);
+}
+
 const SESSION_COOKIE_NAME = 'session';
 const JWT_EXPIRATION = '12h';
 
@@ -250,34 +280,6 @@ ensureDir(dataDir);
 ensureDir(uploadsDir);
 ensureDir(productImagesDir);
 ensureDir(userImagesDir);
-
-const STATIC_CACHE_CONTROL = 'public, max-age=300, must-revalidate';
-const HTML_CACHE_CONTROL = 'no-store';
-
-const setNoSniffHeader = res => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-};
-
-const sendFileWithHeaders = (res, absolutePath, cacheControl = STATIC_CACHE_CONTROL) => {
-  if (cacheControl) {
-    res.setHeader('Cache-Control', cacheControl);
-  }
-  setNoSniffHeader(res);
-  res.sendFile(absolutePath);
-};
-
-const createStaticMiddleware = (relativePath, { cacheControl = STATIC_CACHE_CONTROL } = {}) => express.static(
-  path.join(__dirname, relativePath),
-  {
-    fallthrough: false,
-    setHeaders: res => {
-      setNoSniffHeader(res);
-      if (cacheControl) {
-        res.setHeader('Cache-Control', cacheControl);
-      }
-    }
-  }
-);
 
 const jwtSecretFile = path.join(dataDir, '.jwt-secret');
 let JWT_SECRET = sanitizeText(process.env.JWT_SECRET);
