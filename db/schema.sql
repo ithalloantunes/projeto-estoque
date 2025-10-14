@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS inventory (
   validade DATE,
   custo NUMERIC(12,2) NOT NULL,
   image TEXT,
+  image_data BYTEA,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

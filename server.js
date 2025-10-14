@@ -397,6 +397,16 @@ const removeStoredFile = relativePath => {
   }
 };
 
+const readUploadedFileBuffer = async file => {
+  if (!file?.path) return null;
+  try {
+    return await fs.promises.readFile(file.path);
+  } catch (error) {
+    console.error(`Falha ao ler o arquivo de upload ${file.path}:`, error);
+    throw new Error('Falha ao processar a imagem enviada');
+  }
+};
+
 const mapUserRow = row => ({
   id: row.id,
   username: row.username,
@@ -415,16 +425,22 @@ const sanitizeUserForResponse = user => ({
   photo: toPublicPath(user.photo) || null,
 });
 
-const mapInventoryRow = row => ({
-  id: row.id,
-  produto: row.produto,
-  tipo: row.tipo,
-  lote: row.lote,
-  quantidade: Number(row.quantidade) || 0,
-  validade: row.validade ? (row.validade instanceof Date ? row.validade.toISOString().slice(0, 10) : row.validade) : null,
-  custo: row.custo === null || row.custo === undefined ? null : Number(row.custo),
-  image: row.image,
-});
+const mapInventoryRow = (row, { includeImageData = false } = {}) => {
+  const mapped = {
+    id: row.id,
+    produto: row.produto,
+    tipo: row.tipo,
+    lote: row.lote,
+    quantidade: Number(row.quantidade) || 0,
+    validade: row.validade ? (row.validade instanceof Date ? row.validade.toISOString().slice(0, 10) : row.validade) : null,
+    custo: row.custo === null || row.custo === undefined ? null : Number(row.custo),
+    image: row.image,
+  };
+  if (includeImageData) {
+    mapped.imageData = row.image_data ?? null;
+  }
+  return mapped;
+};
 
 const mapMovimentacaoRow = row => ({
   id: row.id,
@@ -543,16 +559,16 @@ const listInventory = async () => {
 
 const getInventoryItemById = async id => {
   const { rows } = await query(
-    'SELECT id, produto, tipo, lote, quantidade, validade, custo, image FROM inventory WHERE id = $1 LIMIT 1',
+    'SELECT id, produto, tipo, lote, quantidade, validade, custo, image, image_data FROM inventory WHERE id = $1 LIMIT 1',
     [id]
   );
-  return rows[0] ? mapInventoryRow(rows[0]) : null;
+  return rows[0] ? mapInventoryRow(rows[0], { includeImageData: true }) : null;
 };
 
 const insertInventoryItem = async item => {
   await query(
-    `INSERT INTO inventory (id, produto, tipo, lote, quantidade, validade, custo, image, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9)`,
+    `INSERT INTO inventory (id, produto, tipo, lote, quantidade, validade, custo, image, image_data, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10)`,
     [
       item.id,
       item.produto,
@@ -562,6 +578,7 @@ const insertInventoryItem = async item => {
       item.validade,
       item.custo,
       item.image,
+      item.imageData ?? null,
       new Date(),
     ]
   );
@@ -577,6 +594,7 @@ const updateInventoryItem = async item => {
             validade = $6,
             custo = $7,
             image = $8,
+            image_data = $9,
             updated_at = NOW()
       WHERE id = $1`,
     [
@@ -588,6 +606,7 @@ const updateInventoryItem = async item => {
       item.validade,
       item.custo,
       item.image,
+      item.imageData ?? null,
     ]
   );
 };
@@ -732,6 +751,7 @@ const seedInventoryFromFile = async () => {
         validade: entry.validade ? entry.validade : null,
         custo,
         image: entry.image ? sanitizeText(entry.image) : null,
+        imageData: null,
       });
     }
   } catch (error) {
@@ -986,6 +1006,16 @@ app.post('/api/estoque', authMiddleware, productUpload.single('image'), asyncHan
   const quantidadeFinal = Number.isNaN(quantidadeNumerica) ? 0 : quantidadeNumerica;
   const id = uuidv4();
   const imagePath = uploadedImagePath;
+  let imageBuffer = null;
+
+  if (req.file) {
+    try {
+      imageBuffer = await readUploadedFileBuffer(req.file);
+    } catch (error) {
+      if (uploadedImagePath) removeStoredFile(uploadedImagePath);
+      return res.status(500).json({ error: 'Falha ao processar a imagem enviada' });
+    }
+  }
 
   await insertInventoryItem({
     id,
@@ -996,6 +1026,7 @@ app.post('/api/estoque', authMiddleware, productUpload.single('image'), asyncHan
     validade: validade || null,
     custo: custoSanitizado,
     image: imagePath,
+    imageData: imageBuffer,
   });
 
   await insertMovimentacao({
@@ -1049,12 +1080,23 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
   }
 
   let imagemAtualizada = atual.image;
+  let imagemDadosAtualizados = atual.imageData ?? null;
   if (req.body.removeImage === 'true') {
+    if (uploadedImagePath) removeStoredFile(uploadedImagePath);
     if (atual.image) removeStoredFile(atual.image);
     imagemAtualizada = null;
+    imagemDadosAtualizados = null;
   } else if (uploadedImagePath) {
+    let novoBuffer;
+    try {
+      novoBuffer = await readUploadedFileBuffer(req.file);
+    } catch (error) {
+      removeStoredFile(uploadedImagePath);
+      return res.status(500).json({ error: 'Falha ao processar a imagem enviada' });
+    }
     if (atual.image) removeStoredFile(atual.image);
     imagemAtualizada = uploadedImagePath;
+    imagemDadosAtualizados = novoBuffer;
   }
 
   const produtoAtualizado = req.body.produto ? req.body.produto.trim() : atual.produto;
@@ -1071,6 +1113,7 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
     validade: validadeAtualizada,
     custo: hasCusto ? custoAtualizado : atual.custo,
     image: imagemAtualizada,
+    imageData: imagemDadosAtualizados,
   });
 
   const diff = novaQtd - atual.quantidade;
