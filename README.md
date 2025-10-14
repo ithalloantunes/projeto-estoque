@@ -79,6 +79,12 @@ O servidor cria as tabelas automaticamente. O arquivo [`db/schema.sql`](db/schem
 
 - `npm run dev` – inicia o servidor com `nodemon`.
 - `npm start` – inicia o servidor em modo produção.
+- `npm run sync:admins` – importa e atualiza no PostgreSQL os administradores definidos em `data/users.json`.
+- `npm test` – executa os testes automatizados (usa um banco em memória para validar a importação de administradores).
+
+> **Dica:** ao executar `npm run sync:admins` fora do Render, utilize a *External Database URL* (terminada em `.render.com`) na variável `DATABASE_URL`, pois o host interno não é acessível a partir da sua máquina ou deste ambiente de desenvolvimento.
+>
+> Quando a URL aponta para um host do Render, o script ativa SSL automaticamente (`rejectUnauthorized: false`). Caso precise forçar ou desativar o comportamento, defina `DATABASE_SSL=require` ou `DATABASE_SSL=disable` respectivamente.
 
 ## Licença
 

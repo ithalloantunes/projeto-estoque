@@ -12,6 +12,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Pool } from 'pg';
 
+import { sanitizeText, normalizeUsername, sanitizeCost, BCRYPT_SALT_ROUNDS } from './lib/utils.js';
+import { seedUsersFromFile as importUsersFromSeed } from './lib/user-seed.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
@@ -26,16 +29,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 const SESSION_COOKIE_NAME = 'session';
 const JWT_EXPIRATION = '12h';
-const BCRYPT_SALT_ROUNDS = 12;
-
-const sanitizeText = value => typeof value === 'string' ? value.trim() : '';
-const normalizeUsername = value => sanitizeText(value).toLowerCase();
-const sanitizeCost = value => {
-  if (value === undefined || value === null || value === '') return null;
-  const parsed = Number.parseFloat(value);
-  if (!Number.isFinite(parsed) || parsed < 0) return null;
-  return Math.round(parsed * 100) / 100;
-};
 
 const connectionString = sanitizeText(process.env.DATABASE_URL) || sanitizeText(process.env.POSTGRES_URL);
 
@@ -495,59 +488,14 @@ const initializeDatabase = async () => {
 };
 
 const seedUsersFromFile = async () => {
-  if (!fs.existsSync(usersFile)) return;
   try {
-    const raw = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
-    for (const entry of raw) {
-      const username = sanitizeText(entry.username);
-      if (!username) continue;
-      const normalized = normalizeUsername(username);
-      const existing = await getUserByUsernameLower(normalized);
-      const passwordHashSource = sanitizeText(entry.passwordHash);
-      const passwordPlainSource = sanitizeText(entry.password);
-      const passwordSource = passwordHashSource || passwordPlainSource || '12345678';
-      const passwordHash = passwordSource.startsWith('$2')
-        ? passwordSource
-        : (existing?.passwordHash && bcrypt.compareSync(passwordSource, existing.passwordHash))
-          ? existing.passwordHash
-          : bcrypt.hashSync(passwordSource, BCRYPT_SALT_ROUNDS);
-      const role = entry.role || 'user';
-      const approved = Boolean(entry.approved);
-      const providedPhoto = entry.photo ? sanitizeText(entry.photo) : null;
-      if (!existing) {
-        const id = entry.id ? sanitizeText(entry.id) || uuidv4() : uuidv4();
-        await insertUser({
-          id,
-          username,
-          usernameLower: normalized,
-          passwordHash,
-          role,
-          approved,
-          photo: providedPhoto,
-        });
-        continue;
-      }
-
-      const targetPhoto = providedPhoto !== null ? providedPhoto : existing.photo;
-      const needsUpdate =
-        existing.username !== username ||
-        existing.usernameLower !== normalized ||
-        existing.role !== role ||
-        existing.approved !== approved ||
-        existing.passwordHash !== passwordHash ||
-        existing.photo !== targetPhoto;
-
-      if (needsUpdate) {
-        await updateUserFromSeed(existing.id, {
-          username,
-          usernameLower: normalized,
-          passwordHash,
-          role,
-          approved,
-          photo: targetPhoto,
-        });
-      }
-    }
+    await importUsersFromSeed({
+      usersFile,
+      getUserByUsernameLower,
+      insertUser,
+      updateUser: updateUserFromSeed,
+      logger: console,
+    });
   } catch (error) {
     console.error('Falha ao importar usuários iniciais:', error);
   }
