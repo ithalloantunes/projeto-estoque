@@ -676,7 +676,7 @@ const initializeDatabase = async () => {
       role TEXT NOT NULL,
       approved BOOLEAN NOT NULL DEFAULT FALSE,
       photo TEXT
-    )
+    ) TABLESPACE pg_default
   `);
 
   await query(`
@@ -691,7 +691,7 @@ const initializeDatabase = async () => {
       image TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
+    ) TABLESPACE pg_default
   `);
 
   await query(`
@@ -706,12 +706,12 @@ const initializeDatabase = async () => {
       motivo TEXT,
       data TIMESTAMPTZ NOT NULL,
       usuario TEXT
-    )
+    ) TABLESPACE pg_default
   `);
 
-  await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower)');
-  await query('CREATE INDEX IF NOT EXISTS idx_inventory_produto ON inventory(produto)');
-  await query('CREATE INDEX IF NOT EXISTS idx_movimentacoes_data ON movimentacoes(data)');
+  await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower) TABLESPACE pg_default');
+  await query('CREATE INDEX IF NOT EXISTS idx_inventory_produto ON inventory(produto) TABLESPACE pg_default');
+  await query('CREATE INDEX IF NOT EXISTS idx_movimentacoes_data ON movimentacoes(data) TABLESPACE pg_default');
 
   await seedUsersFromFile();
   await seedInventoryFromFile();

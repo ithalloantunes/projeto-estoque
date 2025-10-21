@@ -75,10 +75,10 @@ const ensureUsersTable = async () => {
       role TEXT NOT NULL,
       approved BOOLEAN NOT NULL DEFAULT FALSE,
       photo TEXT
-    )
+    ) TABLESPACE pg_default
   `);
 
-  await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower)');
+  await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower) TABLESPACE pg_default');
 };
 
 const getUserByUsernameLower = async usernameLower => {
