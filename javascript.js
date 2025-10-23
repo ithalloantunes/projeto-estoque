@@ -748,6 +748,15 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/[\u0300-\u036f]/g, '');
   };
 
+  const CASHIER_REINFORCEMENT_KEYWORDS = Object.freeze(['reforc', 'aporte', 'supriment', 'reabert']);
+
+  const includesReinforcementKeyword = value => {
+    if (typeof value !== 'string') return false;
+    const normalized = normalizeText(value);
+    if (!normalized) return false;
+    return CASHIER_REINFORCEMENT_KEYWORDS.some(keyword => normalized.includes(keyword));
+  };
+
   const parseLocaleNumber = rawValue => {
     if (typeof rawValue === 'number') {
       return Number.isFinite(rawValue) ? rawValue : Number.NaN;
@@ -1318,6 +1327,56 @@ document.addEventListener('DOMContentLoaded', () => {
         if (found) return found.trim();
         return category;
       })();
+
+      if (!isReinforcement && rawType.includes('reforc')) {
+        isReinforcement = true;
+      }
+
+      if (!isReinforcement) {
+        const reinforcementFlags = [movement?.isReforco, movement?.reforco, movement?.isReinforcement, movement?.reinforcement];
+        const hasExplicitReinforcementFlag = reinforcementFlags.some(flag => {
+          if (typeof flag === 'boolean') return flag;
+          if (typeof flag === 'number') return flag > 0;
+          if (typeof flag === 'string') {
+            const normalizedFlag = normalizeText(flag);
+            if (!normalizedFlag) return false;
+            if (['1', 'true', 'sim'].includes(normalizedFlag)) return true;
+            return includesReinforcementKeyword(normalizedFlag);
+          }
+          return false;
+        });
+        if (hasExplicitReinforcementFlag) {
+          isReinforcement = true;
+        }
+      }
+
+      if (!isReinforcement) {
+        const reinforcementTextCandidates = [
+          movement?.categoria,
+          movement?.category,
+          movement?.categoriaReforco,
+          movement?.origem,
+          movement?.fonte,
+          movement?.motivo,
+          movement?.descricao,
+          movement?.descricaoDespesa,
+          movement?.tipoDespesa,
+          movement?.subcategoria,
+          movement?.observacoes,
+          movement?.observations,
+          movement?.notes,
+          movement?.tipo,
+          category,
+          reinforcementCategory,
+        ];
+        if (reinforcementTextCandidates.some(includesReinforcementKeyword)) {
+          isReinforcement = true;
+        }
+      }
+
+      if (isReinforcement) {
+        isEntry = true;
+      }
 
       const date = parseMovementDate(movement);
 
