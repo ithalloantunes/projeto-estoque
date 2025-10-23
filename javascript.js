@@ -1444,115 +1444,131 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
   };
 
-  const updateCashierReportsCharts = (dataset, period = cashierSelectedCashFlowPeriod) => {
+  const updateCashierReportsCharts = async (dataset, period = cashierSelectedCashFlowPeriod) => {
     if (!cashierPaymentMethodsCanvas || !cashierCashFlowCanvas) return;
-    const resolvedPeriod = period || 'monthly';
-    const rootStyles = getComputedStyle(document.documentElement);
-    const primaryColor = rootStyles.getPropertyValue('--color-primary')?.trim() || '#16539c';
-    const textColor = document.documentElement.classList.contains('dark') ? '#ffffff' : '#111821';
-    const subtleColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.6)' : 'rgba(17, 24, 33, 0.6)';
-    const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(17, 24, 33, 0.08)';
-    const borderColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.15)' : 'rgba(17, 24, 33, 0.12)';
-    const primaryRgb = parseColorToRgb(primaryColor);
 
-    const paymentData = Array.isArray(dataset?.paymentMethods) ? dataset.paymentMethods : [];
-    const paymentLabels = paymentData.map(item => item.label);
-    const paymentValues = paymentData.map(item => Number(item.value) || 0);
-    const paymentColors = paymentData.map((_, index) => {
-      const weight = index === 0 ? 1 : Math.max(0.25, 0.75 - index * 0.15);
-      return mixColorWithWhite(primaryRgb, weight);
-    });
+    try {
+      const chartReady = await waitForChartLibrary();
+      if (!chartReady || typeof window === 'undefined' || typeof window.Chart !== 'function') {
+        console.warn('Biblioteca de gráficos indisponível para atualizar os relatórios do caixa.');
+        return;
+      }
 
-    if (cashierPaymentMethodsChart) {
-      cashierPaymentMethodsChart.destroy();
-    }
-    cashierPaymentMethodsChart = new Chart(cashierPaymentMethodsCanvas, {
-      type: 'doughnut',
-      data: {
-        labels: paymentLabels,
-        datasets: [{
-          data: paymentValues,
-          backgroundColor: paymentColors,
-          borderWidth: 0,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '75%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: context => {
-                const label = context.label || '';
-                const value = context.parsed || 0;
-                return `${label}: ${formatCurrencyBRL(value)}`;
+      const ChartConstructor = window.Chart;
+      const resolvedPeriod = period || 'monthly';
+      const rootStyles = getComputedStyle(document.documentElement);
+      const primaryColor = rootStyles.getPropertyValue('--color-primary')?.trim() || '#16539c';
+      const textColor = document.documentElement.classList.contains('dark') ? '#ffffff' : '#111821';
+      const subtleColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.6)' : 'rgba(17, 24, 33, 0.6)';
+      const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(17, 24, 33, 0.08)';
+      const borderColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.15)' : 'rgba(17, 24, 33, 0.12)';
+      const primaryRgb = parseColorToRgb(primaryColor);
+
+      const paymentData = Array.isArray(dataset?.paymentMethods) ? dataset.paymentMethods : [];
+      const paymentLabels = paymentData.map(item => item.label);
+      const paymentValues = paymentData.map(item => Number(item.value) || 0);
+      const paymentColors = paymentData.map((_, index) => {
+        const weight = index === 0 ? 1 : Math.max(0.25, 0.75 - index * 0.15);
+        return mixColorWithWhite(primaryRgb, weight);
+      });
+
+      if (cashierPaymentMethodsChart) {
+        cashierPaymentMethodsChart.destroy();
+      }
+      cashierPaymentMethodsChart = new ChartConstructor(cashierPaymentMethodsCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: paymentLabels,
+          datasets: [{
+            data: paymentValues,
+            backgroundColor: paymentColors,
+            borderWidth: 0,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '75%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  return `${label}: ${formatCurrencyBRL(value)}`;
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    const cashFlowData = dataset?.cashFlow?.[resolvedPeriod] || dataset?.cashFlow?.monthly || { labels: [], values: [] };
-    const flowLabels = Array.isArray(cashFlowData.labels) ? cashFlowData.labels : [];
-    const flowValues = Array.isArray(cashFlowData.values) ? cashFlowData.values.map(value => Number(value) || 0) : [];
-    const context = cashierCashFlowCanvas.getContext('2d');
-    const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
-    gradient.addColorStop(0, rgbaFromRgb(primaryRgb, 0.55));
-    gradient.addColorStop(1, rgbaFromRgb(primaryRgb, 0));
+      const cashFlowData = dataset?.cashFlow?.[resolvedPeriod] || dataset?.cashFlow?.monthly || { labels: [], values: [] };
+      const flowLabels = Array.isArray(cashFlowData.labels) ? cashFlowData.labels : [];
+      const flowValues = Array.isArray(cashFlowData.values) ? cashFlowData.values.map(value => Number(value) || 0) : [];
+      const context = cashierCashFlowCanvas.getContext('2d');
+      if (!context) {
+        console.warn('Não foi possível obter o contexto 2D para renderizar o gráfico de fluxo de caixa.');
+        return;
+      }
+      const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
+      gradient.addColorStop(0, rgbaFromRgb(primaryRgb, 0.55));
+      gradient.addColorStop(1, rgbaFromRgb(primaryRgb, 0));
 
-    if (cashierCashFlowChart) {
-      cashierCashFlowChart.destroy();
+      if (cashierCashFlowChart) {
+        cashierCashFlowChart.destroy();
+      }
+
+      cashierCashFlowChart = new ChartConstructor(cashierCashFlowCanvas, {
+        type: 'line',
+        data: {
+          labels: flowLabels,
+          datasets: [{
+            label: 'Fluxo de Caixa',
+            data: flowValues,
+            borderColor: mixColorWithWhite(primaryRgb, 1),
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointBackgroundColor: mixColorWithWhite(primaryRgb, 1),
+            pointBorderWidth: 0,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => formatCurrencyBRL(context.parsed.y),
+              },
+            },
+          },
+          scales: {
+            x: {
+              ticks: { color: subtleColor },
+              grid: { display: false },
+              border: { color: borderColor },
+            },
+            y: {
+              ticks: {
+                color: subtleColor,
+                callback: value => formatCurrencyBRL(value),
+              },
+              grid: { color: gridColor },
+              border: { color: borderColor },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Não foi possível atualizar os gráficos do caixa:', error);
     }
-
-    cashierCashFlowChart = new Chart(cashierCashFlowCanvas, {
-      type: 'line',
-      data: {
-        labels: flowLabels,
-        datasets: [{
-          label: 'Fluxo de Caixa',
-          data: flowValues,
-          borderColor: mixColorWithWhite(primaryRgb, 1),
-          backgroundColor: gradient,
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-          pointBackgroundColor: mixColorWithWhite(primaryRgb, 1),
-          pointBorderWidth: 0,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: context => formatCurrencyBRL(context.parsed.y),
-            },
-          },
-        },
-        scales: {
-          x: {
-            ticks: { color: subtleColor },
-            grid: { display: false },
-            border: { color: borderColor },
-          },
-          y: {
-            ticks: {
-              color: subtleColor,
-              callback: value => formatCurrencyBRL(value),
-            },
-            grid: { color: gridColor },
-            border: { color: borderColor },
-          },
-        },
-      },
-    });
   };
 
   const refreshCashierReportsCharts = () => {
