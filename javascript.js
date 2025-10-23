@@ -1506,7 +1506,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const cashFlowData = dataset?.cashFlow?.[resolvedPeriod] || dataset?.cashFlow?.monthly || { labels: [], values: [] };
       const flowLabels = Array.isArray(cashFlowData.labels) ? cashFlowData.labels : [];
-      const flowValues = Array.isArray(cashFlowData.values) ? cashFlowData.values.map(value => Number(value) || 0) : [];
+      const flowValues = Array.isArray(cashFlowData.values)
+        ? cashFlowData.values.map(value => Number(value) || 0)
+        : [];
       const context = cashierCashFlowCanvas.getContext('2d');
       if (!context) {
         console.warn('Não foi possível obter o contexto 2D para renderizar o gráfico de fluxo de caixa.');
@@ -1515,6 +1517,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
       gradient.addColorStop(0, rgbaFromRgb(primaryRgb, 0.55));
       gradient.addColorStop(1, rgbaFromRgb(primaryRgb, 0));
+
+      const hasSinglePoint = flowValues.length === 1;
+      const hasMultiplePoints = flowValues.length > 1;
+      const datasetBackground = hasMultiplePoints ? gradient : rgbaFromRgb(primaryRgb, 0.35);
+      const datasetBorderWidth = hasMultiplePoints ? 3 : 0;
+      const datasetFill = hasMultiplePoints;
+      const pointRadius = hasSinglePoint ? 6 : 0;
+      const pointHoverRadius = hasSinglePoint ? 8 : 4;
+      const pointBorderWidth = hasSinglePoint ? 2 : 0;
+      const pointBorderColor = hasSinglePoint ? '#ffffff' : 'transparent';
 
       if (cashierCashFlowChart) {
         cashierCashFlowChart.destroy();
@@ -1528,14 +1540,17 @@ document.addEventListener('DOMContentLoaded', () => {
             label: 'Fluxo de Caixa',
             data: flowValues,
             borderColor: mixColorWithWhite(primaryRgb, 1),
-            backgroundColor: gradient,
-            borderWidth: 3,
-            fill: true,
+            backgroundColor: datasetBackground,
+            borderWidth: datasetBorderWidth,
+            fill: datasetFill,
+            showLine: hasMultiplePoints,
             tension: 0.4,
-            pointRadius: 0,
-            pointHoverRadius: 4,
+            pointRadius,
+            pointHoverRadius,
             pointBackgroundColor: mixColorWithWhite(primaryRgb, 1),
-            pointBorderWidth: 0,
+            pointBorderWidth,
+            pointBorderColor,
+            hitRadius: 12,
           }],
         },
         options: {
