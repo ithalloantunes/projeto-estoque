@@ -1330,7 +1330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         expensesTotals.set(category, (expensesTotals.get(category) || 0) + amount);
       }
 
-      if (isReinforcement && !isEntry) {
+      if (isReinforcement) {
         reinforcementTotals.set(reinforcementCategory, (reinforcementTotals.get(reinforcementCategory) || 0) + amount);
       }
 
