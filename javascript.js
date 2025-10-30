@@ -31,32 +31,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const DARK_MODE_STORAGE_KEY = 'acaiStock_dark_mode';
   const AUTO_REFRESH_INTERVAL_MS = 60_000;
   let autoRefreshIntervalId = null;
-  const MOJIBAKE_PATTERN = /Ã|Â|â|¢|€|™/;
+  const MOJIBAKE_PATTERN = /(?:Ã.|Â.|â.|¢|€|™|ï|»|¿)/;
 
-  const decodeSuspectString = value => {
-    if (typeof value !== 'string' || !value) return value;
-    let result = value;
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+  const decodeLatin1String = value => {
+    try {
+      let percentEncoded = '';
+      for (let i = 0; i < value.length; i += 1) {
+        const code = value.charCodeAt(i) & 0xff;
+        percentEncoded += `%${code.toString(16).padStart(2, '0')}`;
+      }
+      return decodeURIComponent(percentEncoded);
+    } catch {
+      return value;
+    }
+  };
+
+  const decodeSuspectString = input => {
+    if (typeof input !== 'string' || !input) return input;
+    let result = input;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
       if (!MOJIBAKE_PATTERN.test(result)) break;
-      const bytes = new Uint8Array(result.length);
-      let convertible = false;
-      for (let i = 0; i < result.length; i += 1) {
-        const code = result.charCodeAt(i);
-        if (code > 255) {
-          convertible = false;
-          break;
-        }
-        if (code >= 0x80) convertible = true;
-        bytes[i] = code & 0xff;
-      }
-      if (!convertible) break;
-      try {
-        const decoded = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-        if (decoded === result) break;
-        result = decoded;
-      } catch {
-        break;
-      }
+      const decoded = decodeLatin1String(result);
+      if (decoded === result) break;
+      result = decoded;
     }
     try {
       return typeof result.normalize === 'function' ? result.normalize('NFC') : result;
@@ -142,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePasswordRegisterIcon = document.getElementById('toggle-password-register-icon');
   const monster = document.getElementById('monster');
 
-  // Elementos gerais da aplicaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o
+  // Elementos gerais da aplicaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o
   const mainMenu = document.getElementById('main-menu');
   const sidebar = document.getElementById('sidebar');
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
@@ -249,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   };
 
-  // ReferÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªncias dos KPIs
+  // ReferÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âªncias dos KPIs
   const homeKpiTotalStock = document.getElementById('home-kpi-total-stock');
   const homeKpiLowStock = document.getElementById('home-kpi-low-stock');
   const homeKpiExpiring = document.getElementById('home-kpi-expiring');
@@ -294,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierSettingsFitContainer = document.getElementById('cashier-settings-fit');
   const settingsMainElement = document.querySelector('.settings-main');
 
-  // Avatar do usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio (existem vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rias instÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ncias na interface)
+  // Avatar do usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio (existem vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rias instÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¢ncias na interface)
   const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
 
   let currentProductId = null;
@@ -384,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(ACTIVE_MODULE_STORAGE_KEY, moduleName);
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar o mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo selecionado:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar o mÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³dulo selecionado:', error);
     }
 
     fitSettingsToViewportDebounced();
@@ -395,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       return window.localStorage.getItem(ACTIVE_MODULE_STORAGE_KEY);
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel recuperar o mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo selecionado:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel recuperar o mÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³dulo selecionado:', error);
       return null;
     }
   };
@@ -497,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ username, userId, role }));
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar a sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar a sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o:', error);
     }
   };
 
@@ -512,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!username || !userId || !role) return null;
       return { username, userId, role };
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel recuperar a sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel recuperar a sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o:', error);
       return null;
     }
   };
@@ -522,11 +519,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.removeItem(SESSION_STORAGE_KEY);
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel limpar a sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel limpar a sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o:', error);
     }
   };
 
-  // UtilitÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios -----------------------------------------------------------------
+  // UtilitÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios -----------------------------------------------------------------
   const showLoader = () => loader?.classList.remove('hidden');
   const hideLoader = () => loader?.classList.add('hidden');
 
@@ -557,14 +554,16 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const buildSuggestionSection = (title, icon, items, emptyMessage) => {
+    const safeTitle = decodeSuspectString(title);
+    const safeEmpty = decodeSuspectString(emptyMessage);
     if (!items || items.length === 0) {
       return `
         <section class="bg-background-light dark:bg-background-dark rounded-xl border border-gray-200/70 dark:border-gray-700/70 p-5">
           <header class="flex items-center gap-2 mb-3">
             <span class="material-icons text-secondary">${icon}</span>
-            <h3 class="text-lg font-semibold">${title}</h3>
+            <h3 class="text-lg font-semibold">${safeTitle}</h3>
           </header>
-          <p class="text-sm text-subtle-light dark:text-subtle-dark">${emptyMessage}</p>
+          <p class="text-sm text-subtle-light dark:text-subtle-dark">${safeEmpty}</p>
         </section>`;
     }
 
@@ -572,18 +571,21 @@ document.addEventListener('DOMContentLoaded', () => {
       .map(item => {
         const quantity = Number(item.quantidade) || 0;
         const validade = item.validade ? formatDate(item.validade) : 'Sem validade';
-        const subtitleParts = [];
-        if (item.lote) subtitleParts.push(`Lote ${item.lote}`);
-        subtitleParts.push(`${quantity} un.`);
-        subtitleParts.push(`Validade: ${validade}`);
+        const details = [
+          item.lote ? decodeSuspectString(`Lote ${item.lote}`) : null,
+          `${quantity} un.`,
+          `Validade: ${validade}`
+        ].filter(Boolean);
+        const name = decodeSuspectString(item.produto || 'Produto');
+        const type = decodeSuspectString(item.tipo || 'Categoria');
         return `
           <li class="flex items-start justify-between gap-4 py-2">
             <div>
-              <p class="font-medium">${item.produto || 'Produto'}</p>
-              <p class="text-xs text-subtle-light dark:text-subtle-dark">${subtitleParts.join(' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ ')}</p>
+              <p class="font-medium">${name}</p>
+              <p class="text-xs text-subtle-light dark:text-subtle-dark">${decodeSuspectString(details.join(' • '))}</p>
             </div>
             <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-              ${item.tipo || 'Categoria'}
+              ${type}
             </span>
           </li>`;
       })
@@ -593,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <section class="bg-background-light dark:bg-background-dark rounded-xl border border-gray-200/70 dark:border-gray-700/70 p-5">
         <header class="flex items-center gap-2 mb-3">
           <span class="material-icons text-secondary">${icon}</span>
-          <h3 class="text-lg font-semibold">${title}</h3>
+          <h3 class="text-lg font-semibold">${safeTitle}</h3>
         </header>
         <ul class="divide-y divide-gray-200/70 dark:divide-gray-700/60">${listItems}</ul>
       </section>`;
@@ -631,9 +633,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return `
       <div class="space-y-5">
-        ${buildSuggestionSection('Repor com urgÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªncia', 'inventory_2', lowStock, 'Nenhum item com estoque crÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­tico no momento.')}
-        ${buildSuggestionSection('Atentos ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  validade', 'event_available', expiringSoon, 'Sem produtos prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ximos do vencimento nos prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ximos 45 dias.')}
-        ${buildSuggestionSection('Itens mais procurados', 'trending_up', bestSellers, 'Ainda nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o hÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ histÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rico suficiente para recomendaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes.')}
+        
+        
+        
       </div>`;
   };
 
@@ -723,7 +725,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const trend = metric?.trend === 'down' ? 'down' : changeValue < 0 ? 'down' : 'up';
       iconEl.textContent = trend === 'down' ? 'arrow_downward' : 'arrow_upward';
       const sign = changeValue > 0 ? '+' : '';
-      changeTextEl.textContent = `${sign}${changeValue}% vs mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªs passado`;
+      const changeLabel = decodeSuspectString(`${sign}${changeValue}% vs mÃªs passado`);
+      changeTextEl.textContent = changeLabel;
       changeWrapper.classList.remove('text-success', 'text-danger');
       changeWrapper.classList.add(trend === 'down' ? 'text-danger' : 'text-success');
     });
@@ -883,8 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const normalizeText = value => {
     if (!value) return '';
-    return value
-      .toString()
+    return decodeSuspectString(value.toString())
       .trim()
       .toLowerCase()
       .normalize('NFD')
@@ -1146,7 +1148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel limpar movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes antigas do caixa:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel limpar movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes antigas do caixa:', error);
     }
   };
 
@@ -1159,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!Array.isArray(parsed)) return null;
       return sortCashierMovements(parsed.map(normalizeCashierMovement).filter(Boolean));
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel carregar as movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes de caixa salvas:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel carregar as movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes de caixa salvas:', error);
       return null;
     }
   };
@@ -1172,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         JSON.stringify(sortCashierMovements(movements))
       );
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar as movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes de caixa:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar as movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes de caixa:', error);
     }
   };
 
@@ -1223,7 +1225,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const td = document.createElement('td');
       td.colSpan = 6;
       td.className = 'px-6 py-6 text-center text-sm text-subtle-light dark:text-subtle-dark';
-      td.textContent = 'Nenhuma movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o encontrada.';
+      td.textContent = 'Nenhuma movimentação encontrada.';
       emptyRow.appendChild(td);
       cashierMovementsTableBody.appendChild(emptyRow);
       return;
@@ -1252,12 +1254,12 @@ document.addEventListener('DOMContentLoaded', () => {
       typeCell.className = 'px-6 py-4';
       const typeBadge = document.createElement('span');
       typeBadge.className = `px-2 py-1 text-xs font-semibold rounded-full ${typeClass}`;
-      typeBadge.textContent = movement?.tipo || '-';
+      typeBadge.textContent = decodeSuspectString(movement?.tipo || '-');
       typeCell.appendChild(typeBadge);
 
       const categoryCell = document.createElement('td');
       categoryCell.className = 'px-6 py-4 text-sm';
-      categoryCell.textContent = movement?.categoria || 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â';
+      categoryCell.textContent = decodeSuspectString(movement?.categoria || '—');
 
       const valueCell = document.createElement('td');
       valueCell.className = `px-6 py-4 text-right text-sm font-semibold ${valueClass}`;
@@ -1265,11 +1267,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const employeeCell = document.createElement('td');
       employeeCell.className = 'px-6 py-4 text-sm';
-      employeeCell.textContent = movement?.funcionario || 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â';
+      employeeCell.textContent = decodeSuspectString(movement?.funcionario || '—');
 
       const observationsCell = document.createElement('td');
       observationsCell.className = 'px-6 py-4 text-sm max-w-xs';
-      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â';
+      observationsCell.textContent = movement?.observacoes?.trim() ? decodeSuspectString(movement.observacoes) : '—';
 
       tr.appendChild(dateCell);
       tr.appendChild(typeCell);
@@ -1369,14 +1371,14 @@ document.addEventListener('DOMContentLoaded', () => {
       category = customCategory;
     }
     if (!category) {
-      alert('Informe uma categoria para a movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.');
+      alert('Informe uma categoria para a movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.');
       return;
     }
 
     const rawValue = formData.get('value');
     const numericValue = parseLocaleNumber(rawValue);
     if (!Number.isFinite(numericValue) || numericValue <= 0) {
-      alert('Informe um valor vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido para a movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.');
+      alert('Informe um valor vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡lido para a movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.');
       return;
     }
     const sanitizedValue = Math.round(Math.abs(numericValue) * 100) / 100;
@@ -1384,7 +1386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalizedType = normalizeText(type);
     const paymentMethodRaw = (formData.get('payment-method') || '').toString().trim()
       || movementPaymentMethodSelect?.value
-      || (normalizedType === 'saida' ? 'CartÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o' : 'Dinheiro');
+      || (normalizedType === 'saida' ? 'Cartão' : 'Dinheiro');
     const paymentMethod = paymentMethodRaw || 'Dinheiro';
     const normalizedPaymentMethod = normalizeText(paymentMethod);
 
@@ -1399,7 +1401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const projectedCash = currentCashOnHand + sanitizedValue;
         if (projectedCash > cashLimit) {
           const formattedLimit = formatCurrencyBRL(cashLimit);
-          alert(`Esta operaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o ultrapassa o limite de caixa configurado (${formattedLimit}). Ajuste o valor ou selecione outra forma de pagamento.`);
+          alert(`Esta operaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o ultrapassa o limite de caixa configurado (${formattedLimit}). Ajuste o valor ou selecione outra forma de pagamento.`);
           return;
         }
       }
@@ -1657,8 +1659,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const values = Array.isArray(items) ? items : [];
     const total = values.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
     if (!values.length || total <= 0) {
-      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel.</li>';
-      return;
+      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel.</li>';
+      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</li>';
     }
 
     values.forEach((item, index) => {
@@ -1688,19 +1690,19 @@ document.addEventListener('DOMContentLoaded', () => {
     cashierSelectedAnalysis = view;
     cashierAnalysisList.innerHTML = '';
     if (!cachedCashierReportsData) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel.</p>';
-      return;
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
     }
     const dataset = cachedCashierReportsData.comparative?.[view] || [];
     if (!dataset.length) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel.</p>';
-      return;
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
     }
     const sorted = [...dataset].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
     const maxValue = Math.max(...sorted.map(item => Number(item.value) || 0), 0);
     if (maxValue <= 0) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel.</p>';
-      return;
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
     }
     cashierAnalysisList.innerHTML = sorted.map(item => {
       const value = Number(item.value) || 0;
@@ -1725,7 +1727,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const chartReady = await waitForChartLibrary();
       if (!chartReady || typeof window === 'undefined' || typeof window.Chart !== 'function') {
-        console.warn('Biblioteca de grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ficos indisponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel para atualizar os relatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios do caixa.');
+        console.warn('Biblioteca de grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ficos indisponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel para atualizar os relatÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³rios do caixa.');
         return;
       }
 
@@ -1783,7 +1785,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : [];
       const context = cashierCashFlowCanvas.getContext('2d');
       if (!context) {
-        console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel obter o contexto 2D para renderizar o grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡fico de fluxo de caixa.');
+        console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel obter o contexto 2D para renderizar o grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡fico de fluxo de caixa.');
         return;
       }
       const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
@@ -1854,7 +1856,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
       });
     } catch (error) {
-      console.error('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel atualizar os grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ficos do caixa:', error);
+      console.error('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel atualizar os grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ficos do caixa:', error);
     }
   };
 
@@ -1905,7 +1907,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // ConfiguraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes do Caixa ------------------------------------------------------
+  // ConfiguraÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes do Caixa ------------------------------------------------------
   const CASHIER_SETTINGS_STORAGE_KEY = 'acaiStock_cashier_settings';
   const DEFAULT_CASHIER_SETTINGS = Object.freeze({
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw',
@@ -1913,12 +1915,12 @@ document.addEventListener('DOMContentLoaded', () => {
     categories: [
       { id: 'category-1', name: 'Vendas', type: 'Receita', status: 'Ativo' },
       { id: 'category-2', name: 'Despesas Operacionais', type: 'Despesa', status: 'Ativo' },
-      { id: 'category-3', name: 'ReforÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§os', type: 'Receita', status: 'Ativo' },
+      { id: 'category-3', name: 'Reforços', type: 'Receita', status: 'Ativo' },
     ],
     paymentMethods: [
       { id: 'payment-1', name: 'Dinheiro', status: 'Ativo' },
-      { id: 'payment-2', name: 'CartÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o de CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dito', status: 'Ativo' },
-      { id: 'payment-3', name: 'Pagamento MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vel', status: 'Inativo' },
+      { id: 'payment-2', name: 'Cartão de Crédito', status: 'Ativo' },
+      { id: 'payment-3', name: 'Pagamento MÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³vel', status: 'Inativo' },
     ],
   });
 
@@ -1965,7 +1967,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const isCashPaymentMethodName = methodName => {
     const normalized = normalizeText(methodName);
     if (!normalized) return false;
-    return normalized.includes('dinheir') || normalized.includes('cash') || normalized.includes('espÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©cie') || normalized.includes('especie');
+    return normalized.includes('dinheir') || normalized.includes('cash') || normalized.includes('espÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â©cie') || normalized.includes('especie');
   };
 
   const getCashPaymentMethodNames = () => {
@@ -2132,7 +2134,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return next;
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel carregar as configuraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes do caixa:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel carregar as configuraÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes do caixa:', error);
       return cloneDefaultCashierSettings();
     }
   };
@@ -2142,7 +2144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(CASHIER_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar as configuraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes do caixa:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar as configuraÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes do caixa:', error);
     }
   };
 
@@ -2236,7 +2238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sorted.length > visible.length) {
       const remaining = sorted.length - visible.length;
       cashierSettingsPaymentSummary.insertAdjacentHTML('beforeend', `
-        <li class="settings-summary-note">+${remaining} método(s) adicionais</li>
+        <li class="settings-summary-note">+${remaining} mÃƒÂ©todo(s) adicionais</li>
       `);
     }
 
@@ -2478,8 +2480,8 @@ document.addEventListener('DOMContentLoaded', () => {
       URL.revokeObjectURL(url);
       showCashierSettingsToast('Backup dos dados iniciado.');
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel gerar o backup das configuraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes:', error);
-      showCashierSettingsToast('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel gerar o backup agora.');
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel gerar o backup das configuraÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes:', error);
+      showCashierSettingsToast('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel gerar o backup agora.');
     }
   };
 
@@ -2487,7 +2489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = event.target?.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      showCashierSettingsToast('Selecione um arquivo de imagem vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.');
+      showCashierSettingsToast('Selecione um arquivo de imagem vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡lido.');
       event.target.value = '';
       return;
     }
@@ -2584,7 +2586,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (stored === null) return null;
       return stored === 'true';
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel recuperar o tema salvo:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel recuperar o tema salvo:', error);
       return null;
     }
   };
@@ -2605,7 +2607,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(DARK_MODE_STORAGE_KEY, shouldEnable ? 'true' : 'false');
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar a preferÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªncia de tema:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar a preferÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âªncia de tema:', error);
     }
   };
 
@@ -2759,7 +2761,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           await renderApprovalPage({ silent: true });
         } catch (error) {
-          console.error('Erro ao atualizar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios em tempo real:', error);
+          console.error('Erro ao atualizar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios em tempo real:', error);
         }
       }
     });
@@ -2776,7 +2778,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         } catch (error) {
-          console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel atualizar a foto armazenada localmente:', error);
+          console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel atualizar a foto armazenada localmente:', error);
         }
         try {
           await initProfilePhoto();
@@ -2790,7 +2792,7 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             await renderApprovalPage({ silent: true });
           } catch (error) {
-            console.error('Erro ao atualizar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios em tempo real:', error);
+            console.error('Erro ao atualizar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios em tempo real:', error);
           }
         }
       }
@@ -2814,7 +2816,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         localStorage.setItem(`profilePhoto_${currentUser}`, photo);
       } catch (error) {
-        console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel armazenar a foto de perfil:', error);
+        console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel armazenar a foto de perfil:', error);
       }
     }
     await initProfilePhoto();
@@ -2854,7 +2856,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = inputUsuario.value.trim();
     const password = inputClave.value.trim();
     if (!username || !password) {
-      alert('Preencha usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio e senha.');
+      alert('Preencha usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio e senha.');
       return;
     }
     try {
@@ -2888,7 +2890,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = document.getElementById('register-username').value.trim();
     const password = document.getElementById('register-password').value.trim();
     if (!username || !password) {
-      alert('Preencha usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio e senha.');
+      alert('Preencha usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio e senha.');
       return;
     }
     try {
@@ -2924,7 +2926,7 @@ document.addEventListener('DOMContentLoaded', () => {
             credentials: 'include'
           });
         } catch (error) {
-          console.error('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel encerrar a sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o no servidor:', error);
+          console.error('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel encerrar a sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o no servidor:', error);
         }
       }
     } finally {
@@ -2969,7 +2971,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const handleSessionExpiry = async () => {
     if (isSessionExpiryHandled) return;
     isSessionExpiryHandled = true;
-    alert('Sua sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o expirou. FaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§a login novamente.');
+    alert('Sua sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o expirou. FaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§a login novamente.');
     await logout({ skipRequest: true });
   };
 
@@ -2981,7 +2983,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await fetch(input, options);
     if (response.status === 401) {
       await handleSessionExpiry();
-      throw new Error('SessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o expirada. FaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§a login novamente.');
+      throw new Error('SessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o expirada. FaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§a login novamente.');
     }
     return response;
   };
@@ -2990,7 +2992,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await authenticatedFetch(input, init);
     const data = await response.json();
     if (!response.ok) {
-      const message = (data && data.error) || 'Erro na requisiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.';
+      const message = (data && data.error) || 'Erro na requisiÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.';
       throw new Error(message);
     }
     return data;
@@ -3063,8 +3065,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderCashierReports(cashierMovementsData);
       recalculateCashierDashboardFromMovements();
     } catch (err) {
-      console.error('Erro ao carregar movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes:', err);
-      alert('Erro ao carregar movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes: ' + err.message);
+      console.error('Erro ao carregar movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes:', err);
+      alert('Erro ao carregar movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -3083,14 +3085,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
       await renderReports(summaryData, stockData);
     } catch (err) {
-      console.error('Erro ao carregar relatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios:', err);
-      alert('Erro ao carregar relatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios: ' + err.message);
+      console.error('Erro ao carregar relatÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³rios:', err);
+      alert('Erro ao carregar relatÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³rios: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
   };
 
-  // RenderizaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes ---------------------------------------------------------------
+  // RenderizaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes ---------------------------------------------------------------
   const applyFilters = () => {
     const searchTerm = (searchInput?.value || '').trim().toLowerCase();
     const today = new Date();
@@ -3368,7 +3370,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const chartReady = await waitForChartLibrary();
     if (!chartReady) {
-      console.warn('Biblioteca de grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ficos indisponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel. Os relatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios serÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o exibidos sem grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ficos.');
+      console.warn('Biblioteca de grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ficos indisponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel. Os relatÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³rios serÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o exibidos sem grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ficos.');
       return;
     }
 
@@ -3486,19 +3488,19 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­da'
+          titlePrefix: 'SaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­da'
         },
         exclusao: {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­da'
+          titlePrefix: 'SaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­da'
         },
         baixa: {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­da'
+          titlePrefix: 'SaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­da'
         },
         ajuste: {
           icon: 'edit',
@@ -3522,25 +3524,25 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio'
+          titlePrefix: 'UsuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio'
         },
         aprovacao_usuario: {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio'
+          titlePrefix: 'UsuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio'
         },
         aprovacao: {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio'
+          titlePrefix: 'UsuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio'
         },
         default: {
           icon: 'history',
           badgeClasses: 'bg-slate-100 dark:bg-slate-800/60',
           iconClasses: 'text-slate-600 dark:text-slate-300',
-          titlePrefix: 'MovimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o'
+          titlePrefix: 'MovimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o'
         }
       };
 
@@ -3573,14 +3575,14 @@ document.addEventListener('DOMContentLoaded', () => {
           return '';
         })();
         const productName = move.produto || move.nomeProduto || '';
-        const userLabel = move.usuario ? `UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio: ${move.usuario}` : '';
+        const userLabel = move.usuario ? `UsuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio: ${move.usuario}` : '';
         const destinationLabel = move.destino ? `Destino: ${move.destino}` : '';
-        const details = [userLabel, destinationLabel].filter(Boolean).join(' ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ');
+        const details = [userLabel, destinationLabel].filter(Boolean).join(' ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ‚Â¢ÃƒÂ¢Ã¢Â€ÂšÃ‚Â¬ÃƒÂ…Ã‚Â¡ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â· ');
 
         const timeLabel = (() => {
-          if (!move.data) return 'Data nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o informada';
+          if (!move.data) return 'Data nÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o informada';
           const parsedDate = new Date(move.data);
-          if (Number.isNaN(parsedDate.getTime())) return 'Data nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o informada';
+          if (Number.isNaN(parsedDate.getTime())) return 'Data nÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o informada';
           return parsedDate.toLocaleString('pt-BR', {
             dateStyle: 'short',
             timeStyle: 'short'
@@ -3596,7 +3598,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div>
               <p class="font-medium text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantitySymbol ? quantitySymbol + ' ' : ''}${quantity.toLocaleString('pt-BR')}x ${productName}</p>
-              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'MovimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o registrada no sistema.'}</p>
+              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'MovimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o registrada no sistema.'}</p>
             </div>
           </div>
           <p class="text-sm text-subtle-light dark:text-subtle-dark whitespace-nowrap text-right">${timeLabel}</p>`;
@@ -3619,8 +3621,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       pendingUsersList.innerHTML = '';
       if (!pendingData.length) {
-        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio aguardando aprovaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.</p>';
-      } else {
+        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio aguardando aprovaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.</p>';
+        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário aguardando aprovação.</p>';
         pendingData.forEach(user => {
           const item = document.createElement('div');
           item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
@@ -3643,8 +3645,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       activeUsersList.innerHTML = '';
       if (!activeData.length) {
-        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio ativo.</p>';
-      } else {
+        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio ativo.</p>';
+        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário ativo.</p>';
         activeData.forEach(user => {
           const item = document.createElement('div');
           const resolvedPhoto = getFullImageUrl(user.photo) || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
@@ -3675,8 +3677,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       usersDataDirty = false;
     } catch (err) {
-      console.error('Erro ao carregar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios:', err);
-      alert('Erro ao carregar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios: ' + err.message);
+      console.error('Erro ao carregar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios:', err);
+      alert('Erro ao carregar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -3697,7 +3699,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (custo === null || Number.isNaN(custo) || custo < 0) {
-      alert('Informe um custo vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.');
+      alert('Informe um custo vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡lido.');
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
@@ -3737,7 +3739,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!product) return;
     currentProductId = product.id;
     editForm.elements.id.value = product.id;
-    editForm.elements.type.value = product.tipo || 'AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§aÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­';
+    editForm.elements.type.value = product.tipo || 'AÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§aÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­';
     editForm.elements.name.value = product.produto || '';
     editForm.elements.lot.value = product.lote || '';
     editForm.elements.quantity.value = product.quantidade || 0;
@@ -3771,7 +3773,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const custoInput = editForm.elements.cost?.value ?? '';
     const custo = custoInput === '' ? null : Number.parseFloat(custoInput);
     if (custo === null || Number.isNaN(custo) || custo < 0) {
-      alert('Informe um custo vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.');
+      alert('Informe um custo vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡lido.');
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
@@ -3822,7 +3824,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentProductId) return;
     const motivo = deleteReasonInput.value.trim();
     if (!motivo) {
-      alert('Informe o motivo da exclusÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.');
+      alert('Informe o motivo da exclusÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.');
       return;
     }
     try {
@@ -3836,7 +3838,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadStock();
       await loadMovimentacoes();
       updateHomePage();
-      alert('Produto excluÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­do com sucesso!');
+      alert('Produto excluÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­do com sucesso!');
     } catch (err) {
       alert('Erro ao remover produto: ' + err.message);
     } finally {
@@ -3844,7 +3846,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // GestÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o de usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios ---------------------------------------------------------
+  // GestÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o de usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios ---------------------------------------------------------
   const approveUser = async userId => {
     try {
       showLoader();
@@ -3853,7 +3855,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       await renderApprovalPage();
     } catch (err) {
-      alert('Erro ao aprovar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio: ' + err.message);
+      alert('Erro ao aprovar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio: ' + err.message);
     } finally {
       hideLoader();
     }
@@ -3867,7 +3869,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       await renderApprovalPage();
     } catch (err) {
-      alert('Erro ao recusar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio: ' + err.message);
+      alert('Erro ao recusar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio: ' + err.message);
     } finally {
       hideLoader();
     }
@@ -3877,14 +3879,14 @@ document.addEventListener('DOMContentLoaded', () => {
     await declineUser(userId);
   };
 
-  // NavegaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o ------------------------------------------------------------------
+  // NavegaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o ------------------------------------------------------------------
   const storeActivePage = pageId => {
     activePageId = pageId;
     if (typeof window === 'undefined' || !window.localStorage) return;
     try {
       window.localStorage.setItem(ACTIVE_PAGE_STORAGE_KEY, pageId);
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar a aba ativa:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar a aba ativa:', error);
     }
   };
 
@@ -3893,7 +3895,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       return window.localStorage.getItem(ACTIVE_PAGE_STORAGE_KEY);
     } catch (error) {
-      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel recuperar a aba ativa:', error);
+      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel recuperar a aba ativa:', error);
       return null;
     }
   };
@@ -4102,7 +4104,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showLoader();
       const res = await fetch(`${BASE_URL}/api/session`, { credentials: 'include' });
       if (!res.ok) {
-        throw new Error('SessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o encontrada');
+        throw new Error('SessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o nÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o encontrada');
       }
       const data = await res.json();
       await enterApplication({
@@ -4214,7 +4216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert('Imagem deve ter no mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ximo 5MB.');
+        alert('Imagem deve ter no mÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ximo 5MB.');
         profileImageFile = null;
         profileImageUpload.value = '';
         return;
@@ -4331,10 +4333,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!event.newValue && currentUser) {
       logout({ skipRequest: true }).catch(err => console.error('Erro ao sincronizar logout:', err));
     } else if (event.newValue && !currentUser) {
-      initializeFromStoredSession().catch(err => console.error('Erro ao sincronizar sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:', err));
+      initializeFromStoredSession().catch(err => console.error('Erro ao sincronizar sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o:', err));
     }
   });
 
   resetProfilePhoto();
   initializeFromStoredSession();
 });
+
