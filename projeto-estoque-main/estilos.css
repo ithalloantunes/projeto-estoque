@@ -16,6 +16,8 @@
     --color-secondary: #9333EA;         /* Purple 600 */
     --color-danger: #DC2626;            /* Red 600 - better contrast */
     --color-success: #16A34A;           /* Green 600 - better contrast */
+    --color-warning: #F59E0B;           /* Amber 500 */
+    --color-info: #0EA5E9;              /* Sky 500 */
 
     --color-background-light: #F9FAFB;  /* Neutral light background for contrast */
     --color-background-dark: #111827;   /* Slate 900 */
@@ -94,6 +96,8 @@ textarea::placeholder {
     --color-secondary: #3b82f6;       /* Blue 500 */
     --color-danger: #DC2626;          /* Red 600 */
     --color-success: #16A34A;         /* Green 600 */
+    --color-warning: #F59E0B;
+    --color-info: #0EA5E9;
     --color-background-light: #F8FAFC;
     --color-background-dark: #111821;
     --color-surface-light: #FFFFFF;
@@ -370,7 +374,7 @@ h2 {
 #toggle-password-register:focus-visible,
 #show-register:focus-visible,
 #show-login:focus-visible {
-    outline: 2px solid #6D28D9;
+    outline: 2px solid var(--focus-ring);
     outline-offset: 3px;
 }
 
