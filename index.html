@@ -913,33 +913,31 @@
                             </div>
                         </header>
                         <main class="flex-1 px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 py-8 overflow-y-auto">
-                            <div class="mx-auto max-w-4xl">
+                            <div class="mx-auto max-w-6xl">
                                 <div class="mb-8">
                                     <h1 class="text-3xl font-bold text-text-light dark:text-text-dark">Configurações Avançadas</h1>
                                     <p class="mt-1 text-subtle-light dark:text-subtle-dark">Gerencie o logotipo da empresa, categorias de movimento, limites de caixa, métodos de pagamento e backup de dados.</p>
                                 </div>
-                                <div class="space-y-12">
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        <div class="md:col-span-1">
+                                <div class="grid gap-8 lg:gap-10 xl:gap-12 lg:grid-cols-2">
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                        <div>
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Logotipo da Empresa</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Atualize o logotipo da sua empresa.</p>
                                         </div>
-                                        <div class="md:col-span-2">
-                                            <div class="rounded-lg border border-border-color bg-surface-light dark:bg-surface-dark p-4">
-                                                <div id="cashier-settings-logo-preview" class="aspect-[16/9] w-full bg-center bg-no-repeat bg-cover rounded" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw');"></div>
-                                                <div class="mt-4 flex justify-start">
-                                                    <input type="file" id="cashier-settings-logo-upload" class="hidden" accept="image/*">
-                                                    <button id="cashier-settings-change-logo-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Alterar Logotipo</button>
-                                                </div>
+                                        <div class="flex flex-col gap-4">
+                                            <div id="cashier-settings-logo-preview" class="aspect-[16/9] w-full rounded-lg border border-border-color bg-center bg-no-repeat bg-cover shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw');"></div>
+                                            <div class="flex justify-start">
+                                                <input type="file" id="cashier-settings-logo-upload" class="hidden" accept="image/*">
+                                                <button id="cashier-settings-change-logo-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Alterar Logotipo</button>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        <div class="md:col-span-1">
+                                    </section>
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr] lg:col-span-2">
+                                        <div>
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Categorias de Movimento</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina categorias para receitas e despesas.</p>
                                         </div>
-                                        <div class="md:col-span-2">
+                                        <div class="flex flex-col gap-4">
                                             <div class="table-wrapper">
                                                 <div class="table-scroll">
                                                     <table class="modern-table">
@@ -955,58 +953,54 @@
                                                     </table>
                                                 </div>
                                             </div>
-                                            <div class="mt-4 flex justify-start">
+                                            <div class="flex justify-start">
                                                 <button id="cashier-settings-add-category-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Adicionar Categoria</button>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        <div class="md:col-span-1">
+                                    </section>
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                        <div>
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Limites de Caixa</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina o limite máximo de dinheiro para transações.</p>
                                         </div>
-                                        <div class="md:col-span-2">
+                                        <div class="flex flex-col gap-2">
                                             <label for="cashier-settings-cash-limit" class="block text-sm font-medium text-subtle-light dark:text-subtle-dark">Limite Máximo de Caixa</label>
-                                            <div class="mt-1 flex items-center gap-2">
-                                                <input id="cashier-settings-cash-limit" name="cash-limit" type="text" placeholder="R$ 1.000,00" class="block w-full rounded border border-border-color bg-surface-light dark:bg-surface-dark shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
-                                                <button id="cashier-settings-save-cash-limit-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Salvar</button>
+                                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                                <input id="cashier-settings-cash-limit" name="cash-limit" type="text" placeholder="R$ 1.000,00" class="flex-1 rounded border border-border-color bg-surface-light dark:bg-surface-dark shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
+                                                <button id="cashier-settings-save-cash-limit-btn" class="w-full sm:w-auto rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Salvar</button>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        <div class="md:col-span-1">
+                                    </section>
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr] lg:col-span-2">
+                                        <div>
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Métodos de Pagamento</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Ative ou desative os métodos de pagamento disponíveis.</p>
                                         </div>
-                                        <div class="md:col-span-2">
-                                            <div class="table-wrapper">
-                                                <div class="table-scroll">
-                                                    <table class="modern-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th scope="col">Método de Pagamento</th>
-                                                                <th scope="col">Status</th>
-                                                                <th scope="col"><span class="sr-only">Ações</span></th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody id="cashier-settings-payment-methods-body"></tbody>
-                                                    </table>
-                                                </div>
+                                        <div class="table-wrapper">
+                                            <div class="table-scroll">
+                                                <table class="modern-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Método de Pagamento</th>
+                                                            <th scope="col">Status</th>
+                                                            <th scope="col"><span class="sr-only">Ações</span></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="cashier-settings-payment-methods-body"></tbody>
+                                                </table>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        <div class="md:col-span-1">
+                                    </section>
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                        <div>
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Gerenciamento de Dados</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Faça backup e exporte os dados do seu sistema.</p>
                                         </div>
-                                        <div class="md:col-span-2">
-                                            <div class="flex flex-col sm:flex-row gap-4">
-                                                <button id="cashier-settings-backup-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40">Fazer Backup dos Dados</button>
-                                                <button id="cashier-settings-export-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40" type="button" disabled>Exportar Dados</button>
-                                            </div>
+                                        <div class="flex flex-col sm:flex-row gap-4">
+                                            <button id="cashier-settings-backup-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40">Fazer Backup dos Dados</button>
+                                            <button id="cashier-settings-export-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40" type="button" disabled>Exportar Dados</button>
                                         </div>
-                                    </div>
+                                    </section>
                                 </div>
                             </div>
                         </main>
