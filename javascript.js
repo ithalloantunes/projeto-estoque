@@ -1,4 +1,4 @@
-const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+﻿const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 const isLocalEnvironment = /127\.0\.0\.1|localhost/.test(currentOrigin);
 const BASE_URL = isLocalEnvironment ? '' : 'https://projeto-estoque-o1x5.onrender.com';
 
@@ -31,6 +31,77 @@ document.addEventListener('DOMContentLoaded', () => {
   const DARK_MODE_STORAGE_KEY = 'acaiStock_dark_mode';
   const AUTO_REFRESH_INTERVAL_MS = 60_000;
   let autoRefreshIntervalId = null;
+  const MOJIBAKE_PATTERN = /Ã|Â|â|¢|€|™/;
+
+  const decodeSuspectString = value => {
+    if (typeof value !== 'string' || !value) return value;
+    let result = value;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (!MOJIBAKE_PATTERN.test(result)) break;
+      const bytes = new Uint8Array(result.length);
+      let convertible = false;
+      for (let i = 0; i < result.length; i += 1) {
+        const code = result.charCodeAt(i);
+        if (code > 255) {
+          convertible = false;
+          break;
+        }
+        if (code >= 0x80) convertible = true;
+        bytes[i] = code & 0xff;
+      }
+      if (!convertible) break;
+      try {
+        const decoded = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+        if (decoded === result) break;
+        result = decoded;
+      } catch {
+        break;
+      }
+    }
+    try {
+      return typeof result.normalize === 'function' ? result.normalize('NFC') : result;
+    } catch {
+      return result;
+    }
+  };
+
+  const sanitizeTextNode = node => {
+    if (!node || node.nodeType !== Node.TEXT_NODE) return;
+    const original = node.textContent;
+    if (!original || !MOJIBAKE_PATTERN.test(original)) return;
+    const fixed = decodeSuspectString(original);
+    if (fixed !== original) {
+      node.textContent = fixed;
+    }
+  };
+
+  const sanitizeTextTree = root => {
+    if (!root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    const nodes = [];
+    while (walker.nextNode()) {
+      nodes.push(walker.currentNode);
+    }
+    nodes.forEach(sanitizeTextNode);
+  };
+
+  if (typeof window !== 'undefined') {
+    const originalAlert = window.alert?.bind(window);
+    if (originalAlert) {
+      window.alert = message => originalAlert(decodeSuspectString(String(message)));
+    }
+    const originalConfirm = window.confirm?.bind(window);
+    if (originalConfirm) {
+      window.confirm = message => originalConfirm(decodeSuspectString(String(message)));
+    }
+    const originalPrompt = window.prompt?.bind(window);
+    if (originalPrompt) {
+      window.prompt = (message, defaultValue) => originalPrompt(
+        decodeSuspectString(String(message)),
+        defaultValue === undefined ? defaultValue : decodeSuspectString(String(defaultValue)),
+      );
+    }
+  }
   const debounce = (fn, delay = 150) => {
     let timeoutId;
     return (...args) => {
@@ -4172,6 +4243,23 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDarkMode();
   updateCashierDashboard();
   registerImageFallbacks(document);
+  sanitizeTextTree(document.body);
+  const mojibakeObserver = new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+      if (mutation.type === 'characterData') {
+        sanitizeTextNode(mutation.target);
+        continue;
+      }
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          sanitizeTextNode(node);
+        } else {
+          sanitizeTextTree(node);
+        }
+      });
+    }
+  });
+  mojibakeObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
 
   if (typeof window !== 'undefined') {
     window.setCashierDashboardMetrics = setCashierDashboardMetrics;
