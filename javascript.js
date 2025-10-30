@@ -31,6 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const DARK_MODE_STORAGE_KEY = 'acaiStock_dark_mode';
   const AUTO_REFRESH_INTERVAL_MS = 60_000;
   let autoRefreshIntervalId = null;
+  const debounce = (fn, delay = 150) => {
+    let timeoutId;
+    return (...args) => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      timeoutId = window.setTimeout(() => {
+        fn(...args);
+      }, delay);
+    };
+  };
   let activePageId = null;
   let socket = null;
   let usersDataDirty = true;
@@ -60,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePasswordRegisterIcon = document.getElementById('toggle-password-register-icon');
   const monster = document.getElementById('monster');
 
-  // Elementos gerais da aplicação
+  // Elementos gerais da aplicaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o
   const mainMenu = document.getElementById('main-menu');
   const sidebar = document.getElementById('sidebar');
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
@@ -167,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   };
 
-  // Referências dos KPIs
+  // ReferÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªncias dos KPIs
   const homeKpiTotalStock = document.getElementById('home-kpi-total-stock');
   const homeKpiLowStock = document.getElementById('home-kpi-low-stock');
   const homeKpiExpiring = document.getElementById('home-kpi-expiring');
@@ -202,8 +213,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierCategoryTypeInput = document.getElementById('cashier-category-type');
   const cashierCategoryCancelBtn = document.getElementById('cashier-category-cancel-btn');
   const cashierSettingsToast = document.getElementById('cashier-settings-toast');
+  const cashierSettingsCategoriesSummary = document.getElementById('cashier-settings-categories-summary');
+  const cashierSettingsPaymentSummary = document.getElementById('cashier-settings-payment-methods-summary');
+  const cashierSettingsManageCategoriesBtn = document.getElementById('cashier-settings-manage-categories-btn');
+  const cashierSettingsManagePaymentsBtn = document.getElementById('cashier-settings-manage-payments-btn');
+  const cashierSettingsCategoriesModal = document.getElementById('cashier-settings-categories-modal');
+  const cashierSettingsPaymentsModal = document.getElementById('cashier-settings-payments-modal');
+  const cashierSettingsAddCategoryBtnSecondary = document.getElementById('cashier-settings-add-category-btn-secondary');
+  const cashierSettingsFitContainer = document.getElementById('cashier-settings-fit');
+  const settingsMainElement = document.querySelector('.settings-main');
 
-  // Avatar do usuário (existem várias instâncias na interface)
+  // Avatar do usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio (existem vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rias instÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ncias na interface)
   const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
 
   let currentProductId = null;
@@ -293,8 +313,10 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(ACTIVE_MODULE_STORAGE_KEY, moduleName);
     } catch (error) {
-      console.warn('Não foi possível salvar o módulo selecionado:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar o mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo selecionado:', error);
     }
+
+    fitSettingsToViewportDebounced();
   };
 
   const getStoredActiveModule = () => {
@@ -302,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       return window.localStorage.getItem(ACTIVE_MODULE_STORAGE_KEY);
     } catch (error) {
-      console.warn('Não foi possível recuperar o módulo selecionado:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel recuperar o mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo selecionado:', error);
       return null;
     }
   };
@@ -404,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ username, userId, role }));
     } catch (error) {
-      console.warn('Não foi possível salvar a sessão:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar a sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:', error);
     }
   };
 
@@ -419,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!username || !userId || !role) return null;
       return { username, userId, role };
     } catch (error) {
-      console.warn('Não foi possível recuperar a sessão:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel recuperar a sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:', error);
       return null;
     }
   };
@@ -429,11 +451,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.removeItem(SESSION_STORAGE_KEY);
     } catch (error) {
-      console.warn('Não foi possível limpar a sessão:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel limpar a sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:', error);
     }
   };
 
-  // Utilitários -----------------------------------------------------------------
+  // UtilitÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios -----------------------------------------------------------------
   const showLoader = () => loader?.classList.remove('hidden');
   const hideLoader = () => loader?.classList.add('hidden');
 
@@ -487,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <li class="flex items-start justify-between gap-4 py-2">
             <div>
               <p class="font-medium">${item.produto || 'Produto'}</p>
-              <p class="text-xs text-subtle-light dark:text-subtle-dark">${subtitleParts.join(' • ')}</p>
+              <p class="text-xs text-subtle-light dark:text-subtle-dark">${subtitleParts.join(' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ ')}</p>
             </div>
             <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
               ${item.tipo || 'Categoria'}
@@ -538,9 +560,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return `
       <div class="space-y-5">
-        ${buildSuggestionSection('Repor com urgência', 'inventory_2', lowStock, 'Nenhum item com estoque crítico no momento.')}
-        ${buildSuggestionSection('Atentos à validade', 'event_available', expiringSoon, 'Sem produtos próximos do vencimento nos próximos 45 dias.')}
-        ${buildSuggestionSection('Itens mais procurados', 'trending_up', bestSellers, 'Ainda não há histórico suficiente para recomendações.')}
+        ${buildSuggestionSection('Repor com urgÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªncia', 'inventory_2', lowStock, 'Nenhum item com estoque crÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­tico no momento.')}
+        ${buildSuggestionSection('Atentos ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  validade', 'event_available', expiringSoon, 'Sem produtos prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ximos do vencimento nos prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ximos 45 dias.')}
+        ${buildSuggestionSection('Itens mais procurados', 'trending_up', bestSellers, 'Ainda nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o hÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ histÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rico suficiente para recomendaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes.')}
       </div>`;
   };
 
@@ -630,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const trend = metric?.trend === 'down' ? 'down' : changeValue < 0 ? 'down' : 'up';
       iconEl.textContent = trend === 'down' ? 'arrow_downward' : 'arrow_upward';
       const sign = changeValue > 0 ? '+' : '';
-      changeTextEl.textContent = `${sign}${changeValue}% vs mês passado`;
+      changeTextEl.textContent = `${sign}${changeValue}% vs mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªs passado`;
       changeWrapper.classList.remove('text-success', 'text-danger');
       changeWrapper.classList.add(trend === 'down' ? 'text-danger' : 'text-success');
     });
@@ -1053,7 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     } catch (error) {
-      console.warn('Não foi possível limpar movimentações antigas do caixa:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel limpar movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes antigas do caixa:', error);
     }
   };
 
@@ -1066,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!Array.isArray(parsed)) return null;
       return sortCashierMovements(parsed.map(normalizeCashierMovement).filter(Boolean));
     } catch (error) {
-      console.warn('Não foi possível carregar as movimentações de caixa salvas:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel carregar as movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes de caixa salvas:', error);
       return null;
     }
   };
@@ -1079,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         JSON.stringify(sortCashierMovements(movements))
       );
     } catch (error) {
-      console.warn('Não foi possível salvar as movimentações de caixa:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar as movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes de caixa:', error);
     }
   };
 
@@ -1130,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const td = document.createElement('td');
       td.colSpan = 6;
       td.className = 'px-6 py-6 text-center text-sm text-subtle-light dark:text-subtle-dark';
-      td.textContent = 'Nenhuma movimentação encontrada.';
+      td.textContent = 'Nenhuma movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o encontrada.';
       emptyRow.appendChild(td);
       cashierMovementsTableBody.appendChild(emptyRow);
       return;
@@ -1164,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const categoryCell = document.createElement('td');
       categoryCell.className = 'px-6 py-4 text-sm';
-      categoryCell.textContent = movement?.categoria || '—';
+      categoryCell.textContent = movement?.categoria || 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â';
 
       const valueCell = document.createElement('td');
       valueCell.className = `px-6 py-4 text-right text-sm font-semibold ${valueClass}`;
@@ -1172,11 +1194,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const employeeCell = document.createElement('td');
       employeeCell.className = 'px-6 py-4 text-sm';
-      employeeCell.textContent = movement?.funcionario || '—';
+      employeeCell.textContent = movement?.funcionario || 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â';
 
       const observationsCell = document.createElement('td');
       observationsCell.className = 'px-6 py-4 text-sm max-w-xs';
-      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : '—';
+      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â';
 
       tr.appendChild(dateCell);
       tr.appendChild(typeCell);
@@ -1276,14 +1298,14 @@ document.addEventListener('DOMContentLoaded', () => {
       category = customCategory;
     }
     if (!category) {
-      alert('Informe uma categoria para a movimentação.');
+      alert('Informe uma categoria para a movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.');
       return;
     }
 
     const rawValue = formData.get('value');
     const numericValue = parseLocaleNumber(rawValue);
     if (!Number.isFinite(numericValue) || numericValue <= 0) {
-      alert('Informe um valor válido para a movimentação.');
+      alert('Informe um valor vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido para a movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.');
       return;
     }
     const sanitizedValue = Math.round(Math.abs(numericValue) * 100) / 100;
@@ -1291,7 +1313,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalizedType = normalizeText(type);
     const paymentMethodRaw = (formData.get('payment-method') || '').toString().trim()
       || movementPaymentMethodSelect?.value
-      || (normalizedType === 'saida' ? 'Cartão' : 'Dinheiro');
+      || (normalizedType === 'saida' ? 'CartÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o' : 'Dinheiro');
     const paymentMethod = paymentMethodRaw || 'Dinheiro';
     const normalizedPaymentMethod = normalizeText(paymentMethod);
 
@@ -1306,7 +1328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const projectedCash = currentCashOnHand + sanitizedValue;
         if (projectedCash > cashLimit) {
           const formattedLimit = formatCurrencyBRL(cashLimit);
-          alert(`Esta operação ultrapassa o limite de caixa configurado (${formattedLimit}). Ajuste o valor ou selecione outra forma de pagamento.`);
+          alert(`Esta operaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o ultrapassa o limite de caixa configurado (${formattedLimit}). Ajuste o valor ou selecione outra forma de pagamento.`);
           return;
         }
       }
@@ -1564,7 +1586,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const values = Array.isArray(items) ? items : [];
     const total = values.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
     if (!values.length || total <= 0) {
-      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</li>';
+      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel.</li>';
       return;
     }
 
@@ -1595,18 +1617,18 @@ document.addEventListener('DOMContentLoaded', () => {
     cashierSelectedAnalysis = view;
     cashierAnalysisList.innerHTML = '';
     if (!cachedCashierReportsData) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel.</p>';
       return;
     }
     const dataset = cachedCashierReportsData.comparative?.[view] || [];
     if (!dataset.length) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel.</p>';
       return;
     }
     const sorted = [...dataset].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
     const maxValue = Math.max(...sorted.map(item => Number(item.value) || 0), 0);
     if (maxValue <= 0) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel.</p>';
       return;
     }
     cashierAnalysisList.innerHTML = sorted.map(item => {
@@ -1632,7 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const chartReady = await waitForChartLibrary();
       if (!chartReady || typeof window === 'undefined' || typeof window.Chart !== 'function') {
-        console.warn('Biblioteca de gráficos indisponível para atualizar os relatórios do caixa.');
+        console.warn('Biblioteca de grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ficos indisponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel para atualizar os relatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios do caixa.');
         return;
       }
 
@@ -1690,7 +1712,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : [];
       const context = cashierCashFlowCanvas.getContext('2d');
       if (!context) {
-        console.warn('Não foi possível obter o contexto 2D para renderizar o gráfico de fluxo de caixa.');
+        console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel obter o contexto 2D para renderizar o grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡fico de fluxo de caixa.');
         return;
       }
       const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
@@ -1761,7 +1783,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
       });
     } catch (error) {
-      console.error('Não foi possível atualizar os gráficos do caixa:', error);
+      console.error('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel atualizar os grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ficos do caixa:', error);
     }
   };
 
@@ -1812,7 +1834,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Configurações do Caixa ------------------------------------------------------
+  // ConfiguraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes do Caixa ------------------------------------------------------
   const CASHIER_SETTINGS_STORAGE_KEY = 'acaiStock_cashier_settings';
   const DEFAULT_CASHIER_SETTINGS = Object.freeze({
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw',
@@ -1820,12 +1842,12 @@ document.addEventListener('DOMContentLoaded', () => {
     categories: [
       { id: 'category-1', name: 'Vendas', type: 'Receita', status: 'Ativo' },
       { id: 'category-2', name: 'Despesas Operacionais', type: 'Despesa', status: 'Ativo' },
-      { id: 'category-3', name: 'Reforços', type: 'Receita', status: 'Ativo' },
+      { id: 'category-3', name: 'ReforÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§os', type: 'Receita', status: 'Ativo' },
     ],
     paymentMethods: [
       { id: 'payment-1', name: 'Dinheiro', status: 'Ativo' },
-      { id: 'payment-2', name: 'Cartão de Crédito', status: 'Ativo' },
-      { id: 'payment-3', name: 'Pagamento Móvel', status: 'Inativo' },
+      { id: 'payment-2', name: 'CartÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o de CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dito', status: 'Ativo' },
+      { id: 'payment-3', name: 'Pagamento MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³vel', status: 'Inativo' },
     ],
   });
 
@@ -1872,7 +1894,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const isCashPaymentMethodName = methodName => {
     const normalized = normalizeText(methodName);
     if (!normalized) return false;
-    return normalized.includes('dinheir') || normalized.includes('cash') || normalized.includes('espécie') || normalized.includes('especie');
+    return normalized.includes('dinheir') || normalized.includes('cash') || normalized.includes('espÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©cie') || normalized.includes('especie');
   };
 
   const getCashPaymentMethodNames = () => {
@@ -2039,7 +2061,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return next;
     } catch (error) {
-      console.warn('Não foi possível carregar as configurações do caixa:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel carregar as configuraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes do caixa:', error);
       return cloneDefaultCashierSettings();
     }
   };
@@ -2049,7 +2071,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(CASHIER_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {
-      console.warn('Não foi possível salvar as configurações do caixa:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar as configuraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes do caixa:', error);
     }
   };
 
@@ -2077,6 +2099,113 @@ document.addEventListener('DOMContentLoaded', () => {
       cashierSettingsLogoPreview.style.backgroundImage = '';
     }
   };
+
+  const renderCashierSettingsCategoriesSummary = () => {
+    if (!cashierSettingsCategoriesSummary) return;
+    cashierSettingsCategoriesSummary.innerHTML = '';
+    const categories = Array.isArray(cashierSettingsState?.categories) ? cashierSettingsState.categories : [];
+    if (!categories.length) {
+      cashierSettingsCategoriesSummary.innerHTML = '<li class="settings-summary-empty">Nenhuma categoria cadastrada.</li>';
+      fitSettingsToViewportDebounced();
+      return;
+    }
+    const sorted = [...categories].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    const visibleItems = sorted.slice(0, 3);
+
+    visibleItems.forEach(category => {
+      const statusClasses = ['settings-summary-status'];
+      if (category.status !== 'Ativo') statusClasses.push('settings-summary-status--inactive');
+      cashierSettingsCategoriesSummary.insertAdjacentHTML('beforeend', `
+        <li class="settings-summary-item">
+          <div class="settings-summary-item__meta">
+            <span class="settings-summary-item__name">${category.name}</span>
+            <span class="settings-summary-item__caption">${category.type}</span>
+          </div>
+          <span class="${statusClasses.join(' ')}">${category.status}</span>
+        </li>
+      `);
+    });
+
+    if (sorted.length > visibleItems.length) {
+      const remaining = sorted.length - visibleItems.length;
+      cashierSettingsCategoriesSummary.insertAdjacentHTML('beforeend', `
+        <li class="settings-summary-note">+${remaining} categoria(s) adicionais</li>
+      `);
+    }
+
+    fitSettingsToViewportDebounced();
+  };
+
+  const renderCashierSettingsPaymentsSummary = () => {
+    if (!cashierSettingsPaymentSummary) return;
+    cashierSettingsPaymentSummary.innerHTML = '';
+    const methods = Array.isArray(cashierSettingsState?.paymentMethods) ? cashierSettingsState.paymentMethods : [];
+    if (!methods.length) {
+      cashierSettingsPaymentSummary.innerHTML = '<li class="settings-summary-empty">Nenhum metodo cadastrado.</li>';
+      fitSettingsToViewportDebounced();
+      return;
+    }
+    const sorted = [...methods].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    const visible = sorted.slice(0, 3);
+    visible.forEach(method => {
+      const statusClasses = ['settings-summary-status'];
+      if (method.status !== 'Ativo') statusClasses.push('settings-summary-status--inactive');
+      const statusLabel = statusClasses.includes('settings-summary-status--inactive') ? 'Inativo' : 'Ativo';
+      cashierSettingsPaymentSummary.insertAdjacentHTML('beforeend', `
+        <li class="settings-summary-item">
+          <div class="settings-summary-item__meta">
+            <span class="settings-summary-item__name">${method.name}</span>
+            <span class="settings-summary-item__caption">Disponibilidade</span>
+          </div>
+          <span class="${statusClasses.join(' ')}">${statusLabel}</span>
+        </li>
+      `);
+    });
+
+    if (sorted.length > visible.length) {
+      const remaining = sorted.length - visible.length;
+      cashierSettingsPaymentSummary.insertAdjacentHTML('beforeend', `
+        <li class="settings-summary-note">+${remaining} método(s) adicionais</li>
+      `);
+    }
+
+    fitSettingsToViewportDebounced();
+  };
+
+  const fitSettingsToViewport = () => {
+    if (!cashierSettingsFitContainer || !settingsMainElement) return;
+    const element = cashierSettingsFitContainer;
+    element.style.transition = 'none';
+    element.style.transform = 'none';
+    element.classList.remove('settings-fit--scaled');
+
+    const elementRect = element.getBoundingClientRect();
+    const mainRect = settingsMainElement.getBoundingClientRect();
+    const styles = getComputedStyle(settingsMainElement);
+    const paddingBottom = Number.parseFloat(styles.paddingBottom) || 0;
+    const paddingTop = Number.parseFloat(styles.paddingTop) || 0;
+    const availableHeight = window.innerHeight - mainRect.top - paddingBottom - 16;
+    const contentHeight = elementRect.height + paddingTop;
+
+    let scale = 1;
+    if (contentHeight > availableHeight) {
+      scale = Math.max(0.82, Math.min(1, availableHeight / contentHeight));
+    }
+
+    if (scale < 0.999) {
+      element.style.transform = `scale(${scale})`;
+      element.classList.add('settings-fit--scaled');
+    } else {
+      element.style.transform = '';
+      element.classList.remove('settings-fit--scaled');
+    }
+
+    requestAnimationFrame(() => {
+      element.style.transition = '';
+    });
+  };
+
+  const fitSettingsToViewportDebounced = debounce(fitSettingsToViewport, 120);
 
   const renderCashierSettingsCategories = () => {
     if (!cashierSettingsCategoriesBody) return;
@@ -2121,6 +2250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     populateCashierMovementFormOptions();
+    renderCashierSettingsCategoriesSummary();
   };
 
   const renderCashierSettingsPaymentMethods = () => {
@@ -2132,7 +2262,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const emptyCell = document.createElement('td');
       emptyCell.colSpan = 3;
       emptyCell.className = 'text-sm text-subtle-light dark:text-subtle-dark text-center';
-      emptyCell.textContent = 'Nenhum método de pagamento cadastrado.';
+      emptyCell.textContent = 'Nenhum metodo de pagamento cadastrado.';
       emptyRow.appendChild(emptyCell);
       cashierSettingsPaymentMethodsBody.appendChild(emptyRow);
       return;
@@ -2169,7 +2299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cashierSettingsState = { ...cashierSettingsState, paymentMethods: nextMethods };
         saveCashierSettingsToStorage(cashierSettingsState);
         renderCashierSettingsPaymentMethods();
-        showCashierSettingsToast('Status do método atualizado.');
+        showCashierSettingsToast('Status do metodo atualizado.');
       });
       actionsCell.appendChild(toggleButton);
       row.append(nameCell, statusCell, actionsCell);
@@ -2177,6 +2307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     populateCashierMovementFormOptions();
+    renderCashierSettingsPaymentsSummary();
   };
 
   const updateCashierSettingsCashLimitInput = () => {
@@ -2190,7 +2321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCashierSettingsCashLimitInput();
     renderCashierSettingsCategories();
     renderCashierSettingsPaymentMethods();
-    populateCashierMovementFormOptions();
+    fitSettingsToViewportDebounced();
   };
 
   const openCashierCategoryModal = (category = null) => {
@@ -2215,7 +2346,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = (formData.get('name') || '').toString().trim();
     const type = formData.get('type') === 'Despesa' ? 'Despesa' : 'Receita';
     if (!name) {
-      showCashierSettingsToast('Informe um nome válido para a categoria.');
+      showCashierSettingsToast('Informe um nome valido para a categoria.');
       return;
     }
     if (!cashierSettingsState) {
@@ -2276,8 +2407,8 @@ document.addEventListener('DOMContentLoaded', () => {
       URL.revokeObjectURL(url);
       showCashierSettingsToast('Backup dos dados iniciado.');
     } catch (error) {
-      console.warn('Não foi possível gerar o backup das configurações:', error);
-      showCashierSettingsToast('Não foi possível gerar o backup agora.');
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel gerar o backup das configuraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes:', error);
+      showCashierSettingsToast('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel gerar o backup agora.');
     }
   };
 
@@ -2285,7 +2416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = event.target?.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      showCashierSettingsToast('Selecione um arquivo de imagem válido.');
+      showCashierSettingsToast('Selecione um arquivo de imagem vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.');
       event.target.value = '';
       return;
     }
@@ -2320,8 +2451,15 @@ document.addEventListener('DOMContentLoaded', () => {
       cashierSettingsChangeLogoBtn.addEventListener('click', () => cashierSettingsLogoUpload.click());
       cashierSettingsLogoUpload.addEventListener('change', handleCashierSettingsLogoChange);
     }
+    const openCategoryModal = () => openCashierCategoryModal();
     if (cashierSettingsAddCategoryBtn) {
-      cashierSettingsAddCategoryBtn.addEventListener('click', () => openCashierCategoryModal());
+      cashierSettingsAddCategoryBtn.addEventListener('click', openCategoryModal);
+    }
+    if (cashierSettingsAddCategoryBtnSecondary) {
+      cashierSettingsAddCategoryBtnSecondary.addEventListener('click', () => {
+        closeModal('cashier-settings-categories-modal');
+        openCategoryModal();
+      });
     }
     if (cashierCategoryCancelBtn) {
       cashierCategoryCancelBtn.addEventListener('click', () => {
@@ -2344,6 +2482,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cashierSettingsBackupBtn) {
       cashierSettingsBackupBtn.addEventListener('click', handleCashierSettingsBackup);
     }
+    if (cashierSettingsManageCategoriesBtn) {
+      cashierSettingsManageCategoriesBtn.addEventListener('click', () => openModal('cashier-settings-categories-modal'));
+    }
+    if (cashierSettingsCategoriesModal) {
+      cashierSettingsCategoriesModal.addEventListener('click', event => {
+        if (event.target === cashierSettingsCategoriesModal) {
+          closeModal('cashier-settings-categories-modal');
+        }
+      });
+    }
+    if (cashierSettingsManagePaymentsBtn) {
+      cashierSettingsManagePaymentsBtn.addEventListener('click', () => openModal('cashier-settings-payments-modal'));
+    }
+    if (cashierSettingsPaymentsModal) {
+      cashierSettingsPaymentsModal.addEventListener('click', event => {
+        if (event.target === cashierSettingsPaymentsModal) {
+          closeModal('cashier-settings-payments-modal');
+        }
+      });
+    }
+
+    fitSettingsToViewport();
   };
 
   const getStoredDarkModePreference = () => {
@@ -2353,7 +2513,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (stored === null) return null;
       return stored === 'true';
     } catch (error) {
-      console.warn('Não foi possível recuperar o tema salvo:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel recuperar o tema salvo:', error);
       return null;
     }
   };
@@ -2374,7 +2534,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(DARK_MODE_STORAGE_KEY, shouldEnable ? 'true' : 'false');
     } catch (error) {
-      console.warn('Não foi possível salvar a preferência de tema:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar a preferÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªncia de tema:', error);
     }
   };
 
@@ -2528,7 +2688,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           await renderApprovalPage({ silent: true });
         } catch (error) {
-          console.error('Erro ao atualizar usuários em tempo real:', error);
+          console.error('Erro ao atualizar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios em tempo real:', error);
         }
       }
     });
@@ -2545,7 +2705,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         } catch (error) {
-          console.warn('Não foi possível atualizar a foto armazenada localmente:', error);
+          console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel atualizar a foto armazenada localmente:', error);
         }
         try {
           await initProfilePhoto();
@@ -2559,7 +2719,7 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             await renderApprovalPage({ silent: true });
           } catch (error) {
-            console.error('Erro ao atualizar usuários em tempo real:', error);
+            console.error('Erro ao atualizar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios em tempo real:', error);
           }
         }
       }
@@ -2583,7 +2743,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         localStorage.setItem(`profilePhoto_${currentUser}`, photo);
       } catch (error) {
-        console.warn('Não foi possível armazenar a foto de perfil:', error);
+        console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel armazenar a foto de perfil:', error);
       }
     }
     await initProfilePhoto();
@@ -2623,7 +2783,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = inputUsuario.value.trim();
     const password = inputClave.value.trim();
     if (!username || !password) {
-      alert('Preencha usuário e senha.');
+      alert('Preencha usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio e senha.');
       return;
     }
     try {
@@ -2657,7 +2817,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = document.getElementById('register-username').value.trim();
     const password = document.getElementById('register-password').value.trim();
     if (!username || !password) {
-      alert('Preencha usuário e senha.');
+      alert('Preencha usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio e senha.');
       return;
     }
     try {
@@ -2693,7 +2853,7 @@ document.addEventListener('DOMContentLoaded', () => {
             credentials: 'include'
           });
         } catch (error) {
-          console.error('Não foi possível encerrar a sessão no servidor:', error);
+          console.error('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel encerrar a sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o no servidor:', error);
         }
       }
     } finally {
@@ -2738,7 +2898,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const handleSessionExpiry = async () => {
     if (isSessionExpiryHandled) return;
     isSessionExpiryHandled = true;
-    alert('Sua sessão expirou. Faça login novamente.');
+    alert('Sua sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o expirou. FaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§a login novamente.');
     await logout({ skipRequest: true });
   };
 
@@ -2750,7 +2910,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await fetch(input, options);
     if (response.status === 401) {
       await handleSessionExpiry();
-      throw new Error('Sessão expirada. Faça login novamente.');
+      throw new Error('SessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o expirada. FaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§a login novamente.');
     }
     return response;
   };
@@ -2759,7 +2919,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await authenticatedFetch(input, init);
     const data = await response.json();
     if (!response.ok) {
-      const message = (data && data.error) || 'Erro na requisição.';
+      const message = (data && data.error) || 'Erro na requisiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.';
       throw new Error(message);
     }
     return data;
@@ -2832,8 +2992,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderCashierReports(cashierMovementsData);
       recalculateCashierDashboardFromMovements();
     } catch (err) {
-      console.error('Erro ao carregar movimentações:', err);
-      alert('Erro ao carregar movimentações: ' + err.message);
+      console.error('Erro ao carregar movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes:', err);
+      alert('Erro ao carregar movimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -2852,14 +3012,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
       await renderReports(summaryData, stockData);
     } catch (err) {
-      console.error('Erro ao carregar relatórios:', err);
-      alert('Erro ao carregar relatórios: ' + err.message);
+      console.error('Erro ao carregar relatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios:', err);
+      alert('Erro ao carregar relatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
   };
 
-  // Renderizações ---------------------------------------------------------------
+  // RenderizaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµes ---------------------------------------------------------------
   const applyFilters = () => {
     const searchTerm = (searchInput?.value || '').trim().toLowerCase();
     const today = new Date();
@@ -3137,7 +3297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const chartReady = await waitForChartLibrary();
     if (!chartReady) {
-      console.warn('Biblioteca de gráficos indisponível. Os relatórios serão exibidos sem gráficos.');
+      console.warn('Biblioteca de grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ficos indisponÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel. Os relatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios serÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o exibidos sem grÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ficos.');
       return;
     }
 
@@ -3255,19 +3415,19 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'Saída'
+          titlePrefix: 'SaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­da'
         },
         exclusao: {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'Saída'
+          titlePrefix: 'SaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­da'
         },
         baixa: {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'Saída'
+          titlePrefix: 'SaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­da'
         },
         ajuste: {
           icon: 'edit',
@@ -3291,25 +3451,25 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'Usuário'
+          titlePrefix: 'UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio'
         },
         aprovacao_usuario: {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'Usuário'
+          titlePrefix: 'UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio'
         },
         aprovacao: {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'Usuário'
+          titlePrefix: 'UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio'
         },
         default: {
           icon: 'history',
           badgeClasses: 'bg-slate-100 dark:bg-slate-800/60',
           iconClasses: 'text-slate-600 dark:text-slate-300',
-          titlePrefix: 'Movimentação'
+          titlePrefix: 'MovimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o'
         }
       };
 
@@ -3342,14 +3502,14 @@ document.addEventListener('DOMContentLoaded', () => {
           return '';
         })();
         const productName = move.produto || move.nomeProduto || '';
-        const userLabel = move.usuario ? `Usuário: ${move.usuario}` : '';
+        const userLabel = move.usuario ? `UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio: ${move.usuario}` : '';
         const destinationLabel = move.destino ? `Destino: ${move.destino}` : '';
-        const details = [userLabel, destinationLabel].filter(Boolean).join(' · ');
+        const details = [userLabel, destinationLabel].filter(Boolean).join(' ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ');
 
         const timeLabel = (() => {
-          if (!move.data) return 'Data não informada';
+          if (!move.data) return 'Data nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o informada';
           const parsedDate = new Date(move.data);
-          if (Number.isNaN(parsedDate.getTime())) return 'Data não informada';
+          if (Number.isNaN(parsedDate.getTime())) return 'Data nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o informada';
           return parsedDate.toLocaleString('pt-BR', {
             dateStyle: 'short',
             timeStyle: 'short'
@@ -3365,7 +3525,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div>
               <p class="font-medium text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantitySymbol ? quantitySymbol + ' ' : ''}${quantity.toLocaleString('pt-BR')}x ${productName}</p>
-              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'Movimentação registrada no sistema.'}</p>
+              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'MovimentaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o registrada no sistema.'}</p>
             </div>
           </div>
           <p class="text-sm text-subtle-light dark:text-subtle-dark whitespace-nowrap text-right">${timeLabel}</p>`;
@@ -3388,7 +3548,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       pendingUsersList.innerHTML = '';
       if (!pendingData.length) {
-        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário aguardando aprovação.</p>';
+        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio aguardando aprovaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.</p>';
       } else {
         pendingData.forEach(user => {
           const item = document.createElement('div');
@@ -3412,7 +3572,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       activeUsersList.innerHTML = '';
       if (!activeData.length) {
-        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário ativo.</p>';
+        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio ativo.</p>';
       } else {
         activeData.forEach(user => {
           const item = document.createElement('div');
@@ -3444,8 +3604,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       usersDataDirty = false;
     } catch (err) {
-      console.error('Erro ao carregar usuários:', err);
-      alert('Erro ao carregar usuários: ' + err.message);
+      console.error('Erro ao carregar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios:', err);
+      alert('Erro ao carregar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -3466,7 +3626,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (custo === null || Number.isNaN(custo) || custo < 0) {
-      alert('Informe um custo válido.');
+      alert('Informe um custo vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.');
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
@@ -3506,7 +3666,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!product) return;
     currentProductId = product.id;
     editForm.elements.id.value = product.id;
-    editForm.elements.type.value = product.tipo || 'Açaí';
+    editForm.elements.type.value = product.tipo || 'AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§aÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­';
     editForm.elements.name.value = product.produto || '';
     editForm.elements.lot.value = product.lote || '';
     editForm.elements.quantity.value = product.quantidade || 0;
@@ -3540,7 +3700,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const custoInput = editForm.elements.cost?.value ?? '';
     const custo = custoInput === '' ? null : Number.parseFloat(custoInput);
     if (custo === null || Number.isNaN(custo) || custo < 0) {
-      alert('Informe um custo válido.');
+      alert('Informe um custo vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.');
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
@@ -3591,7 +3751,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentProductId) return;
     const motivo = deleteReasonInput.value.trim();
     if (!motivo) {
-      alert('Informe o motivo da exclusão.');
+      alert('Informe o motivo da exclusÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o.');
       return;
     }
     try {
@@ -3605,7 +3765,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadStock();
       await loadMovimentacoes();
       updateHomePage();
-      alert('Produto excluído com sucesso!');
+      alert('Produto excluÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­do com sucesso!');
     } catch (err) {
       alert('Erro ao remover produto: ' + err.message);
     } finally {
@@ -3613,7 +3773,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Gestão de usuários ---------------------------------------------------------
+  // GestÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o de usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios ---------------------------------------------------------
   const approveUser = async userId => {
     try {
       showLoader();
@@ -3622,7 +3782,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       await renderApprovalPage();
     } catch (err) {
-      alert('Erro ao aprovar usuário: ' + err.message);
+      alert('Erro ao aprovar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio: ' + err.message);
     } finally {
       hideLoader();
     }
@@ -3636,7 +3796,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       await renderApprovalPage();
     } catch (err) {
-      alert('Erro ao recusar usuário: ' + err.message);
+      alert('Erro ao recusar usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio: ' + err.message);
     } finally {
       hideLoader();
     }
@@ -3646,14 +3806,14 @@ document.addEventListener('DOMContentLoaded', () => {
     await declineUser(userId);
   };
 
-  // Navegação ------------------------------------------------------------------
+  // NavegaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o ------------------------------------------------------------------
   const storeActivePage = pageId => {
     activePageId = pageId;
     if (typeof window === 'undefined' || !window.localStorage) return;
     try {
       window.localStorage.setItem(ACTIVE_PAGE_STORAGE_KEY, pageId);
     } catch (error) {
-      console.warn('Não foi possível salvar a aba ativa:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel salvar a aba ativa:', error);
     }
   };
 
@@ -3662,7 +3822,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       return window.localStorage.getItem(ACTIVE_PAGE_STORAGE_KEY);
     } catch (error) {
-      console.warn('Não foi possível recuperar a aba ativa:', error);
+      console.warn('NÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel recuperar a aba ativa:', error);
       return null;
     }
   };
@@ -3871,7 +4031,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showLoader();
       const res = await fetch(`${BASE_URL}/api/session`, { credentials: 'include' });
       if (!res.ok) {
-        throw new Error('Sessão não encontrada');
+        throw new Error('SessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o encontrada');
       }
       const data = await res.json();
       await enterApplication({
@@ -3983,7 +4143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert('Imagem deve ter no máximo 5MB.');
+        alert('Imagem deve ter no mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ximo 5MB.');
         profileImageFile = null;
         profileImageUpload.value = '';
         return;
@@ -4006,6 +4166,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSettingsLinks();
   initializeCashierSettings();
   initializeCashierMovementsModule();
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', fitSettingsToViewportDebounced);
+  }
   setupDarkMode();
   updateCashierDashboard();
   registerImageFallbacks(document);
@@ -4080,7 +4243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!event.newValue && currentUser) {
       logout({ skipRequest: true }).catch(err => console.error('Erro ao sincronizar logout:', err));
     } else if (event.newValue && !currentUser) {
-      initializeFromStoredSession().catch(err => console.error('Erro ao sincronizar sessão:', err));
+      initializeFromStoredSession().catch(err => console.error('Erro ao sincronizar sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:', err));
     }
   });
 
