@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const loader = document.getElementById('loader');
   const FALLBACK_PRODUCT_IMAGE = 'img/placeholders/product-placeholder.svg';
   const FALLBACK_AVATAR_IMAGE = 'img/placeholders/avatar-placeholder.svg';
+  const FALLBACK_PRIMARY_COLOR = '#6D28D9';
+  const FALLBACK_PRIMARY_RGB = { r: 109, g: 40, b: 217 };
   let profileImageFile = null;
   let isRefreshingAllData = false;
   const ACTIVE_PAGE_STORAGE_KEY = 'acaiStock_active_page';
@@ -691,20 +693,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas.getContext('2d');
     return color => {
       if (!ctx) return color;
-      ctx.fillStyle = '#16539c';
+      ctx.fillStyle = FALLBACK_PRIMARY_COLOR;
       ctx.fillStyle = color;
       return ctx.fillStyle;
     };
   })();
 
   const hexToRgb = hex => {
-    if (!hex) return { r: 22, g: 83, b: 156 };
+    if (!hex) return { ...FALLBACK_PRIMARY_RGB };
     let normalized = hex.replace('#', '');
     if (normalized.length === 3) {
       normalized = normalized.split('').map(char => char + char).join('');
     }
     const intValue = Number.parseInt(normalized, 16);
-    if (Number.isNaN(intValue)) return { r: 22, g: 83, b: 156 };
+    if (Number.isNaN(intValue)) return { ...FALLBACK_PRIMARY_RGB };
     return {
       r: (intValue >> 16) & 255,
       g: (intValue >> 8) & 255,
@@ -713,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const parseColorToRgb = color => {
-    if (!color) return { r: 22, g: 83, b: 156 };
+    if (!color) return { ...FALLBACK_PRIMARY_RGB };
     const resolved = resolveColorValue(color);
     if (resolved.startsWith('#')) {
       return hexToRgb(resolved);
@@ -726,17 +728,61 @@ document.addEventListener('DOMContentLoaded', () => {
         b: Number(match[3]),
       };
     }
-    return { r: 22, g: 83, b: 156 };
+    return { ...FALLBACK_PRIMARY_RGB };
   };
 
   const mixColorWithWhite = (rgb, weight = 1) => {
-    const clampedWeight = Math.max(0, Math.min(1, weight));
+    const clampedWeight = Math.max(0.45, Math.min(1, weight));
     const whitePortion = 1 - clampedWeight;
     const mix = component => Math.round(component * clampedWeight + 255 * whitePortion);
     return `rgb(${mix(rgb.r)}, ${mix(rgb.g)}, ${mix(rgb.b)})`;
   };
 
   const rgbaFromRgb = (rgb, alpha) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${Math.max(0, Math.min(1, alpha))})`;
+
+  const getAccessibleChartPalette = (count = 6) => {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const candidateVars = [
+      '--color-primary',
+      '--color-secondary',
+      '--color-success',
+      '--color-danger',
+      '--color-info',
+      '--color-warning',
+    ];
+    const palette = [];
+
+    candidateVars.forEach(varName => {
+      const value = rootStyles.getPropertyValue(varName)?.trim();
+      if (!value) return;
+      const resolved = resolveColorValue(value);
+      if (resolved && !palette.includes(resolved)) {
+        palette.push(resolved);
+      }
+    });
+
+    const fallbackColors = [
+      FALLBACK_PRIMARY_COLOR,
+      '#9333EA',
+      '#16A34A',
+      '#DC2626',
+      '#0EA5E9',
+      '#F59E0B',
+      '#1D4ED8',
+      '#F97316',
+      '#4B5563',
+    ];
+
+    fallbackColors.forEach(color => {
+      if (palette.length >= count) return;
+      const resolved = resolveColorValue(color);
+      if (resolved && !palette.includes(resolved)) {
+        palette.push(resolved);
+      }
+    });
+
+    return palette.slice(0, count);
+  };
 
   const normalizeText = value => {
     if (!value) return '';
@@ -1539,7 +1585,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const ChartConstructor = window.Chart;
       const resolvedPeriod = period || 'monthly';
       const rootStyles = getComputedStyle(document.documentElement);
-      const primaryColor = rootStyles.getPropertyValue('--color-primary')?.trim() || '#16539c';
+      const primaryColor = rootStyles.getPropertyValue('--color-primary')?.trim() || FALLBACK_PRIMARY_COLOR;
       const textColor = document.documentElement.classList.contains('dark') ? '#ffffff' : '#111821';
       const subtleColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.6)' : 'rgba(17, 24, 33, 0.6)';
       const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(17, 24, 33, 0.08)';
@@ -1549,10 +1595,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const paymentData = Array.isArray(dataset?.paymentMethods) ? dataset.paymentMethods : [];
       const paymentLabels = paymentData.map(item => item.label);
       const paymentValues = paymentData.map(item => Number(item.value) || 0);
-      const paymentColors = paymentData.map((_, index) => {
-        const weight = index === 0 ? 1 : Math.max(0.25, 0.75 - index * 0.15);
-        return mixColorWithWhite(primaryRgb, weight);
-      });
+      const paymentColors = getAccessibleChartPalette(Math.max(paymentLabels.length, 1));
 
       if (cashierPaymentMethodsChart) {
         cashierPaymentMethodsChart.destroy();
@@ -2875,6 +2918,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }).length;
     reportsKpiExpiring.textContent = expiring;
 
+    const rootStyles = getComputedStyle(document.documentElement);
+    const isDarkTheme = document.documentElement.classList.contains('dark');
+    const axisColor = (isDarkTheme
+      ? rootStyles.getPropertyValue('--color-subtle-dark')
+      : rootStyles.getPropertyValue('--color-subtle-light'))?.trim() || (isDarkTheme ? '#CBD5E1' : '#475569');
+    const gridColor = isDarkTheme ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.2)';
+    const doughnutBorderColor = isDarkTheme ? 'rgba(15, 23, 42, 0.65)' : '#FFFFFF';
+
     const chartReady = await waitForChartLibrary();
     if (!chartReady) {
       console.warn('Biblioteca de gráficos indisponível. Os relatórios serão exibidos sem gráficos.');
@@ -2884,6 +2935,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!stockByProductCanvas || !stockByTypeCanvas) return;
 
     if (stockByProductChart) stockByProductChart.destroy();
+    const productPalette = getAccessibleChartPalette(Math.max(labels.length, 1));
     stockByProductChart = new Chart(stockByProductCanvas, {
       type: 'bar',
       data: {
@@ -2891,19 +2943,19 @@ document.addEventListener('DOMContentLoaded', () => {
         datasets: [{
           label: 'Quantidade',
           data: labels.map(label => Number(estoqueResumo?.[label]) || 0),
-          backgroundColor: ['#6D28D9', '#7C3AED', '#8B5CF6', '#C4B5FD', '#DDD6FE'],
-          borderRadius: 6
-        }]
+          backgroundColor: productPalette,
+          borderRadius: 6,
+        }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { color: '#6B7280' }, grid: { display: false } },
-          y: { ticks: { color: '#6B7280' }, grid: { color: 'rgba(107,114,128,0.2)' } }
-        }
-      }
+          x: { ticks: { color: axisColor }, grid: { display: false } },
+          y: { ticks: { color: axisColor }, grid: { color: gridColor } },
+        },
+      },
     });
 
     const typeCounts = {};
@@ -2912,25 +2964,30 @@ document.addEventListener('DOMContentLoaded', () => {
       typeCounts[key] = (typeCounts[key] || 0) + (Number(item.quantidade) || 0);
     });
 
+    const typeLabels = Object.keys(typeCounts);
+    const typeValues = typeLabels.map(label => typeCounts[label]);
+    const typePalette = getAccessibleChartPalette(Math.max(typeLabels.length, 1));
+
     if (stockByTypeChart) stockByTypeChart.destroy();
     stockByTypeChart = new Chart(stockByTypeCanvas, {
       type: 'doughnut',
       data: {
-        labels: Object.keys(typeCounts),
+        labels: typeLabels,
         datasets: [{
-          data: Object.values(typeCounts),
-          backgroundColor: ['#6D28D9', '#9333EA', '#C084FC', '#E9D5FF', '#A855F7'],
-          borderWidth: 2
-        }]
+          data: typeValues,
+          backgroundColor: typePalette,
+          borderColor: doughnutBorderColor,
+          borderWidth: 2,
+        }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '70%',
         plugins: {
-          legend: { position: 'bottom' }
-        }
-      }
+          legend: { position: 'bottom', labels: { color: axisColor } },
+        },
+      },
     });
   };
 
@@ -3821,4 +3878,3 @@ document.addEventListener('DOMContentLoaded', () => {
   resetProfilePhoto();
   initializeFromStoredSession();
 });
-
