@@ -749,12 +749,41 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const CASHIER_REINFORCEMENT_KEYWORDS = Object.freeze(['reforc', 'aporte', 'supriment', 'reabert']);
+  const CASHIER_REINFORCEMENT_LEADING_WORDS = Object.freeze([
+    'reforco',
+    'reforcos',
+    'suprimento',
+    'suprimentos',
+    'aporte',
+    'aportes',
+    'reabertura',
+    'reaberturas',
+  ]);
 
   const includesReinforcementKeyword = value => {
     if (typeof value !== 'string') return false;
     const normalized = normalizeText(value);
     if (!normalized) return false;
     return CASHIER_REINFORCEMENT_KEYWORDS.some(keyword => normalized.includes(keyword));
+  };
+
+  const startsWithReinforcementWord = value => {
+    if (typeof value !== 'string') return false;
+    const normalized = normalizeText(value);
+    if (!normalized) return false;
+    return CASHIER_REINFORCEMENT_LEADING_WORDS.some(word => normalized === word || normalized.startsWith(`${word} `));
+  };
+
+  const isTruthyReinforcementFlag = value => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value > 0;
+    if (typeof value === 'string') {
+      const normalized = normalizeText(value);
+      if (!normalized) return false;
+      if (['1', 'true', 'sim', 'yes'].includes(normalized)) return true;
+      if (startsWithReinforcementWord(normalized) || includesReinforcementKeyword(normalized)) return true;
+    }
+    return false;
   };
 
   const parseLocaleNumber = rawValue => {
@@ -1328,48 +1357,42 @@ document.addEventListener('DOMContentLoaded', () => {
         return category;
       })();
 
-      if (!isReinforcement && rawType.includes('reforc')) {
+      if (!isReinforcement && includesReinforcementKeyword(rawType)) {
         isReinforcement = true;
       }
 
       if (!isReinforcement) {
         const reinforcementFlags = [movement?.isReforco, movement?.reforco, movement?.isReinforcement, movement?.reinforcement];
-        const hasExplicitReinforcementFlag = reinforcementFlags.some(flag => {
-          if (typeof flag === 'boolean') return flag;
-          if (typeof flag === 'number') return flag > 0;
-          if (typeof flag === 'string') {
-            const normalizedFlag = normalizeText(flag);
-            if (!normalizedFlag) return false;
-            if (['1', 'true', 'sim'].includes(normalizedFlag)) return true;
-            return includesReinforcementKeyword(normalizedFlag);
-          }
-          return false;
-        });
-        if (hasExplicitReinforcementFlag) {
+        if (reinforcementFlags.some(isTruthyReinforcementFlag)) {
           isReinforcement = true;
         }
       }
 
       if (!isReinforcement) {
-        const reinforcementTextCandidates = [
-          movement?.categoria,
-          movement?.category,
+        const reinforcementSpecificCandidates = [
           movement?.categoriaReforco,
+          movement?.origemReforco,
           movement?.origem,
           movement?.fonte,
-          movement?.motivo,
-          movement?.descricao,
-          movement?.descricaoDespesa,
-          movement?.tipoDespesa,
-          movement?.subcategoria,
-          movement?.observacoes,
-          movement?.observations,
-          movement?.notes,
+          movement?.origemRecurso,
+        ];
+        const hasSpecificReinforcementLabel = reinforcementSpecificCandidates.some(candidate =>
+          startsWithReinforcementWord(candidate) || includesReinforcementKeyword(candidate)
+        );
+        if (hasSpecificReinforcementLabel) {
+          isReinforcement = true;
+        }
+      }
+
+      if (!isReinforcement) {
+        const reinforcementLabelCandidates = [
+          movement?.categoria,
+          movement?.category,
           movement?.tipo,
           category,
           reinforcementCategory,
         ];
-        if (reinforcementTextCandidates.some(includesReinforcementKeyword)) {
+        if (reinforcementLabelCandidates.some(startsWithReinforcementWord)) {
           isReinforcement = true;
         }
       }
