@@ -1,4 +1,4 @@
- # Projeto Estoque
+# Projeto Estoque
 
 Aplicação web para gerenciamento de estoque com autenticação, controle de produtos, movimentações e relatórios. A API agora utiliza PostgreSQL 17 (hospedado no Render ou em outra instância compatível) para armazenar usuários, itens de estoque e movimentações.
 
@@ -43,8 +43,8 @@ Para o banco criado com as credenciais abaixo, configure as variáveis no Render
 |------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
 | Host (Internal)                                | `dpg-d3mkd5juibrs738v4fbg-a`                                                                                |
 | Porta                                          | `5432`                                                                                                      |
-| Base de dados                                  | `Exemplo`                                                                              |
-| Usuário                                        | `Exemplo`                                                                         |
+| Base de dados                                  | `banco_de_dados_acai_da_barra`                                                                              |
+| Usuário                                        | `banco_de_dados_acai_da_barra_user`                                                                         |
 | `DATABASE_URL`                                 | `postgresql://banco_de_dados_acai_da_barra_user:SUA_SENHA_AQUI@dpg-d3mkd5juibrs738v4fbg-a/banco_de_dados_acai_da_barra` |
 | Comando para testar via Shell do Render (PSQL) | `PGPASSWORD=SUA_SENHA_AQUI psql -h dpg-d3mkd5juibrs738v4fbg-a.oregon-postgres.render.com -U banco_de_dados_acai_da_barra_user banco_de_dados_acai_da_barra` |
 

@@ -1,4 +1,4 @@
-﻿const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 const isLocalEnvironment = /127\.0\.0\.1|localhost/.test(currentOrigin);
 const BASE_URL = isLocalEnvironment ? '' : 'https://projeto-estoque-o1x5.onrender.com';
 
@@ -31,85 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const DARK_MODE_STORAGE_KEY = 'acaiStock_dark_mode';
   const AUTO_REFRESH_INTERVAL_MS = 60_000;
   let autoRefreshIntervalId = null;
-  const MOJIBAKE_PATTERN = /(?:Ã.|Â.|â.|¢|€|™|ï|»|¿)/;
-
-  const decodeLatin1String = value => {
-    try {
-      let percentEncoded = '';
-      for (let i = 0; i < value.length; i += 1) {
-        const code = value.charCodeAt(i) & 0xff;
-        percentEncoded += `%${code.toString(16).padStart(2, '0')}`;
-      }
-      return decodeURIComponent(percentEncoded);
-    } catch {
-      return value;
-    }
-  };
-
-  const decodeSuspectString = input => {
-    if (typeof input !== 'string' || !input) return input;
-    let result = input;
-    for (let attempt = 0; attempt < 4; attempt += 1) {
-      if (!MOJIBAKE_PATTERN.test(result)) break;
-      const decoded = decodeLatin1String(result);
-      if (decoded === result) break;
-      result = decoded;
-    }
-    try {
-      return typeof result.normalize === 'function' ? result.normalize('NFC') : result;
-    } catch {
-      return result;
-    }
-  };
-
-  const sanitizeTextNode = node => {
-    if (!node || node.nodeType !== Node.TEXT_NODE) return;
-    const original = node.textContent;
-    if (!original || !MOJIBAKE_PATTERN.test(original)) return;
-    const fixed = decodeSuspectString(original);
-    if (fixed !== original) {
-      node.textContent = fixed;
-    }
-  };
-
-  const sanitizeTextTree = root => {
-    if (!root) return;
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-    const nodes = [];
-    while (walker.nextNode()) {
-      nodes.push(walker.currentNode);
-    }
-    nodes.forEach(sanitizeTextNode);
-  };
-
-  if (typeof window !== 'undefined') {
-    const originalAlert = window.alert?.bind(window);
-    if (originalAlert) {
-      window.alert = message => originalAlert(decodeSuspectString(String(message)));
-    }
-    const originalConfirm = window.confirm?.bind(window);
-    if (originalConfirm) {
-      window.confirm = message => originalConfirm(decodeSuspectString(String(message)));
-    }
-    const originalPrompt = window.prompt?.bind(window);
-    if (originalPrompt) {
-      window.prompt = (message, defaultValue) => originalPrompt(
-        decodeSuspectString(String(message)),
-        defaultValue === undefined ? defaultValue : decodeSuspectString(String(defaultValue)),
-      );
-    }
-  }
-  const debounce = (fn, delay = 150) => {
-    let timeoutId;
-    return (...args) => {
-      if (timeoutId) {
-        window.clearTimeout(timeoutId);
-      }
-      timeoutId = window.setTimeout(() => {
-        fn(...args);
-      }, delay);
-    };
-  };
   let activePageId = null;
   let socket = null;
   let usersDataDirty = true;
@@ -139,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePasswordRegisterIcon = document.getElementById('toggle-password-register-icon');
   const monster = document.getElementById('monster');
 
-  // Elementos gerais da aplicaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o
+  // Elementos gerais da aplicação
   const mainMenu = document.getElementById('main-menu');
   const sidebar = document.getElementById('sidebar');
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
@@ -210,10 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierRegisterMovementBtn = document.getElementById('register-movement-btn');
   const cashierMovementModal = document.getElementById('cashier-movement-modal');
   const cashierMovementForm = document.getElementById('cashier-movement-form');
-  const movementTypeSelect = document.getElementById('movement-type');
-  const movementCategorySelect = document.getElementById('movement-category');
-  const movementCategoryCustomInput = document.getElementById('movement-category-custom');
-  const movementPaymentMethodSelect = document.getElementById('movement-payment-method');
   const cashierCancelMovementBtn = document.getElementById('cancel-movement-btn');
 
   const pendingUsersList = document.getElementById('pending-users-list');
@@ -246,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   };
 
-  // ReferÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âªncias dos KPIs
+  // Referências dos KPIs
   const homeKpiTotalStock = document.getElementById('home-kpi-total-stock');
   const homeKpiLowStock = document.getElementById('home-kpi-low-stock');
   const homeKpiExpiring = document.getElementById('home-kpi-expiring');
@@ -281,17 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierCategoryTypeInput = document.getElementById('cashier-category-type');
   const cashierCategoryCancelBtn = document.getElementById('cashier-category-cancel-btn');
   const cashierSettingsToast = document.getElementById('cashier-settings-toast');
-  const cashierSettingsCategoriesSummary = document.getElementById('cashier-settings-categories-summary');
-  const cashierSettingsPaymentSummary = document.getElementById('cashier-settings-payment-methods-summary');
-  const cashierSettingsManageCategoriesBtn = document.getElementById('cashier-settings-manage-categories-btn');
-  const cashierSettingsManagePaymentsBtn = document.getElementById('cashier-settings-manage-payments-btn');
-  const cashierSettingsCategoriesModal = document.getElementById('cashier-settings-categories-modal');
-  const cashierSettingsPaymentsModal = document.getElementById('cashier-settings-payments-modal');
-  const cashierSettingsAddCategoryBtnSecondary = document.getElementById('cashier-settings-add-category-btn-secondary');
-  const cashierSettingsFitContainer = document.getElementById('cashier-settings-fit');
-  const settingsMainElement = document.querySelector('.settings-main');
 
-  // Avatar do usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio (existem vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rias instÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¢ncias na interface)
+  // Avatar do usuário (existem várias instâncias na interface)
   const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
 
   let currentProductId = null;
@@ -381,10 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(ACTIVE_MODULE_STORAGE_KEY, moduleName);
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar o mÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³dulo selecionado:', error);
+      console.warn('Não foi possível salvar o módulo selecionado:', error);
     }
-
-    fitSettingsToViewportDebounced();
   };
 
   const getStoredActiveModule = () => {
@@ -392,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       return window.localStorage.getItem(ACTIVE_MODULE_STORAGE_KEY);
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel recuperar o mÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³dulo selecionado:', error);
+      console.warn('Não foi possível recuperar o módulo selecionado:', error);
       return null;
     }
   };
@@ -494,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ username, userId, role }));
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar a sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o:', error);
+      console.warn('Não foi possível salvar a sessão:', error);
     }
   };
 
@@ -509,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!username || !userId || !role) return null;
       return { username, userId, role };
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel recuperar a sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o:', error);
+      console.warn('Não foi possível recuperar a sessão:', error);
       return null;
     }
   };
@@ -519,11 +425,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.removeItem(SESSION_STORAGE_KEY);
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel limpar a sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o:', error);
+      console.warn('Não foi possível limpar a sessão:', error);
     }
   };
 
-  // UtilitÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios -----------------------------------------------------------------
+  // Utilitários -----------------------------------------------------------------
   const showLoader = () => loader?.classList.remove('hidden');
   const hideLoader = () => loader?.classList.add('hidden');
 
@@ -554,16 +460,14 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const buildSuggestionSection = (title, icon, items, emptyMessage) => {
-    const safeTitle = decodeSuspectString(title);
-    const safeEmpty = decodeSuspectString(emptyMessage);
     if (!items || items.length === 0) {
       return `
         <section class="bg-background-light dark:bg-background-dark rounded-xl border border-gray-200/70 dark:border-gray-700/70 p-5">
           <header class="flex items-center gap-2 mb-3">
             <span class="material-icons text-secondary">${icon}</span>
-            <h3 class="text-lg font-semibold">${safeTitle}</h3>
+            <h3 class="text-lg font-semibold">${title}</h3>
           </header>
-          <p class="text-sm text-subtle-light dark:text-subtle-dark">${safeEmpty}</p>
+          <p class="text-sm text-subtle-light dark:text-subtle-dark">${emptyMessage}</p>
         </section>`;
     }
 
@@ -571,21 +475,18 @@ document.addEventListener('DOMContentLoaded', () => {
       .map(item => {
         const quantity = Number(item.quantidade) || 0;
         const validade = item.validade ? formatDate(item.validade) : 'Sem validade';
-        const details = [
-          item.lote ? decodeSuspectString(`Lote ${item.lote}`) : null,
-          `${quantity} un.`,
-          `Validade: ${validade}`
-        ].filter(Boolean);
-        const name = decodeSuspectString(item.produto || 'Produto');
-        const type = decodeSuspectString(item.tipo || 'Categoria');
+        const subtitleParts = [];
+        if (item.lote) subtitleParts.push(`Lote ${item.lote}`);
+        subtitleParts.push(`${quantity} un.`);
+        subtitleParts.push(`Validade: ${validade}`);
         return `
           <li class="flex items-start justify-between gap-4 py-2">
             <div>
-              <p class="font-medium">${name}</p>
-              <p class="text-xs text-subtle-light dark:text-subtle-dark">${decodeSuspectString(details.join(' • '))}</p>
+              <p class="font-medium">${item.produto || 'Produto'}</p>
+              <p class="text-xs text-subtle-light dark:text-subtle-dark">${subtitleParts.join(' • ')}</p>
             </div>
             <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-              ${type}
+              ${item.tipo || 'Categoria'}
             </span>
           </li>`;
       })
@@ -595,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <section class="bg-background-light dark:bg-background-dark rounded-xl border border-gray-200/70 dark:border-gray-700/70 p-5">
         <header class="flex items-center gap-2 mb-3">
           <span class="material-icons text-secondary">${icon}</span>
-          <h3 class="text-lg font-semibold">${safeTitle}</h3>
+          <h3 class="text-lg font-semibold">${title}</h3>
         </header>
         <ul class="divide-y divide-gray-200/70 dark:divide-gray-700/60">${listItems}</ul>
       </section>`;
@@ -633,9 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return `
       <div class="space-y-5">
-        
-        
-        
+        ${buildSuggestionSection('Repor com urgência', 'inventory_2', lowStock, 'Nenhum item com estoque crítico no momento.')}
+        ${buildSuggestionSection('Atentos à validade', 'event_available', expiringSoon, 'Sem produtos próximos do vencimento nos próximos 45 dias.')}
+        ${buildSuggestionSection('Itens mais procurados', 'trending_up', bestSellers, 'Ainda não há histórico suficiente para recomendações.')}
       </div>`;
   };
 
@@ -725,8 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const trend = metric?.trend === 'down' ? 'down' : changeValue < 0 ? 'down' : 'up';
       iconEl.textContent = trend === 'down' ? 'arrow_downward' : 'arrow_upward';
       const sign = changeValue > 0 ? '+' : '';
-      const changeLabel = decodeSuspectString(`${sign}${changeValue}% vs mÃªs passado`);
-      changeTextEl.textContent = changeLabel;
+      changeTextEl.textContent = `${sign}${changeValue}% vs mês passado`;
       changeWrapper.classList.remove('text-success', 'text-danger');
       changeWrapper.classList.add(trend === 'down' ? 'text-danger' : 'text-success');
     });
@@ -886,7 +786,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const normalizeText = value => {
     if (!value) return '';
-    return decodeSuspectString(value.toString())
+    return value
+      .toString()
       .trim()
       .toLowerCase()
       .normalize('NFD')
@@ -1148,7 +1049,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel limpar movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes antigas do caixa:', error);
+      console.warn('Não foi possível limpar movimentações antigas do caixa:', error);
     }
   };
 
@@ -1161,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!Array.isArray(parsed)) return null;
       return sortCashierMovements(parsed.map(normalizeCashierMovement).filter(Boolean));
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel carregar as movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes de caixa salvas:', error);
+      console.warn('Não foi possível carregar as movimentações de caixa salvas:', error);
       return null;
     }
   };
@@ -1174,7 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
         JSON.stringify(sortCashierMovements(movements))
       );
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar as movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes de caixa:', error);
+      console.warn('Não foi possível salvar as movimentações de caixa:', error);
     }
   };
 
@@ -1254,12 +1155,12 @@ document.addEventListener('DOMContentLoaded', () => {
       typeCell.className = 'px-6 py-4';
       const typeBadge = document.createElement('span');
       typeBadge.className = `px-2 py-1 text-xs font-semibold rounded-full ${typeClass}`;
-      typeBadge.textContent = decodeSuspectString(movement?.tipo || '-');
+      typeBadge.textContent = movement?.tipo || '-';
       typeCell.appendChild(typeBadge);
 
       const categoryCell = document.createElement('td');
       categoryCell.className = 'px-6 py-4 text-sm';
-      categoryCell.textContent = decodeSuspectString(movement?.categoria || '—');
+      categoryCell.textContent = movement?.categoria || '—';
 
       const valueCell = document.createElement('td');
       valueCell.className = `px-6 py-4 text-right text-sm font-semibold ${valueClass}`;
@@ -1267,11 +1168,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const employeeCell = document.createElement('td');
       employeeCell.className = 'px-6 py-4 text-sm';
-      employeeCell.textContent = decodeSuspectString(movement?.funcionario || '—');
+      employeeCell.textContent = movement?.funcionario || '—';
 
       const observationsCell = document.createElement('td');
       observationsCell.className = 'px-6 py-4 text-sm max-w-xs';
-      observationsCell.textContent = movement?.observacoes?.trim() ? decodeSuspectString(movement.observacoes) : '—';
+      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : '—';
 
       tr.appendChild(dateCell);
       tr.appendChild(typeCell);
@@ -1349,10 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  const openCashierMovementModal = () => {
-    populateCashierMovementFormOptions();
-    openModal('cashier-movement-modal');
-  };
+  const openCashierMovementModal = () => openModal('cashier-movement-modal');
   const closeCashierMovementModal = () => closeModal('cashier-movement-modal');
 
   const handleCashierMovementSubmit = event => {
@@ -1361,51 +1259,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formData = new FormData(cashierMovementForm);
     const type = (formData.get('type') || 'Entrada').toString();
+    const category = (formData.get('category') || '').toString().trim() || 'Outros';
     const employee = (formData.get('employee') || '').toString().trim() || 'Equipe';
     const observations = (formData.get('observations') || '').toString().trim();
-    const selectedCategory = (formData.get('category') || '').toString();
-    const customCategory = (formData.get('category-custom') || '').toString().trim();
-
-    let category = selectedCategory;
-    if (!category || category === '__custom__' || category === '__placeholder__') {
-      category = customCategory;
-    }
-    if (!category) {
-      alert('Informe uma categoria para a movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.');
-      return;
-    }
 
     const rawValue = formData.get('value');
     const numericValue = parseLocaleNumber(rawValue);
     if (!Number.isFinite(numericValue) || numericValue <= 0) {
-      alert('Informe um valor vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡lido para a movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.');
+      alert('Informe um valor válido para a movimentação.');
       return;
     }
     const sanitizedValue = Math.round(Math.abs(numericValue) * 100) / 100;
 
     const normalizedType = normalizeText(type);
-    const paymentMethodRaw = (formData.get('payment-method') || '').toString().trim()
-      || movementPaymentMethodSelect?.value
-      || (normalizedType === 'saida' ? 'Cartão' : 'Dinheiro');
-    const paymentMethod = paymentMethodRaw || 'Dinheiro';
-    const normalizedPaymentMethod = normalizeText(paymentMethod);
-
-    const cashLimit = parseCashierCashLimitValue();
-    if (Number.isFinite(cashLimit) && normalizedType !== 'saida') {
-      const cashMethodNames = new Set(
-        getCashPaymentMethodNames().map(name => normalizeText(name)).filter(Boolean),
-      );
-      const isCashPayment = cashMethodNames.has(normalizedPaymentMethod) || isCashPaymentMethodName(paymentMethod);
-      if (isCashPayment) {
-        const currentCashOnHand = calculateCashOnHand();
-        const projectedCash = currentCashOnHand + sanitizedValue;
-        if (projectedCash > cashLimit) {
-          const formattedLimit = formatCurrencyBRL(cashLimit);
-          alert(`Esta operaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o ultrapassa o limite de caixa configurado (${formattedLimit}). Ajuste o valor ou selecione outra forma de pagamento.`);
-          return;
-        }
-      }
-    }
+    const defaultPayment = normalizedType === 'saida' ? 'Despesas' : 'Dinheiro';
 
     const newMovement = {
       id: `cashier-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
@@ -1415,7 +1282,7 @@ document.addEventListener('DOMContentLoaded', () => {
       valor: sanitizedValue,
       funcionario: employee,
       observacoes: observations,
-      formaPagamento: paymentMethod,
+      formaPagamento: defaultPayment,
     };
 
     cashierMovementsData = sortCashierMovements([newMovement, ...cashierMovementsData]);
@@ -1434,25 +1301,11 @@ document.addEventListener('DOMContentLoaded', () => {
     purgeLegacyCashierMovementsStorage();
     const storedMovements = loadCashierMovementsFromStorage();
     cashierMovementsData = Array.isArray(storedMovements) ? storedMovements : [];
-    populateCashierMovementFormOptions();
 
     setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
     renderCashierMovementsTable();
     recalculateCashierDashboardFromMovements();
     renderCashierReports(cashierMovementsData);
-
-    if (movementTypeSelect) {
-      movementTypeSelect.addEventListener('change', () => {
-        populateCashierCategoryOptions(movementTypeSelect.value);
-      });
-    }
-
-    if (movementCategorySelect) {
-      movementCategorySelect.addEventListener('change', () => {
-        const shouldShowCustom = movementCategorySelect.value === '__custom__';
-        toggleCustomCategoryInputVisibility(shouldShowCustom);
-      });
-    }
 
     if (cashierFilterButtons) {
       cashierFilterButtons.addEventListener('click', event => {
@@ -1467,7 +1320,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cashierRegisterMovementBtn) {
       cashierRegisterMovementBtn.addEventListener('click', () => {
         cashierMovementForm?.reset();
-        populateCashierMovementFormOptions();
         openCashierMovementModal();
       });
     }
@@ -1475,7 +1327,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cashierCancelMovementBtn) {
       cashierCancelMovementBtn.addEventListener('click', () => {
         cashierMovementForm?.reset();
-        populateCashierMovementFormOptions();
         closeCashierMovementModal();
       });
     }
@@ -1659,8 +1510,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const values = Array.isArray(items) ? items : [];
     const total = values.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
     if (!values.length || total <= 0) {
-      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel.</li>';
       cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</li>';
+      return;
     }
 
     values.forEach((item, index) => {
@@ -1690,19 +1541,19 @@ document.addEventListener('DOMContentLoaded', () => {
     cashierSelectedAnalysis = view;
     cashierAnalysisList.innerHTML = '';
     if (!cachedCashierReportsData) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel.</p>';
       cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      return;
     }
     const dataset = cachedCashierReportsData.comparative?.[view] || [];
     if (!dataset.length) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel.</p>';
       cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      return;
     }
     const sorted = [...dataset].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
     const maxValue = Math.max(...sorted.map(item => Number(item.value) || 0), 0);
     if (maxValue <= 0) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel.</p>';
       cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
+      return;
     }
     cashierAnalysisList.innerHTML = sorted.map(item => {
       const value = Number(item.value) || 0;
@@ -1727,7 +1578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const chartReady = await waitForChartLibrary();
       if (!chartReady || typeof window === 'undefined' || typeof window.Chart !== 'function') {
-        console.warn('Biblioteca de grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ficos indisponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel para atualizar os relatÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³rios do caixa.');
+        console.warn('Biblioteca de gráficos indisponível para atualizar os relatórios do caixa.');
         return;
       }
 
@@ -1785,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : [];
       const context = cashierCashFlowCanvas.getContext('2d');
       if (!context) {
-        console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel obter o contexto 2D para renderizar o grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡fico de fluxo de caixa.');
+        console.warn('Não foi possível obter o contexto 2D para renderizar o gráfico de fluxo de caixa.');
         return;
       }
       const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
@@ -1856,7 +1707,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
       });
     } catch (error) {
-      console.error('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel atualizar os grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ficos do caixa:', error);
+      console.error('Não foi possível atualizar os gráficos do caixa:', error);
     }
   };
 
@@ -1907,7 +1758,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // ConfiguraÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes do Caixa ------------------------------------------------------
+  // Configurações do Caixa ------------------------------------------------------
   const CASHIER_SETTINGS_STORAGE_KEY = 'acaiStock_cashier_settings';
   const DEFAULT_CASHIER_SETTINGS = Object.freeze({
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw',
@@ -1920,7 +1771,7 @@ document.addEventListener('DOMContentLoaded', () => {
     paymentMethods: [
       { id: 'payment-1', name: 'Dinheiro', status: 'Ativo' },
       { id: 'payment-2', name: 'Cartão de Crédito', status: 'Ativo' },
-      { id: 'payment-3', name: 'Pagamento MÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³vel', status: 'Inativo' },
+      { id: 'payment-3', name: 'Pagamento Móvel', status: 'Inativo' },
     ],
   });
 
@@ -1930,156 +1781,6 @@ document.addEventListener('DOMContentLoaded', () => {
     categories: DEFAULT_CASHIER_SETTINGS.categories.map(category => ({ ...category })),
     paymentMethods: DEFAULT_CASHIER_SETTINGS.paymentMethods.map(method => ({ ...method })),
   });
-
-  const resolveCashierCategoryTypeFromMovement = movementTypeValue => {
-    const normalized = normalizeText(movementTypeValue);
-    return normalized === 'saida' ? 'Despesa' : 'Receita';
-  };
-
-  const getActiveCashierCategories = movementTypeValue => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    const expectedType = resolveCashierCategoryTypeFromMovement(movementTypeValue);
-    return Array.isArray(cashierSettingsState?.categories)
-      ? cashierSettingsState.categories.filter(category => (
-        category
-        && category.status !== 'Inativo'
-        && category.type === expectedType
-        && typeof category.name === 'string'
-      ))
-      : [];
-  };
-
-  const getActiveCashierPaymentMethods = () => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    return Array.isArray(cashierSettingsState?.paymentMethods)
-      ? cashierSettingsState.paymentMethods.filter(method => (
-        method
-        && method.status !== 'Inativo'
-        && typeof method.name === 'string'
-      ))
-      : [];
-  };
-
-  const isCashPaymentMethodName = methodName => {
-    const normalized = normalizeText(methodName);
-    if (!normalized) return false;
-    return normalized.includes('dinheir') || normalized.includes('cash') || normalized.includes('espÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â©cie') || normalized.includes('especie');
-  };
-
-  const getCashPaymentMethodNames = () => {
-    const activeMethods = getActiveCashierPaymentMethods();
-    const names = activeMethods.map(method => method.name);
-    if (!names.some(name => isCashPaymentMethodName(name))) {
-      names.push('Dinheiro');
-    }
-    return names;
-  };
-
-  const parseCashierCashLimitValue = () => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    const raw = cashierSettingsState?.cashLimit;
-    const numeric = parseLocaleNumber(raw);
-    return Number.isFinite(numeric) && numeric > 0 ? numeric : Number.NaN;
-  };
-
-  const toggleCustomCategoryInputVisibility = shouldShow => {
-    if (!movementCategoryCustomInput) return;
-    movementCategoryCustomInput.classList.toggle('hidden', !shouldShow);
-    movementCategoryCustomInput.required = shouldShow;
-    if (!shouldShow) {
-      movementCategoryCustomInput.value = '';
-    } else {
-      movementCategoryCustomInput.focus();
-    }
-  };
-
-  const populateCashierCategoryOptions = movementTypeValue => {
-    if (!movementCategorySelect) return;
-    const categories = getActiveCashierCategories(movementTypeValue);
-    movementCategorySelect.innerHTML = '';
-
-    if (categories.length) {
-      categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category.name;
-        option.textContent = category.name;
-        movementCategorySelect.appendChild(option);
-      });
-      const customOption = document.createElement('option');
-      customOption.value = '__custom__';
-      customOption.textContent = 'Outra (digitar manualmente)';
-      movementCategorySelect.appendChild(customOption);
-      movementCategorySelect.disabled = false;
-      movementCategorySelect.value = categories[0].name;
-      toggleCustomCategoryInputVisibility(false);
-      return;
-    }
-
-    const fallbackOption = document.createElement('option');
-    fallbackOption.value = '__custom__';
-    fallbackOption.textContent = 'Nenhuma categoria configurada';
-    movementCategorySelect.appendChild(fallbackOption);
-    movementCategorySelect.value = '__custom__';
-    movementCategorySelect.disabled = true;
-    toggleCustomCategoryInputVisibility(true);
-  };
-
-  const populateCashierPaymentMethodOptions = () => {
-    if (!movementPaymentMethodSelect) return;
-    const methods = getActiveCashierPaymentMethods();
-    movementPaymentMethodSelect.innerHTML = '';
-
-    if (methods.length) {
-      methods.forEach(method => {
-        const option = document.createElement('option');
-        option.value = method.name;
-        option.textContent = method.name;
-        movementPaymentMethodSelect.appendChild(option);
-      });
-      movementPaymentMethodSelect.disabled = false;
-      movementPaymentMethodSelect.value = methods[0].name;
-      return;
-    }
-
-    const fallbackOption = document.createElement('option');
-    fallbackOption.value = 'Dinheiro';
-    fallbackOption.textContent = 'Dinheiro';
-    movementPaymentMethodSelect.appendChild(fallbackOption);
-    movementPaymentMethodSelect.disabled = true;
-    movementPaymentMethodSelect.value = 'Dinheiro';
-  };
-
-  const populateCashierMovementFormOptions = () => {
-    if (!cashierMovementForm) return;
-    const currentType = movementTypeSelect?.value || 'Entrada';
-    populateCashierCategoryOptions(currentType);
-    populateCashierPaymentMethodOptions();
-  };
-
-  const calculateCashOnHand = () => {
-    if (!Array.isArray(cashierMovementsData) || !cashierMovementsData.length) return 0;
-    const cashNames = getCashPaymentMethodNames()
-      .map(name => normalizeText(name))
-      .filter(Boolean);
-    const cashNamesSet = new Set(cashNames);
-    return cashierMovementsData.reduce((total, movement) => {
-      const method = normalizeText(movement?.formaPagamento);
-      if (!method) return total;
-      const isCashMovement = cashNamesSet.has(method) || isCashPaymentMethodName(method);
-      if (!isCashMovement) return total;
-      const amount = parseMovementAmount(movement);
-      if (!(amount > 0)) return total;
-      const type = normalizeText(movement?.tipo);
-      const sign = type === 'saida' ? -1 : 1;
-      return total + amount * sign;
-    }, 0);
-  };
 
   const normalizeCashierCategory = category => {
     if (!category || typeof category !== 'object') return null;
@@ -2134,7 +1835,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return next;
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel carregar as configuraÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes do caixa:', error);
+      console.warn('Não foi possível carregar as configurações do caixa:', error);
       return cloneDefaultCashierSettings();
     }
   };
@@ -2144,7 +1845,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(CASHIER_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar as configuraÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes do caixa:', error);
+      console.warn('Não foi possível salvar as configurações do caixa:', error);
     }
   };
 
@@ -2172,113 +1873,6 @@ document.addEventListener('DOMContentLoaded', () => {
       cashierSettingsLogoPreview.style.backgroundImage = '';
     }
   };
-
-  const renderCashierSettingsCategoriesSummary = () => {
-    if (!cashierSettingsCategoriesSummary) return;
-    cashierSettingsCategoriesSummary.innerHTML = '';
-    const categories = Array.isArray(cashierSettingsState?.categories) ? cashierSettingsState.categories : [];
-    if (!categories.length) {
-      cashierSettingsCategoriesSummary.innerHTML = '<li class="settings-summary-empty">Nenhuma categoria cadastrada.</li>';
-      fitSettingsToViewportDebounced();
-      return;
-    }
-    const sorted = [...categories].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-    const visibleItems = sorted.slice(0, 3);
-
-    visibleItems.forEach(category => {
-      const statusClasses = ['settings-summary-status'];
-      if (category.status !== 'Ativo') statusClasses.push('settings-summary-status--inactive');
-      cashierSettingsCategoriesSummary.insertAdjacentHTML('beforeend', `
-        <li class="settings-summary-item">
-          <div class="settings-summary-item__meta">
-            <span class="settings-summary-item__name">${category.name}</span>
-            <span class="settings-summary-item__caption">${category.type}</span>
-          </div>
-          <span class="${statusClasses.join(' ')}">${category.status}</span>
-        </li>
-      `);
-    });
-
-    if (sorted.length > visibleItems.length) {
-      const remaining = sorted.length - visibleItems.length;
-      cashierSettingsCategoriesSummary.insertAdjacentHTML('beforeend', `
-        <li class="settings-summary-note">+${remaining} categoria(s) adicionais</li>
-      `);
-    }
-
-    fitSettingsToViewportDebounced();
-  };
-
-  const renderCashierSettingsPaymentsSummary = () => {
-    if (!cashierSettingsPaymentSummary) return;
-    cashierSettingsPaymentSummary.innerHTML = '';
-    const methods = Array.isArray(cashierSettingsState?.paymentMethods) ? cashierSettingsState.paymentMethods : [];
-    if (!methods.length) {
-      cashierSettingsPaymentSummary.innerHTML = '<li class="settings-summary-empty">Nenhum metodo cadastrado.</li>';
-      fitSettingsToViewportDebounced();
-      return;
-    }
-    const sorted = [...methods].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-    const visible = sorted.slice(0, 3);
-    visible.forEach(method => {
-      const statusClasses = ['settings-summary-status'];
-      if (method.status !== 'Ativo') statusClasses.push('settings-summary-status--inactive');
-      const statusLabel = statusClasses.includes('settings-summary-status--inactive') ? 'Inativo' : 'Ativo';
-      cashierSettingsPaymentSummary.insertAdjacentHTML('beforeend', `
-        <li class="settings-summary-item">
-          <div class="settings-summary-item__meta">
-            <span class="settings-summary-item__name">${method.name}</span>
-            <span class="settings-summary-item__caption">Disponibilidade</span>
-          </div>
-          <span class="${statusClasses.join(' ')}">${statusLabel}</span>
-        </li>
-      `);
-    });
-
-    if (sorted.length > visible.length) {
-      const remaining = sorted.length - visible.length;
-      cashierSettingsPaymentSummary.insertAdjacentHTML('beforeend', `
-        <li class="settings-summary-note">+${remaining} mÃƒÂ©todo(s) adicionais</li>
-      `);
-    }
-
-    fitSettingsToViewportDebounced();
-  };
-
-  const fitSettingsToViewport = () => {
-    if (!cashierSettingsFitContainer || !settingsMainElement) return;
-    const element = cashierSettingsFitContainer;
-    element.style.transition = 'none';
-    element.style.transform = 'none';
-    element.classList.remove('settings-fit--scaled');
-
-    const elementRect = element.getBoundingClientRect();
-    const mainRect = settingsMainElement.getBoundingClientRect();
-    const styles = getComputedStyle(settingsMainElement);
-    const paddingBottom = Number.parseFloat(styles.paddingBottom) || 0;
-    const paddingTop = Number.parseFloat(styles.paddingTop) || 0;
-    const availableHeight = window.innerHeight - mainRect.top - paddingBottom - 16;
-    const contentHeight = elementRect.height + paddingTop;
-
-    let scale = 1;
-    if (contentHeight > availableHeight) {
-      scale = Math.max(0.82, Math.min(1, availableHeight / contentHeight));
-    }
-
-    if (scale < 0.999) {
-      element.style.transform = `scale(${scale})`;
-      element.classList.add('settings-fit--scaled');
-    } else {
-      element.style.transform = '';
-      element.classList.remove('settings-fit--scaled');
-    }
-
-    requestAnimationFrame(() => {
-      element.style.transition = '';
-    });
-  };
-
-  const fitSettingsToViewportDebounced = debounce(fitSettingsToViewport, 120);
 
   const renderCashierSettingsCategories = () => {
     if (!cashierSettingsCategoriesBody) return;
@@ -2321,9 +1915,6 @@ document.addEventListener('DOMContentLoaded', () => {
       row.append(nameCell, typeCell, statusCell, actionsCell);
       cashierSettingsCategoriesBody.appendChild(row);
     });
-
-    populateCashierMovementFormOptions();
-    renderCashierSettingsCategoriesSummary();
   };
 
   const renderCashierSettingsPaymentMethods = () => {
@@ -2335,7 +1926,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const emptyCell = document.createElement('td');
       emptyCell.colSpan = 3;
       emptyCell.className = 'text-sm text-subtle-light dark:text-subtle-dark text-center';
-      emptyCell.textContent = 'Nenhum metodo de pagamento cadastrado.';
+      emptyCell.textContent = 'Nenhum método de pagamento cadastrado.';
       emptyRow.appendChild(emptyCell);
       cashierSettingsPaymentMethodsBody.appendChild(emptyRow);
       return;
@@ -2372,15 +1963,12 @@ document.addEventListener('DOMContentLoaded', () => {
         cashierSettingsState = { ...cashierSettingsState, paymentMethods: nextMethods };
         saveCashierSettingsToStorage(cashierSettingsState);
         renderCashierSettingsPaymentMethods();
-        showCashierSettingsToast('Status do metodo atualizado.');
+        showCashierSettingsToast('Status do método atualizado.');
       });
       actionsCell.appendChild(toggleButton);
       row.append(nameCell, statusCell, actionsCell);
       cashierSettingsPaymentMethodsBody.appendChild(row);
     });
-
-    populateCashierMovementFormOptions();
-    renderCashierSettingsPaymentsSummary();
   };
 
   const updateCashierSettingsCashLimitInput = () => {
@@ -2394,7 +1982,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCashierSettingsCashLimitInput();
     renderCashierSettingsCategories();
     renderCashierSettingsPaymentMethods();
-    fitSettingsToViewportDebounced();
   };
 
   const openCashierCategoryModal = (category = null) => {
@@ -2419,7 +2006,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = (formData.get('name') || '').toString().trim();
     const type = formData.get('type') === 'Despesa' ? 'Despesa' : 'Receita';
     if (!name) {
-      showCashierSettingsToast('Informe um nome valido para a categoria.');
+      showCashierSettingsToast('Informe um nome válido para a categoria.');
       return;
     }
     if (!cashierSettingsState) {
@@ -2480,8 +2067,8 @@ document.addEventListener('DOMContentLoaded', () => {
       URL.revokeObjectURL(url);
       showCashierSettingsToast('Backup dos dados iniciado.');
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel gerar o backup das configuraÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes:', error);
-      showCashierSettingsToast('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel gerar o backup agora.');
+      console.warn('Não foi possível gerar o backup das configurações:', error);
+      showCashierSettingsToast('Não foi possível gerar o backup agora.');
     }
   };
 
@@ -2489,7 +2076,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = event.target?.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      showCashierSettingsToast('Selecione um arquivo de imagem vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡lido.');
+      showCashierSettingsToast('Selecione um arquivo de imagem válido.');
       event.target.value = '';
       return;
     }
@@ -2524,15 +2111,8 @@ document.addEventListener('DOMContentLoaded', () => {
       cashierSettingsChangeLogoBtn.addEventListener('click', () => cashierSettingsLogoUpload.click());
       cashierSettingsLogoUpload.addEventListener('change', handleCashierSettingsLogoChange);
     }
-    const openCategoryModal = () => openCashierCategoryModal();
     if (cashierSettingsAddCategoryBtn) {
-      cashierSettingsAddCategoryBtn.addEventListener('click', openCategoryModal);
-    }
-    if (cashierSettingsAddCategoryBtnSecondary) {
-      cashierSettingsAddCategoryBtnSecondary.addEventListener('click', () => {
-        closeModal('cashier-settings-categories-modal');
-        openCategoryModal();
-      });
+      cashierSettingsAddCategoryBtn.addEventListener('click', () => openCashierCategoryModal());
     }
     if (cashierCategoryCancelBtn) {
       cashierCategoryCancelBtn.addEventListener('click', () => {
@@ -2555,28 +2135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cashierSettingsBackupBtn) {
       cashierSettingsBackupBtn.addEventListener('click', handleCashierSettingsBackup);
     }
-    if (cashierSettingsManageCategoriesBtn) {
-      cashierSettingsManageCategoriesBtn.addEventListener('click', () => openModal('cashier-settings-categories-modal'));
-    }
-    if (cashierSettingsCategoriesModal) {
-      cashierSettingsCategoriesModal.addEventListener('click', event => {
-        if (event.target === cashierSettingsCategoriesModal) {
-          closeModal('cashier-settings-categories-modal');
-        }
-      });
-    }
-    if (cashierSettingsManagePaymentsBtn) {
-      cashierSettingsManagePaymentsBtn.addEventListener('click', () => openModal('cashier-settings-payments-modal'));
-    }
-    if (cashierSettingsPaymentsModal) {
-      cashierSettingsPaymentsModal.addEventListener('click', event => {
-        if (event.target === cashierSettingsPaymentsModal) {
-          closeModal('cashier-settings-payments-modal');
-        }
-      });
-    }
-
-    fitSettingsToViewport();
   };
 
   const getStoredDarkModePreference = () => {
@@ -2586,7 +2144,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (stored === null) return null;
       return stored === 'true';
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel recuperar o tema salvo:', error);
+      console.warn('Não foi possível recuperar o tema salvo:', error);
       return null;
     }
   };
@@ -2607,7 +2165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(DARK_MODE_STORAGE_KEY, shouldEnable ? 'true' : 'false');
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar a preferÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âªncia de tema:', error);
+      console.warn('Não foi possível salvar a preferência de tema:', error);
     }
   };
 
@@ -2761,7 +2319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           await renderApprovalPage({ silent: true });
         } catch (error) {
-          console.error('Erro ao atualizar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios em tempo real:', error);
+          console.error('Erro ao atualizar usuários em tempo real:', error);
         }
       }
     });
@@ -2778,7 +2336,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         } catch (error) {
-          console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel atualizar a foto armazenada localmente:', error);
+          console.warn('Não foi possível atualizar a foto armazenada localmente:', error);
         }
         try {
           await initProfilePhoto();
@@ -2792,7 +2350,7 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             await renderApprovalPage({ silent: true });
           } catch (error) {
-            console.error('Erro ao atualizar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios em tempo real:', error);
+            console.error('Erro ao atualizar usuários em tempo real:', error);
           }
         }
       }
@@ -2816,7 +2374,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         localStorage.setItem(`profilePhoto_${currentUser}`, photo);
       } catch (error) {
-        console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel armazenar a foto de perfil:', error);
+        console.warn('Não foi possível armazenar a foto de perfil:', error);
       }
     }
     await initProfilePhoto();
@@ -2856,7 +2414,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = inputUsuario.value.trim();
     const password = inputClave.value.trim();
     if (!username || !password) {
-      alert('Preencha usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio e senha.');
+      alert('Preencha usuário e senha.');
       return;
     }
     try {
@@ -2890,7 +2448,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = document.getElementById('register-username').value.trim();
     const password = document.getElementById('register-password').value.trim();
     if (!username || !password) {
-      alert('Preencha usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio e senha.');
+      alert('Preencha usuário e senha.');
       return;
     }
     try {
@@ -2926,7 +2484,7 @@ document.addEventListener('DOMContentLoaded', () => {
             credentials: 'include'
           });
         } catch (error) {
-          console.error('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel encerrar a sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o no servidor:', error);
+          console.error('Não foi possível encerrar a sessão no servidor:', error);
         }
       }
     } finally {
@@ -2971,7 +2529,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const handleSessionExpiry = async () => {
     if (isSessionExpiryHandled) return;
     isSessionExpiryHandled = true;
-    alert('Sua sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o expirou. FaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§a login novamente.');
+    alert('Sua sessão expirou. Faça login novamente.');
     await logout({ skipRequest: true });
   };
 
@@ -2983,7 +2541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await fetch(input, options);
     if (response.status === 401) {
       await handleSessionExpiry();
-      throw new Error('SessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o expirada. FaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§a login novamente.');
+      throw new Error('Sessão expirada. Faça login novamente.');
     }
     return response;
   };
@@ -2992,7 +2550,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await authenticatedFetch(input, init);
     const data = await response.json();
     if (!response.ok) {
-      const message = (data && data.error) || 'Erro na requisiÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.';
+      const message = (data && data.error) || 'Erro na requisição.';
       throw new Error(message);
     }
     return data;
@@ -3065,8 +2623,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderCashierReports(cashierMovementsData);
       recalculateCashierDashboardFromMovements();
     } catch (err) {
-      console.error('Erro ao carregar movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes:', err);
-      alert('Erro ao carregar movimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes: ' + err.message);
+      console.error('Erro ao carregar movimentações:', err);
+      alert('Erro ao carregar movimentações: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -3085,14 +2643,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
       await renderReports(summaryData, stockData);
     } catch (err) {
-      console.error('Erro ao carregar relatÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³rios:', err);
-      alert('Erro ao carregar relatÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³rios: ' + err.message);
+      console.error('Erro ao carregar relatórios:', err);
+      alert('Erro ao carregar relatórios: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
   };
 
-  // RenderizaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Âµes ---------------------------------------------------------------
+  // Renderizações ---------------------------------------------------------------
   const applyFilters = () => {
     const searchTerm = (searchInput?.value || '').trim().toLowerCase();
     const today = new Date();
@@ -3370,7 +2928,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const chartReady = await waitForChartLibrary();
     if (!chartReady) {
-      console.warn('Biblioteca de grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ficos indisponÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel. Os relatÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â³rios serÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o exibidos sem grÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ficos.');
+      console.warn('Biblioteca de gráficos indisponível. Os relatórios serão exibidos sem gráficos.');
       return;
     }
 
@@ -3488,19 +3046,19 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­da'
+          titlePrefix: 'Saída'
         },
         exclusao: {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­da'
+          titlePrefix: 'Saída'
         },
         baixa: {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­da'
+          titlePrefix: 'Saída'
         },
         ajuste: {
           icon: 'edit',
@@ -3524,25 +3082,25 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio'
+          titlePrefix: 'Usuário'
         },
         aprovacao_usuario: {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio'
+          titlePrefix: 'Usuário'
         },
         aprovacao: {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio'
+          titlePrefix: 'Usuário'
         },
         default: {
           icon: 'history',
           badgeClasses: 'bg-slate-100 dark:bg-slate-800/60',
           iconClasses: 'text-slate-600 dark:text-slate-300',
-          titlePrefix: 'MovimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o'
+          titlePrefix: 'Movimentação'
         }
       };
 
@@ -3575,14 +3133,14 @@ document.addEventListener('DOMContentLoaded', () => {
           return '';
         })();
         const productName = move.produto || move.nomeProduto || '';
-        const userLabel = move.usuario ? `UsuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio: ${move.usuario}` : '';
+        const userLabel = move.usuario ? `Usuário: ${move.usuario}` : '';
         const destinationLabel = move.destino ? `Destino: ${move.destino}` : '';
-        const details = [userLabel, destinationLabel].filter(Boolean).join(' ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ‚Â¢ÃƒÂ¢Ã¢Â€ÂšÃ‚Â¬ÃƒÂ…Ã‚Â¡ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â· ');
+        const details = [userLabel, destinationLabel].filter(Boolean).join(' · ');
 
         const timeLabel = (() => {
-          if (!move.data) return 'Data nÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o informada';
+          if (!move.data) return 'Data não informada';
           const parsedDate = new Date(move.data);
-          if (Number.isNaN(parsedDate.getTime())) return 'Data nÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o informada';
+          if (Number.isNaN(parsedDate.getTime())) return 'Data não informada';
           return parsedDate.toLocaleString('pt-BR', {
             dateStyle: 'short',
             timeStyle: 'short'
@@ -3598,7 +3156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div>
               <p class="font-medium text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantitySymbol ? quantitySymbol + ' ' : ''}${quantity.toLocaleString('pt-BR')}x ${productName}</p>
-              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'MovimentaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o registrada no sistema.'}</p>
+              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'Movimentação registrada no sistema.'}</p>
             </div>
           </div>
           <p class="text-sm text-subtle-light dark:text-subtle-dark whitespace-nowrap text-right">${timeLabel}</p>`;
@@ -3621,8 +3179,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       pendingUsersList.innerHTML = '';
       if (!pendingData.length) {
-        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio aguardando aprovaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.</p>';
         pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário aguardando aprovação.</p>';
+      } else {
         pendingData.forEach(user => {
           const item = document.createElement('div');
           item.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50';
@@ -3645,8 +3203,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       activeUsersList.innerHTML = '';
       if (!activeData.length) {
-        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio ativo.</p>';
         activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário ativo.</p>';
+      } else {
         activeData.forEach(user => {
           const item = document.createElement('div');
           const resolvedPhoto = getFullImageUrl(user.photo) || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
@@ -3677,8 +3235,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       usersDataDirty = false;
     } catch (err) {
-      console.error('Erro ao carregar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios:', err);
-      alert('Erro ao carregar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios: ' + err.message);
+      console.error('Erro ao carregar usuários:', err);
+      alert('Erro ao carregar usuários: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -3699,7 +3257,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (custo === null || Number.isNaN(custo) || custo < 0) {
-      alert('Informe um custo vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡lido.');
+      alert('Informe um custo válido.');
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
@@ -3739,7 +3297,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!product) return;
     currentProductId = product.id;
     editForm.elements.id.value = product.id;
-    editForm.elements.type.value = product.tipo || 'AÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§aÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­';
+    editForm.elements.type.value = product.tipo || 'Açaí';
     editForm.elements.name.value = product.produto || '';
     editForm.elements.lot.value = product.lote || '';
     editForm.elements.quantity.value = product.quantidade || 0;
@@ -3773,7 +3331,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const custoInput = editForm.elements.cost?.value ?? '';
     const custo = custoInput === '' ? null : Number.parseFloat(custoInput);
     if (custo === null || Number.isNaN(custo) || custo < 0) {
-      alert('Informe um custo vÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡lido.');
+      alert('Informe um custo válido.');
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
@@ -3824,7 +3382,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentProductId) return;
     const motivo = deleteReasonInput.value.trim();
     if (!motivo) {
-      alert('Informe o motivo da exclusÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o.');
+      alert('Informe o motivo da exclusão.');
       return;
     }
     try {
@@ -3838,7 +3396,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadStock();
       await loadMovimentacoes();
       updateHomePage();
-      alert('Produto excluÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­do com sucesso!');
+      alert('Produto excluído com sucesso!');
     } catch (err) {
       alert('Erro ao remover produto: ' + err.message);
     } finally {
@@ -3846,7 +3404,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // GestÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o de usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rios ---------------------------------------------------------
+  // Gestão de usuários ---------------------------------------------------------
   const approveUser = async userId => {
     try {
       showLoader();
@@ -3855,7 +3413,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       await renderApprovalPage();
     } catch (err) {
-      alert('Erro ao aprovar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio: ' + err.message);
+      alert('Erro ao aprovar usuário: ' + err.message);
     } finally {
       hideLoader();
     }
@@ -3869,7 +3427,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       await renderApprovalPage();
     } catch (err) {
-      alert('Erro ao recusar usuÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡rio: ' + err.message);
+      alert('Erro ao recusar usuário: ' + err.message);
     } finally {
       hideLoader();
     }
@@ -3879,14 +3437,14 @@ document.addEventListener('DOMContentLoaded', () => {
     await declineUser(userId);
   };
 
-  // NavegaÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â§ÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o ------------------------------------------------------------------
+  // Navegação ------------------------------------------------------------------
   const storeActivePage = pageId => {
     activePageId = pageId;
     if (typeof window === 'undefined' || !window.localStorage) return;
     try {
       window.localStorage.setItem(ACTIVE_PAGE_STORAGE_KEY, pageId);
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel salvar a aba ativa:', error);
+      console.warn('Não foi possível salvar a aba ativa:', error);
     }
   };
 
@@ -3895,7 +3453,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       return window.localStorage.getItem(ACTIVE_PAGE_STORAGE_KEY);
     } catch (error) {
-      console.warn('NÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o foi possÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â­vel recuperar a aba ativa:', error);
+      console.warn('Não foi possível recuperar a aba ativa:', error);
       return null;
     }
   };
@@ -4104,7 +3662,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showLoader();
       const res = await fetch(`${BASE_URL}/api/session`, { credentials: 'include' });
       if (!res.ok) {
-        throw new Error('SessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o nÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o encontrada');
+        throw new Error('Sessão não encontrada');
       }
       const data = await res.json();
       await enterApplication({
@@ -4216,7 +3774,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert('Imagem deve ter no mÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â¡ximo 5MB.');
+        alert('Imagem deve ter no máximo 5MB.');
         profileImageFile = null;
         profileImageUpload.value = '';
         return;
@@ -4239,29 +3797,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSettingsLinks();
   initializeCashierSettings();
   initializeCashierMovementsModule();
-  if (typeof window !== 'undefined') {
-    window.addEventListener('resize', fitSettingsToViewportDebounced);
-  }
   setupDarkMode();
   updateCashierDashboard();
   registerImageFallbacks(document);
-  sanitizeTextTree(document.body);
-  const mojibakeObserver = new MutationObserver(mutations => {
-    for (const mutation of mutations) {
-      if (mutation.type === 'characterData') {
-        sanitizeTextNode(mutation.target);
-        continue;
-      }
-      mutation.addedNodes.forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          sanitizeTextNode(node);
-        } else {
-          sanitizeTextTree(node);
-        }
-      });
-    }
-  });
-  mojibakeObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
 
   if (typeof window !== 'undefined') {
     window.setCashierDashboardMetrics = setCashierDashboardMetrics;
@@ -4333,11 +3871,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!event.newValue && currentUser) {
       logout({ skipRequest: true }).catch(err => console.error('Erro ao sincronizar logout:', err));
     } else if (event.newValue && !currentUser) {
-      initializeFromStoredSession().catch(err => console.error('Erro ao sincronizar sessÃƒÂƒÃ†Â’ÃƒÂ†Ã¢Â€Â™ÃƒÂƒÃ¢Â€Â ÃƒÂ¢Ã¢Â‚Â¬Ã¢Â„Â¢ÃƒÂƒÃ†Â’ÃƒÂ¢Ã¢Â‚Â¬Ã…Â¡ÃƒÂƒÃ¢Â€ÂšÃƒÂ‚Ã‚Â£o:', err));
+      initializeFromStoredSession().catch(err => console.error('Erro ao sincronizar sessão:', err));
     }
   });
 
   resetProfilePhoto();
   initializeFromStoredSession();
 });
-
