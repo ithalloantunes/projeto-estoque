@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AçaíStock</title>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/tM9dd5d8/favicon-png.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="estilos.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'var(--color-primary)',
+                        secondary: 'var(--color-secondary)',
+                        danger: 'var(--color-danger)',
+                        success: 'var(--color-success)',
+                        "background-light": "var(--color-background-light)",
+                        "background-dark": "var(--color-background-dark)",
+                        "surface-light": "var(--color-surface-light)",
+                        "surface-dark": "var(--color-surface-dark)",
+                        "text-light": "var(--color-text-light)",
+                        "text-dark": "var(--color-text-dark)",
+                        "subtle-light": "var(--color-subtle-light)",
+                        "subtle-dark": "var(--color-subtle-dark)",
+                        "border-color": "var(--color-border)"
+                    },
+                    fontFamily: {
+                        display: ["Poppins", "sans-serif"],
+                        cashier: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        'DEFAULT': '0.75rem',
+                        'lg': '1rem',
+                        'xl': '1.25rem',
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+        }
+
+        .card-actions {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        .group:hover .card-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+
+        .loader {
+            border-top-color: var(--color-primary);
+            animation: spin 1s linear infinite;
+        }
+
+        #stock-page-container,
+        #home-page-container {
+            width: 100%;
+            max-width: none;
+        }
+
+        
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark antialiased theme-stock">
+    <!-- Login -->
+    <div id="login-container" class="flex flex-col md:flex-row min-h-screen bg-background-light dark:bg-background-dark">
+        <div class="w-full md:w-1/2 bg-[#D4F4D4] dark:bg-purple-900/20 flex items-center justify-center p-8 md:p-12 transition-all duration-300">
+            <div class="text-center space-y-8">
+                <img src="img/idle/1.png" alt="Mascote roxo sorrindo com boné branco" id="monster" loading="lazy" decoding="async" class="mx-auto max-w-xs md:max-w-md lg:max-w-lg transform transition-transform duration-500 hover:scale-105">
+                <div class="hidden md:block space-y-2">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark">A energia que você precisa!</h2>
+                    <p class="text-secondary-text-light dark:text-secondary-text-dark">Faça login e peça o melhor açaí da região.</p>
+                      </div>
+                  </div>
+        </div>
+        <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 bg-surface-light dark:bg-surface-dark">
+            <div class="w-full max-w-md space-y-10">
+                <form id="login-form" class="space-y-6">
+                    <div class="text-center md:text-left space-y-2">
+                        <h1 class="text-4xl font-bold text-primary">Bem-vindo de volta!</h1>
+                        <p class="text-lg text-secondary-text-light dark:text-secondary-text-dark">Acesse sua conta para continuar.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="input-usuario" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Nome de Usuário (Login)</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">person_outline</span>
+                                </span>
+                                <input type="text" id="input-usuario" placeholder="Digite seu usuário" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-4 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="username">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="input-clave" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Senha de Acesso</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">lock_outline</span>
+                                </span>
+                                <input type="password" id="input-clave" placeholder="Digite sua senha" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-12 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="current-password">
+                                <button type="button" id="toggle-password-login" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-primary" aria-label="Alternar visibilidade da senha">
+                                    <span class="material-icons" id="toggle-password-login-icon">visibility_off</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <label class="flex items-center gap-2 text-secondary-text-light dark:text-secondary-text-dark">
+                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
+                            Lembrar-me
+                        </label>
+                        <a href="#" class="font-medium text-primary hover:text-primary/80">Esqueceu sua senha?</a>
+                    </div>
+                    <div class="flex flex-col space-y-4">
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            Entrar
+                        </button>
+                        <button type="button" id="show-register" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-primary border border-gray-300 dark:border-gray-600 hover:bg-primary/10 transition focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            Ainda não tem uma conta? Cadastre-se
+                        </button>
+                    </div>
+                </form>
+                <form id="register-form" class="space-y-6" style="display: none;">
+                    <div class="text-center md:text-left space-y-2">
+                        <h1 class="text-4xl font-bold text-primary">Crie sua conta</h1>
+                        <p class="text-lg text-secondary-text-light dark:text-secondary-text-dark">Cadastre-se para aproveitar a experiência completa.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="register-username" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Nome de Usuário (Login)</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">person_outline</span>
+                                </span>
+                                <input type="text" id="register-username" placeholder="Crie um usuário" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-4 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="username">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="register-password" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Senha de Acesso</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">lock_outline</span>
+                                </span>
+                                <input type="password" id="register-password" placeholder="Crie uma senha" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-12 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="new-password">
+                                <button type="button" id="toggle-password-register" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-primary" aria-label="Alternar visibilidade da senha de cadastro">
+                                    <span class="material-icons" id="toggle-password-register-icon">visibility_off</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col space-y-4">
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            Cadastrar
+                        </button>
+                        <button type="button" id="show-login" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-primary border border-gray-300 dark:border-gray-600 hover:bg-primary/10 transition focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                            Já possui uma conta? Voltar ao login
+                        </button>
+                    </div>
+                </form>
+                <div class="text-center md:hidden space-y-1">
+                    <h2 class="text-xl font-bold text-text-light dark:text-text-dark">A energia que você precisa!</h2>
+                    <p class="text-sm text-secondary-text-light dark:text-secondary-text-dark">Peça o melhor açaí da região.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aplicação -->
+    <div id="app-container" class="hidden">
+        <div class="app-shell bg-background-light dark:bg-background-dark">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="app-sidebar bg-primary text-white" aria-label="Menu principal">
+                <div id="stock-sidebar-content" class="flex-1 flex flex-col">
+                    <div class="px-6 py-8 flex items-center justify-between">
+                        <h1 class="text-2xl font-bold">AçaíStock</h1>
+                        <button type="button" class="mobile-menu-close sm:hidden p-2 rounded-full hover:bg-primary/80 transition" aria-label="Fechar menu">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    <nav id="main-menu" class="flex-1 px-4 space-y-2 overflow-y-auto">
+                        <a id="home-menu-item" data-page="home-page" class="flex items-center gap-4 px-4 py-3 rounded-lg text-white/70 hover:bg-white/10 transition-colors" href="#">
+                            <span class="material-icons">dashboard</span>
+                            <span class="font-medium">Início</span>
+                        </a>
+                        <a id="stock-menu-item" data-page="stock-page" class="flex items-center gap-4 px-4 py-3 rounded-lg text-white/70 hover:bg-white/10 transition-colors" href="#">
+                            <span class="material-icons">inventory_2</span>
+                            <span class="font-medium">Estoque</span>
+                        </a>
+                        <a id="add-product-link" class="flex items-center gap-4 pl-12 pr-4 py-3 rounded-lg cursor-pointer text-white/70 hover:bg-white/10 transition-colors" href="#">
+                            <span class="material-icons">add_circle_outline</span>
+                            <span class="font-medium">Adicionar</span>
+                        </a>
+                        <a id="moves-menu-item" data-page="moves-page" class="flex items-center gap-4 px-4 py-3 rounded-lg text-white/70 hover:bg-white/10 transition-colors" href="#">
+                            <span class="material-icons">swap_horiz</span>
+                            <span class="font-medium">Movimentações</span>
+                        </a>
+                        <a id="reports-menu-item" data-page="reports-page" class="flex items-center gap-4 px-4 py-3 rounded-lg text-white/70 hover:bg-white/10 transition-colors" href="#">
+                            <span class="material-icons">assessment</span>
+                            <span class="font-medium">Relatórios</span>
+                        </a>
+                    </nav>
+                </div>
+                <div id="cashier-sidebar-content" class="hidden flex-1 flex-col">
+                    <div class="px-6 py-8 flex items-center justify-between">
+                        <h1 class="text-2xl font-bold">CashFlow</h1>
+                        <button type="button" class="mobile-menu-close sm:hidden p-2 rounded-full hover:bg-primary/80 transition" aria-label="Fechar menu">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    <nav id="cashier-menu" class="flex-1 px-4 space-y-2 overflow-y-auto">
+                        <a data-page="cashier-dashboard-page" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors cashier-menu-active" href="#">
+                            <span class="material-symbols-outlined">dashboard</span>
+                            <span class="font-medium">Painel</span>
+                        </a>
+                        <a data-page="cashier-movements-page" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors" href="#">
+                            <span class="material-symbols-outlined">swap_horiz</span>
+                            <span class="font-medium">Movimentos</span>
+                        </a>
+                        <a data-page="cashier-reports-page" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors" href="#">
+                            <span class="material-symbols-outlined">bar_chart</span>
+                            <span class="font-medium">Relatórios</span>
+                        </a>
+                        <a data-page="cashier-settings-page" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors" href="#">
+                            <span class="material-symbols-outlined">settings</span>
+                            <span class="font-medium">Configurações</span>
+                        </a>
+                    </nav>
+                </div>
+                <div class="mt-auto px-4 pb-6">
+                    <div class="module-switch-container space-y-1">
+                        <button id="module-stock-btn" type="button" class="module-switch-btn is-active w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium">
+                            <span class="material-icons">inventory_2</span>
+                            <span>Estoque</span>
+                        </button>
+                        <button id="module-cashier-btn" type="button" class="module-switch-btn w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium">
+                            <span class="material-symbols-outlined">point_of_sale</span>
+                            <span>Gerenciar Caixa</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+            <div id="sidebar-backdrop" class="app-sidebar-backdrop"></div>
+
+            <!-- Main Content -->
+            <div id="main-content" class="flex-1 flex flex-col overflow-hidden min-h-0">
+                <div id="stock-module" class="flex-1 flex flex-col min-h-0">
+
+                <!-- Home Page -->
+                <div id="home-page" class="page-content flex-1 flex flex-col min-h-0">
+                    <header class="flex items-center justify-between p-6 bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center gap-3">
+                            <button type="button" class="mobile-menu-toggle sm:hidden p-2 rounded-full border border-white/30 bg-primary/90 text-white shadow-md" aria-label="Abrir menu" aria-controls="sidebar">
+                                <span class="material-icons">menu</span>
+                            </button>
+                            <div>
+                            <h2 class="text-2xl font-bold">Dashboard</h2>
+                            <p class="text-subtle-light dark:text-subtle-dark" id="home-greeting">Bem-vindo!</p>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+                                <span class="font-medium hidden md:block" id="home-user-name">Usuário</span>
+                                <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
+                            </button>
+                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
+                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
+                                <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
+                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                                <a href="#" class="logout-link block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
+                            </div>
+                        </div>
+                    </header>
+                    <div id="home-page-container" class="flex-1 p-8 overflow-y-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div id="home-card-total-stock" class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between cursor-pointer hover:shadow-lg transition-shadow">
+                                <div>
+                                    <p class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Itens em Estoque</p>
+                                    <p id="home-kpi-total-stock" class="text-3xl font-bold mt-1">0</p>
+                                </div>
+                                <div class="bg-primary/10 text-primary p-3 rounded-lg">
+                                    <span class="material-icons">inventory_2</span>
+                                </div>
+                            </div>
+                            <div id="home-card-low-stock" class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between cursor-pointer hover:shadow-lg transition-shadow">
+                                <div>
+                                    <p class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Estoque Baixo</p>
+                                    <p id="home-kpi-low-stock" class="text-3xl font-bold mt-1">0</p>
+                                </div>
+                                <div class="bg-yellow-500/10 text-yellow-500 p-3 rounded-lg">
+                                    <span class="material-icons">warning</span>
+                                </div>
+                            </div>
+                            <div id="home-card-expiring" class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between cursor-pointer hover:shadow-lg transition-shadow">
+                                <div>
+                                    <p class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Itens Vencendo</p>
+                                    <p id="home-kpi-expiring" class="text-3xl font-bold mt-1">0</p>
+                                </div>
+                                <div class="bg-red-500/10 text-danger p-3 rounded-lg">
+                                    <span class="material-icons">event_busy</span>
+                                </div>
+                            </div>
+                            <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm flex items-start justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Valor do Estoque</p>
+                                    <p id="home-kpi-stock-value" class="text-3xl font-bold mt-1">R$ 0,00</p>
+                                </div>
+                                <div class="bg-green-500/10 text-green-500 p-3 rounded-lg">
+                                    <span class="material-icons">attach_money</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div id="recent-activity" class="lg:col-span-2 bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm">
+                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark mb-4">Atividade Recente</h3>
+                                <div id="recent-activity-list" class="space-y-4"></div>
+                            </div>
+                            <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm">
+                                <h3 class="text-lg font-semibold mb-4">Ações Rápidas</h3>
+                                <div class="space-y-3">
+                                    <button id="quick-add-product" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+                                        <span class="material-icons">add_circle_outline</span>
+                                        Novo Produto
+                                    </button>
+                                    <button id="quick-export-report" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-200 dark:bg-gray-600 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
+                                        <span class="material-icons">file_download</span>
+                                        Exportar Relatório
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Page -->
+                <div id="stock-page" class="page-content flex-1 flex flex-col hidden min-h-0 bg-background-light dark:bg-background-dark">
+                    <div class="flex-1 flex flex-col items-stretch px-0 py-6 overflow-hidden">
+                        <div id="stock-page-container" class="w-full flex-1 flex flex-col rounded-none lg:rounded-none shadow-sm bg-surface-light dark:bg-surface-dark overflow-hidden">
+                            <header class="flex items-center justify-between px-6 py-5 bg-surface-light dark:bg-surface-dark">
+                                <div class="flex items-center gap-3">
+                                    <button type="button" class="mobile-menu-toggle sm:hidden p-2 rounded-full border border-white/30 bg-primary/90 text-white shadow-md" aria-label="Abrir menu" aria-controls="sidebar">
+                                        <span class="material-icons">menu</span>
+                                    </button>
+                                    <h1 class="text-2xl font-bold">Estoque</h1>
+                                </div>
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+                                        <span class="user-name-display font-medium hidden md:block">Usuário</span>
+                                        <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
+                                        <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
+                                        <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
+                                    </div>
+                                </div>
+                            </header>
+                            <div class="px-6 py-5 bg-surface-light dark:bg-surface-dark">
+                                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                    <div class="relative flex-1 lg:max-w-md">
+                                        <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                                        <input id="search-input" class="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background-light dark:bg-background-dark" placeholder="Buscar por produto ou categoria..." type="text" />
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-3 justify-end">
+                                        <div id="filter-buttons" class="flex items-center gap-2 bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 rounded-xl p-1">
+                                            <button data-filter="all" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition">Todos</button>
+                                            <button data-filter="low_stock" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition">Estoque Baixo</button>
+                                            <button data-filter="expiring_soon" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition">Vencendo</button>
+                                        </div>
+                                        <button id="clear-filters-btn" class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-subtle-light dark:text-subtle-dark hover:bg-gray-100 dark:hover:bg-gray-700 transition">Limpar filtros</button>
+                                        <button id="stock-add-product-btn" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm">
+                                            <span class="material-icons text-base">add</span>
+                                            <span>Adicionar</span>
+                                        </button>
+                                        <button id="suggest-product-btn" class="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm">
+                                            <span class="material-icons text-base">auto_awesome</span>
+                                            <span>Sugerir</span>
+                                        </button>
+                                        <div class="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+                                            <button id="grid-view-btn" class="p-2 transition-colors"><span class="material-icons">grid_view</span></button>
+                                            <button id="list-view-btn" class="p-2 transition-colors"><span class="material-icons">view_list</span></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="product-container" class="flex-1 px-6 py-6 overflow-y-auto bg-background-light dark:bg-background-dark flex flex-col">
+                                <div id="product-grid" class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 content-start"></div>
+                                <div id="pagination-controls" class="flex justify-center items-center mt-8 space-x-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Page -->
+                <div id="reports-page" class="page-content hidden flex-1 flex flex-col min-h-0">
+                    <header class="flex justify-between items-center p-6 bg-surface-light dark:bg-surface-dark border-b dark:border-gray-700">
+                        <div class="flex items-center gap-3">
+                            <button type="button" class="mobile-menu-toggle sm:hidden p-2 rounded-full border border-white/30 bg-primary/90 text-white shadow-md" aria-label="Abrir menu" aria-controls="sidebar">
+                                <span class="material-icons">menu</span>
+                            </button>
+                            <h1 class="text-2xl font-bold">Relatórios</h1>
+                        </div>
+                        <div class="relative">
+                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+                                <span class="font-medium hidden md:block">Usuário</span>
+                                <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
+                            </button>
+                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
+                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
+                                <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
+                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                                <a href="#" class="logout-link block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="flex-1 p-8 overflow-y-auto bg-background-light dark:bg-background-dark">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm flex items-center">
+                                <div class="p-3 rounded-full bg-green-500/10">
+                                    <span class="material-icons text-2xl text-green-500">arrow_downward</span>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm text-subtle-light dark:text-subtle-dark">Total de Entradas</p>
+                                    <p id="kpi-inputs" class="text-2xl font-bold">0</p>
+                                </div>
+                            </div>
+                            <div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm flex items-center">
+                                <div class="p-3 rounded-full bg-red-500/10">
+                                    <span class="material-icons text-2xl text-danger">arrow_upward</span>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm text-subtle-light dark:text-subtle-dark">Total de Saídas</p>
+                                    <p id="kpi-outputs" class="text-2xl font-bold">0</p>
+                                </div>
+                            </div>
+                            <div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm flex items-center">
+                                <div class="p-3 rounded-full bg-primary/10">
+                                    <span class="material-icons text-2xl text-primary">inventory</span>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm text-subtle-light dark:text-subtle-dark">Estoque Atual</p>
+                                    <p id="kpi-total-stock" class="text-2xl font-bold">0 un.</p>
+                                </div>
+                            </div>
+                            <div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm flex items-center">
+                                <div class="p-3 rounded-full bg-yellow-500/10">
+                                    <span class="material-icons text-2xl text-yellow-500">warning</span>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm text-subtle-light dark:text-subtle-dark">Alertas (Venc.)</p>
+                                    <p id="kpi-expiring" class="text-2xl font-bold">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm h-96">
+                                <h3 class="font-semibold text-lg mb-4">Estoque por Produto</h3>
+                                <canvas id="stock-by-product-chart"></canvas>
+                            </div>
+                            <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm h-96">
+                                <h3 class="font-semibold text-lg mb-4">Distribuição por Tipo</h3>
+                                <canvas id="stock-by-type-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approve Page -->
+                <div id="approve-page" class="page-content hidden flex-1 flex flex-col min-h-0">
+                    <header class="flex justify-between items-center p-6 bg-surface-light dark:bg-surface-dark border-b dark:border-gray-700">
+                        <div class="flex items-center gap-3">
+                            <button type="button" class="mobile-menu-toggle sm:hidden p-2 rounded-full border border-white/30 bg-primary/90 text-white shadow-md" aria-label="Abrir menu" aria-controls="sidebar">
+                                <span class="material-icons">menu</span>
+                            </button>
+                            <h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Gerenciar Cadastros</h1>
+                        </div>
+                        <div class="relative">
+                            <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <img src="https://placehold.co/40x40/6D28D9/FFFFFF?text=U" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+                                <span class="font-medium hidden md:block">Usuário</span>
+                                <span class="material-icons text-subtle-light dark:text-subtle-dark">expand_more</span>
+                            </button>
+                            <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-600">
+                                <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Perfil</a>
+                                <a href="#" data-page="approve-page" class="approve-link block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Aprovar Cadastro</a>
+                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                                <a href="#" class="logout-link block px-4 py-2 text-sm text-danger dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sair</a>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="flex-1 p-8 overflow-y-auto bg-background-light dark:bg-background-dark space-y-8">
+                        <div>
+                            <h2 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">Aguardando Aprovação</h2>
+                            <div id="pending-users-list" class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm p-4 space-y-3"></div>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">Usuários Ativos</h2>
+                            <div id="active-users-list" class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm p-4 space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moves Page -->
+                <div id="moves-page" class="page-content hidden flex-1 flex flex-col min-h-0">
+                    <header class="flex justify-between items-center p-6 bg-surface-light dark:bg-surface-dark border-b dark:border-gray-700">
+                        <div class="flex items-center gap-3">
+                            <button type="button" class="mobile-menu-toggle sm:hidden p-2 rounded-full border border-white/30 bg-primary/90 text-white shadow-md" aria-label="Abrir menu" aria-controls="sidebar">
+                                <span class="material-icons">menu</span>
+                            </button>
+                            <h1 class="text-2xl font-bold">Movimentações</h1>
+                        </div>
+                    </header>
+                    <div class="flex-1 p-8 bg-background-light dark:bg-background-dark overflow-y-auto">
+                        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div>
+                                    <label for="mov-inicio" class="block text-sm font-medium mb-1">Data Inicial</label>
+                                    <input type="date" id="mov-inicio" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" />
+                                </div>
+                                <div>
+                                    <label for="mov-fim" class="block text-sm font-medium mb-1">Data Final</label>
+                                    <input type="date" id="mov-fim" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" />
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="filtrar-mov-btn" class="w-full md:w-auto px-4 py-2 bg-primary text-white rounded-lg">Filtrar</button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <div class="table-scroll">
+                                    <table class="modern-table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Data</th>
+                                                <th scope="col">Usuário</th>
+                                                <th scope="col">Produto</th>
+                                                <th scope="col">Tipo</th>
+                                                <th scope="col">Qtd. Antes</th>
+                                                <th scope="col">Quantidade</th>
+                                                <th scope="col">Total Atual</th>
+                                                <th scope="col">Motivo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="movimentacoes-table-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div id="cashier-module" class="hidden flex-1 overflow-y-auto">
+                    <div id="cashier-dashboard-page" class="cashier-page flex flex-col flex-1 min-h-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                        <header class="flex items-center justify-between p-6 border-b border-border-color">
+                            <div>
+                                <h2 class="text-2xl font-bold">Painel</h2>
+                                <p class="text-sm text-subtle-light dark:text-subtle-dark">Visão geral financeira em tempo real</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                        <span class="user-name-display font-medium hidden md:block"></span>
+                                        <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                        <a href="#" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                        <div class="border-t border-border-color"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                    </div>
+                                </div>
+                                <button class="dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" aria-pressed="false" type="button">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </button>
+                            </div>
+                        </header>
+                        <main class="flex-1 p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                                <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Caixa Total</h3>
+                                        <div class="p-2 rounded-lg bg-primary/15">
+                                            <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p id="cashier-kpi-total" class="text-4xl font-bold">R$ 0,00</p>
+                                        <p class="text-sm font-semibold flex items-center gap-1 text-success" data-kpi-change="total">
+                                            <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="total">arrow_upward</span>
+                                            <span data-kpi-change-text="total">0% vs mês passado</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Receita Total</h3>
+                                        <div class="p-2 rounded-lg bg-success/15">
+                                            <span class="material-symbols-outlined text-success">trending_up</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p id="cashier-kpi-revenue" class="text-4xl font-bold">R$ 0,00</p>
+                                        <p class="text-sm font-semibold flex items-center gap-1 text-success" data-kpi-change="revenue">
+                                            <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="revenue">arrow_upward</span>
+                                            <span data-kpi-change-text="revenue">0% vs mês passado</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Despesas Totais</h3>
+                                        <div class="p-2 rounded-lg bg-danger/15">
+                                            <span class="material-symbols-outlined text-danger">trending_down</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p id="cashier-kpi-expenses" class="text-4xl font-bold">R$ 0,00</p>
+                                        <p class="text-sm font-semibold flex items-center gap-1 text-danger" data-kpi-change="expenses">
+                                            <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="expenses">arrow_downward</span>
+                                            <span data-kpi-change-text="expenses">0% vs mês passado</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bg-surface-light dark:bg-surface-dark border border-border-color rounded-xl p-6 flex flex-col gap-4 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-text-light/80 dark:text-text-dark/80">Lucro Líquido</h3>
+                                        <div class="p-2 bg-purple-500/20 rounded-lg">
+                                            <span class="material-symbols-outlined text-purple-500">paid</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p id="cashier-kpi-profit" class="text-4xl font-bold">R$ 0,00</p>
+                                        <p class="text-sm font-semibold flex items-center gap-1 text-success" data-kpi-change="profit">
+                                            <span class="material-symbols-outlined text-sm" data-kpi-trend-icon="profit">arrow_upward</span>
+                                            <span data-kpi-change-text="profit">0% vs mês passado</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    <div id="cashier-movements-page" class="cashier-page hidden flex flex-col flex-1 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                        <header class="flex items-center justify-between p-6 border-b border-border-color">
+                            <div>
+                                <h2 class="text-2xl font-bold">Movimentos de Caixa</h2>
+                                <p class="text-sm text-subtle-light dark:text-subtle-dark">Acompanhe entradas, saídas e reforços registrados.</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                        <span class="user-name-display font-medium hidden md:block"></span>
+                                        <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                        <a href="#" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                        <div class="border-t border-border-color"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                    </div>
+                                </div>
+                                <button class="dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" aria-pressed="false" type="button">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </button>
+                            </div>
+                        </header>
+                        <main class="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+                                <div>
+                                    <h1 class="text-3xl font-bold text-text-light dark:text-text-dark">Movimentações Financeiras</h1>
+                                    <p class="text-sm text-subtle-light dark:text-subtle-dark">Visualize entradas, saídas e reforços realizados no caixa.</p>
+                                </div>
+                                <button id="register-movement-btn" class="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors">
+                                    <span class="material-symbols-outlined">add</span>
+                                    <span>Registrar Movimentação</span>
+                                </button>
+                            </div>
+                            <div class="bg-surface-light dark:bg-surface-dark/50 p-4 rounded-lg border border-border-color mb-8">
+                                <div id="cashier-filter-buttons" class="flex flex-wrap items-center gap-3">
+                                    <button data-filter="all" type="button" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium border border-transparent shadow-sm">
+                                        <span>Todos</span>
+                                    </button>
+                                    <button data-filter="Entrada" type="button" class="flex items-center gap-2 px-4 py-2 bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg text-sm font-medium text-text-light dark:text-text-dark hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+                                        <span>Entradas</span>
+                                    </button>
+                                    <button data-filter="Saída" type="button" class="flex items-center gap-2 px-4 py-2 bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg text-sm font-medium text-text-light dark:text-text-dark hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+                                        <span>Saídas</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bg-surface-light dark:bg-surface-dark/50 rounded-lg border border-border-color overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-border-color text-sm text-left text-subtle-light dark:text-subtle-dark">
+                                        <thead class="bg-primary/10 dark:bg-primary/20 text-xs uppercase tracking-wide text-subtle-light dark:text-subtle-dark">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 font-semibold">Data/Hora</th>
+                                                <th scope="col" class="px-6 py-3 font-semibold">Tipo</th>
+                                                <th scope="col" class="px-6 py-3 font-semibold">Categoria</th>
+                                                <th scope="col" class="px-6 py-3 font-semibold text-right text-text-light dark:text-text-dark">Valor</th>
+                                                <th scope="col" class="px-6 py-3 font-semibold">Funcionário</th>
+                                                <th scope="col" class="px-6 py-3 font-semibold">Observações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cashier-movements-table-body" class="divide-y divide-border-color bg-surface-light dark:bg-surface-dark text-text-light dark:text-text-dark"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    <div id="cashier-movement-modal" class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+                        <div class="bg-background-light dark:bg-background-dark rounded-lg shadow-xl w-full max-w-xl border border-border-color">
+                            <div class="flex items-center justify-between p-6 border-b border-border-color/60">
+                                <h3 class="text-lg font-semibold">Registrar Nova Movimentação</h3>
+                                <button type="button" class="p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors" data-close-modal="cashier-movement-modal">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+                            <form id="cashier-movement-form" class="p-6 space-y-5">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="movement-type" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Tipo</label>
+                                        <select id="movement-type" name="type" required class="w-full bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary">
+                                            <option value="Entrada">Entrada</option>
+                                            <option value="Saída">Saída</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="movement-category" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Categoria</label>
+                                        <select id="movement-category" name="category" required class="w-full bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary">
+                                            <option value="__placeholder__" disabled>Carregando categorias...</option>
+                                        </select>
+                                        <input id="movement-category-custom" name="category-custom" type="text" placeholder="Digite a categoria" class="hidden mt-2 w-full bg-surface-light dark:bg-surface-dark border border-dashed border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div>
+                                        <label for="movement-value" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Valor</label>
+                                        <input id="movement-value" name="value" type="number" step="0.01" min="0" placeholder="ex: 500,00" required class="w-full bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary">
+                                    </div>
+                                    <div>
+                                        <label for="movement-employee" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Funcionário</label>
+                                        <input id="movement-employee" name="employee" type="text" placeholder="Nome do responsável" required class="w-full bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary">
+                                    </div>
+                                    <div>
+                                        <label for="movement-payment-method" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Forma de Pagamento</label>
+                                        <select id="movement-payment-method" name="payment-method" required class="w-full bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary">
+                                            <option value="__placeholder__" disabled>Carregando métodos...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="movement-observations" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Observações</label>
+                                    <textarea id="movement-observations" name="observations" rows="3" class="w-full bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary" placeholder="Detalhes adicionais (opcional)"></textarea>
+                                </div>
+                                <div class="flex items-center justify-end gap-3 pt-4 border-t border-border-color/60">
+                                    <button type="button" id="cancel-movement-btn" class="px-4 py-2 rounded-lg bg-background-light dark:bg-surface-dark text-text-light dark:text-text-dark font-medium hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">Cancelar</button>
+                                    <button type="submit" class="px-4 py-2 rounded-lg bg-success text-white font-medium hover:bg-success/90 transition-colors">Confirmar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="cashier-reports-page" class="cashier-page hidden flex flex-col flex-1 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                        <header class="flex items-center justify-between p-6 border-b border-border-color">
+                            <div>
+                                <h2 class="text-2xl font-bold">Relatórios Financeiros</h2>
+                                <p class="text-sm text-subtle-light dark:text-subtle-dark">Analise o desempenho e descubra oportunidades de melhoria.</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                        <span class="user-name-display font-medium hidden md:block"></span>
+                                        <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                        <a href="#" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                        <div class="border-t border-border-color"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                    </div>
+                                </div>
+                                <button class="dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" aria-pressed="false" type="button">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </button>
+                            </div>
+                        </header>
+                        <main class="flex-1 px-4 py-8 sm:px-6 lg:px-8 overflow-y-auto">
+                            <div class="mx-auto flex w-full max-w-7xl flex-col gap-8">
+                                <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                    <div>
+                                        <h3 class="text-3xl font-bold">Visão Geral Financeira</h3>
+                                        <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Acompanhe indicadores-chave, fluxo de caixa e a distribuição de gastos do seu caixa.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button class="flex items-center gap-2 rounded bg-surface-light px-4 py-2 text-sm font-medium text-text-light shadow-sm ring-1 ring-inset ring-border-color hover:bg-primary/10 dark:bg-surface-dark dark:text-text-dark dark:ring-border-color dark:hover:bg-primary/20">
+                                            <span class="material-symbols-outlined text-base">download</span>
+                                            Exportar
+                                        </button>
+                                        <button class="flex items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90">
+                                            <span class="material-symbols-outlined text-base">add</span>
+                                            Novo Relatório
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                    <div class="rounded-xl border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/60 lg:col-span-1">
+                                        <h4 class="text-lg font-semibold">Formas de Pagamento</h4>
+                                        <div class="mt-4 flex h-64 items-center justify-center">
+                                            <canvas id="cashier-payment-methods-chart"></canvas>
+                                        </div>
+                                        <ul id="cashier-payment-methods-list" class="mt-4 space-y-2 text-sm"></ul>
+                                    </div>
+                                    <div class="rounded-xl border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/60 lg:col-span-2">
+                                        <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                            <h4 class="text-lg font-semibold">Análise de Fluxo de Caixa</h4>
+                                            <div class="flex items-center rounded bg-background-light p-1 dark:bg-background-dark">
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-subtle-light has-[:checked]:bg-primary has-[:checked]:text-white dark:text-subtle-dark">
+                                                    <input class="sr-only" name="cashier-cashflow" type="radio" value="daily">
+                                                    Diário
+                                                </label>
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-subtle-light has-[:checked]:bg-primary has-[:checked]:text-white dark:text-subtle-dark">
+                                                    <input class="sr-only" name="cashier-cashflow" type="radio" value="weekly">
+                                                    Semanal
+                                                </label>
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-subtle-light has-[:checked]:bg-primary has-[:checked]:text-white dark:text-subtle-dark">
+                                                    <input class="sr-only" name="cashier-cashflow" type="radio" value="monthly" checked>
+                                                    Mensal
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 h-72">
+                                            <canvas id="cashier-cash-flow-chart"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="rounded-xl border border-border-color bg-surface-light p-6 shadow-sm dark:bg-surface-dark/60 lg:col-span-3">
+                                        <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                                            <h4 class="text-lg font-semibold">Análise Comparativa</h4>
+                                            <div class="flex items-center rounded bg-background-light p-1 dark:bg-background-dark">
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-subtle-light has-[:checked]:bg-primary has-[:checked]:text-white dark:text-subtle-dark">
+                                                    <input class="sr-only" name="cashier-analysis" type="radio" value="expenses" checked>
+                                                    Despesas
+                                                </label>
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-subtle-light has-[:checked]:bg-primary has-[:checked]:text-white dark:text-subtle-dark">
+                                                    <input class="sr-only" name="cashier-analysis" type="radio" value="reinforcements">
+                                                    Reforços
+                                                </label>
+                                                <label class="cursor-pointer rounded px-3 py-1 text-sm font-medium text-subtle-light has-[:checked]:bg-primary has-[:checked]:text-white dark:text-subtle-dark">
+                                                    <input class="sr-only" name="cashier-analysis" type="radio" value="categories">
+                                                    Categorias
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div id="cashier-analysis-list" class="mt-6 space-y-4"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    <div id="cashier-settings-page" class="cashier-page hidden flex flex-col flex-1 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                        <header class="flex items-center justify-between p-6 border-b border-border-color">
+                            <div>
+                                <h2 class="text-2xl font-bold">Configurações</h2>
+                                <p class="text-sm text-subtle-light dark:text-subtle-dark">Gerencie as configurações do seu sistema.</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button class="user-menu-button flex items-center gap-3 p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <img src="" alt="Avatar do Usuário" class="user-avatar-img w-10 h-10 rounded-full object-cover" data-fallback-src="img/placeholders/avatar-placeholder.svg">
+                                        <span class="user-name-display font-medium hidden md:block"></span>
+                                        <span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">expand_more</span>
+                                    </button>
+                                    <div class="user-dropdown-menu hidden absolute right-0 mt-2 w-48 bg-surface-light dark:bg-surface-dark rounded-lg shadow-xl z-10 border border-border-color">
+                                        <a href="#" class="profile-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Perfil</a>
+                                        <a href="#" class="settings-link block px-4 py-2 text-sm hover:bg-primary/10 dark:hover:bg-primary/20">Configurações</a>
+                                        <div class="border-t border-border-color"></div>
+                                        <a href="#" class="logout-link block px-4 py-2 text-sm text-danger hover:bg-danger/10">Sair</a>
+                                    </div>
+                                </div>
+                                <button class="dark-mode-toggle p-2 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" type="button">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </button>
+                            </div>
+                        </header>
+                        <main class="flex-1 px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 py-8 overflow-y-auto">
+                            <div class="mx-auto max-w-6xl">
+                                <div class="mb-8">
+                                    <h1 class="text-3xl font-bold text-text-light dark:text-text-dark">Configurações Avançadas</h1>
+                                    <p class="mt-1 text-subtle-light dark:text-subtle-dark">Gerencie o logotipo da empresa, categorias de movimento, limites de caixa, métodos de pagamento e backup de dados.</p>
+                                </div>
+                                <div class="grid gap-8 lg:gap-10 xl:gap-12 lg:grid-cols-2">
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Logotipo da Empresa</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Atualize o logotipo da sua empresa.</p>
+                                        </div>
+                                        <div class="flex flex-col gap-4">
+                                            <div id="cashier-settings-logo-preview" class="aspect-[16/9] w-full rounded-lg border border-border-color bg-center bg-no-repeat bg-cover shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw');"></div>
+                                            <div class="flex justify-start">
+                                                <input type="file" id="cashier-settings-logo-upload" class="hidden" accept="image/*">
+                                                <button id="cashier-settings-change-logo-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Alterar Logotipo</button>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr] lg:col-span-2">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Categorias de Movimento</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina categorias para receitas e despesas.</p>
+                                        </div>
+                                        <div class="flex flex-col gap-4">
+                                            <div class="table-wrapper">
+                                                <div class="table-scroll">
+                                                    <table class="modern-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Nome da Categoria</th>
+                                                                <th scope="col">Tipo</th>
+                                                                <th scope="col">Status</th>
+                                                                <th scope="col"><span class="sr-only">Ações</span></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="cashier-settings-categories-body"></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-start">
+                                                <button id="cashier-settings-add-category-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Adicionar Categoria</button>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Limites de Caixa</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina o limite máximo de dinheiro para transações.</p>
+                                        </div>
+                                        <div class="flex flex-col gap-2">
+                                            <label for="cashier-settings-cash-limit" class="block text-sm font-medium text-subtle-light dark:text-subtle-dark">Limite Máximo de Caixa</label>
+                                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                                <input id="cashier-settings-cash-limit" name="cash-limit" type="text" placeholder="R$ 1.000,00" class="flex-1 rounded border border-border-color bg-surface-light dark:bg-surface-dark shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
+                                                <button id="cashier-settings-save-cash-limit-btn" class="w-full sm:w-auto rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Salvar</button>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr] lg:col-span-2">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Métodos de Pagamento</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Ative ou desative os métodos de pagamento disponíveis.</p>
+                                        </div>
+                                        <div class="table-wrapper">
+                                            <div class="table-scroll">
+                                                <table class="modern-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Método de Pagamento</th>
+                                                            <th scope="col">Status</th>
+                                                            <th scope="col"><span class="sr-only">Ações</span></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="cashier-settings-payment-methods-body"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <section class="rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Gerenciamento de Dados</h3>
+                                            <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Faça backup e exporte os dados do seu sistema.</p>
+                                        </div>
+                                        <div class="flex flex-col sm:flex-row gap-4">
+                                            <button id="cashier-settings-backup-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40">Fazer Backup dos Dados</button>
+                                            <button id="cashier-settings-export-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40" type="button" disabled>Exportar Dados</button>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    <div id="cashier-category-modal" class="fixed inset-0 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+                        <div class="bg-background-light dark:bg-background-dark rounded-lg shadow-xl w-full max-w-lg border border-border-color">
+                            <div class="p-6 border-b border-border-color/60">
+                                <h3 id="cashier-category-modal-title" class="text-lg font-semibold text-text-light dark:text-text-dark">Adicionar Categoria</h3>
+                            </div>
+                            <form id="cashier-category-form">
+                                <input type="hidden" id="cashier-category-id" name="id">
+                                <div class="p-6 space-y-4">
+                                    <div>
+                                        <label for="cashier-category-name" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Nome da Categoria</label>
+                                        <input id="cashier-category-name" name="name" type="text" required placeholder="ex: Vendas Online" class="w-full bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary">
+                                    </div>
+                                    <div>
+                                        <label for="cashier-category-type" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Tipo</label>
+                                        <select id="cashier-category-type" name="type" required class="w-full bg-surface-light dark:bg-surface-dark border border-border-color rounded-lg px-3 py-2 text-sm text-text-light dark:text-text-dark focus:ring-primary focus:border-primary">
+                                            <option>Receita</option>
+                                            <option>Despesa</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="px-6 py-4 bg-background-light dark:bg-background-dark/60 flex justify-end gap-3 rounded-b-lg">
+                                    <button type="button" id="cashier-category-cancel-btn" class="px-4 py-2 bg-background-light dark:bg-surface-dark text-text-light dark:text-text-dark font-medium rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">Cancelar</button>
+                                    <button type="submit" class="px-4 py-2 bg-success text-white font-medium rounded-lg hover:bg-success/90 transition-colors">Salvar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="cashier-settings-toast" class="fixed top-5 right-5 bg-success text-white px-6 py-3 rounded-lg shadow-xl text-sm font-medium transition-transform duration-300 translate-x-full opacity-0 pointer-events-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modais -->
+    <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-md">
+            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <span class="material-icons">person</span>
+                    <span>Meu Perfil</span>
+                </h2>
+                <button data-close-modal="profile-modal" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <span class="material-icons">close</span>
+                </button>
+            </header>
+            <main class="p-6 space-y-4 flex flex-col items-center">
+                <img id="profile-modal-image" src="" alt="Foto de Perfil" class="w-32 h-32 rounded-full object-cover mb-4 border-4 border-primary" loading="lazy" decoding="async" data-fallback-src="img/placeholders/avatar-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+                <label for="profile-image-upload" class="cursor-pointer bg-secondary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-secondary/90">
+                    Alterar Foto
+                    <input type="file" name="profile_image" id="profile-image-upload" class="hidden" accept="image/*">
+                </label>
+            </main>
+            <footer class="flex justify-end p-4 bg-gray-50 dark:bg-gray-800 space-x-2">
+                <button type="button" data-close-modal="profile-modal" class="px-4 py-2 rounded-lg">Fechar</button>
+                <button id="save-profile-btn" type="button" class="px-4 py-2 bg-primary text-white rounded-lg">Salvar</button>
+            </footer>
+        </div>
+    </div>
+
+    <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start sm:items-center justify-center p-4 sm:p-6 hidden overflow-y-auto">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700 sticky top-0 bg-surface-light dark:bg-surface-dark z-10">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <span class="material-icons">add_circle</span>
+                    <span>Adicionar Produto</span>
+                </h2>
+                <button data-close-modal="add-modal" class="p-2 rounded-full">
+                    <span class="material-icons">close</span>
+                </button>
+            </header>
+            <form id="add-form" class="flex-1 flex flex-col overflow-hidden">
+                <main class="p-6 space-y-4 overflow-y-auto flex-1">
+                    <label class="block text-sm font-medium">Imagem
+                        <input type="file" name="image" id="add-image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-violet-50 file:text-primary hover:file:bg-violet-100">
+                        <img id="add-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden" loading="lazy" decoding="async" data-fallback-src="img/placeholders/product-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+                    </label>
+                    <label class="block text-sm font-medium">Tipo
+                        <select name="type" id="add-type" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                            <option value="Açaí">Açaí</option>
+                            <option value="Sorvete">Sorvete</option>
+                            <option value="Complemento">Complemento</option>
+                            <option value="Bebida">Bebida</option>
+                        </select>
+                    </label>
+                    <label class="block text-sm font-medium">Nome
+                        <input type="text" name="name" id="add-name" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    </label>
+                    <label class="block text-sm font-medium">Lote
+                        <input type="text" name="lot" id="add-lot" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label class="block text-sm font-medium">Quantidade
+                            <input type="number" name="quantity" id="add-quantity" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" min="0">
+                        </label>
+                        <label class="block text-sm font-medium">Validade
+                            <input type="date" name="expiryDate" id="add-expiryDate" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                        </label>
+                        <label class="block text-sm font-medium">Valor(R$)
+                            <input type="number" name="cost" id="add-cost" required step="0.01" min="0" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" placeholder="Ex.: 15.90">
+                        </label>
+                    </div>
+                </main>
+                <footer class="flex justify-end p-4 bg-gray-50 dark:bg-gray-800 space-x-2">
+                    <button type="button" data-close-modal="add-modal" class="px-4 py-2 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Adicionar</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <div id="suggestions-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <span class="material-icons text-secondary">auto_awesome</span>
+                    <span>Sugestões Inteligentes</span>
+                </h2>
+                <button data-close-modal="suggestions-modal" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <span class="material-icons">close</span>
+                </button>
+            </header>
+            <main id="suggestions-content" class="p-6 space-y-6 overflow-y-auto"></main>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start sm:items-center justify-center p-4 sm:p-6 hidden overflow-y-auto">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+            <header class="flex items-center justify-between p-4 border-b dark:border-gray-700 sticky top-0 bg-surface-light dark:bg-surface-dark z-10">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <span class="material-icons">edit</span>
+                    <span>Editar Produto</span>
+                </h2>
+                <button data-close-modal="edit-modal" class="p-2 rounded-full">
+                    <span class="material-icons">close</span>
+                </button>
+            </header>
+            <form id="edit-form" class="flex-1 flex flex-col overflow-hidden">
+                <main class="p-4 space-y-4 overflow-y-auto flex-1">
+                    <input type="hidden" id="edit-id" name="id">
+                    <label class="block text-sm font-medium">Imagem
+                        <input type="file" name="image" id="edit-image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-violet-50 file:text-primary hover:file:bg-violet-100">
+                        <img id="edit-image-preview" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Preview" alt="Preview" class="mt-2 rounded-md h-24 w-24 object-cover hidden" loading="lazy" decoding="async" data-fallback-src="img/placeholders/product-placeholder.svg" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}">
+                    </label>
+                    <label class="block text-sm font-medium">Tipo
+                        <select name="type" id="edit-type" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                            <option value="Açaí">Açaí</option>
+                            <option value="Sorvete">Sorvete</option>
+                            <option value="Complemento">Complemento</option>
+                            <option value="Bebida">Bebida</option>
+                        </select>
+                    </label>
+                    <label class="block text-sm font-medium">Nome
+                        <input type="text" name="name" id="edit-name" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    </label>
+                    <label class="block text-sm font-medium">Lote
+                        <input type="text" name="lot" id="edit-lot" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label class="block text-sm font-medium">Quantidade
+                            <input type="number" name="quantity" id="edit-quantity" required class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" min="0">
+                        </label>
+                        <label class="block text-sm font-medium">Validade
+                            <input type="date" name="expiryDate" id="edit-expiryDate" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark">
+                        </label>
+                        <label class="block text-sm font-medium">Valor(R$)
+                            <input type="number" name="cost" id="edit-cost" required step="0.01" min="0" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" placeholder="Ex.: 15.90">
+                        </label>
+                    </div>
+                </main>
+                <footer class="flex justify-end p-4 bg-gray-50 dark:bg-gray-800 space-x-2">
+                    <button type="button" data-close-modal="edit-modal" class="px-4 py-2 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Salvar</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl w-full max-w-md">
+            <header class="flex items-center p-4">
+                <span class="material-icons text-danger text-2xl mr-3">warning</span>
+                <h2 class="text-xl font-bold">Confirmar Exclusão</h2>
+            </header>
+            <main class="p-6 pt-0">
+                <p>Excluir "<strong id="delete-product-name"></strong>"?</p>
+                <label class="block text-sm font-medium mt-4">Motivo
+                    <input type="text" id="delete-reason" class="w-full border rounded-lg p-2 bg-background-light dark:bg-background-dark" placeholder="Informe o motivo da exclusão" />
+                </label>
+            </main>
+            <footer class="flex justify-end p-4 bg-gray-50 dark:bg-gray-800 space-x-2">
+                <button type="button" data-close-modal="delete-modal" class="px-4 py-2 rounded-lg">Cancelar</button>
+                <button id="confirm-delete-btn" type="button" class="px-4 py-2 bg-danger text-white rounded-lg">Excluir</button>
+            </footer>
+        </div>
+    </div>
+
+    <div id="loader" class="fixed inset-0 bg-black bg-opacity-30 z-[60] flex items-center justify-center hidden">
+        <div class="loader h-16 w-16 rounded-full border-4 border-t-4 border-gray-200"></div>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js" onerror="this.onerror=null;this.src='vendor/chart.umd.min.js';"></script>
+    <script src="/socket.io/socket.io.js" defer></script>
+    <script defer src="javascript.js"></script>
+</body>
+</html>
