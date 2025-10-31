@@ -131,10 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierRegisterMovementBtn = document.getElementById('register-movement-btn');
   const cashierMovementModal = document.getElementById('cashier-movement-modal');
   const cashierMovementForm = document.getElementById('cashier-movement-form');
-  const movementTypeSelect = document.getElementById('movement-type');
-  const movementCategorySelect = document.getElementById('movement-category');
-  const movementCategoryCustomInput = document.getElementById('movement-category-custom');
-  const movementPaymentMethodSelect = document.getElementById('movement-payment-method');
   const cashierCancelMovementBtn = document.getElementById('cancel-movement-btn');
 
   const pendingUsersList = document.getElementById('pending-users-list');
@@ -1254,10 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  const openCashierMovementModal = () => {
-    populateCashierMovementFormOptions();
-    openModal('cashier-movement-modal');
-  };
+  const openCashierMovementModal = () => openModal('cashier-movement-modal');
   const closeCashierMovementModal = () => closeModal('cashier-movement-modal');
 
   const handleCashierMovementSubmit = event => {
@@ -1266,19 +1259,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formData = new FormData(cashierMovementForm);
     const type = (formData.get('type') || 'Entrada').toString();
+    const category = (formData.get('category') || '').toString().trim() || 'Outros';
     const employee = (formData.get('employee') || '').toString().trim() || 'Equipe';
     const observations = (formData.get('observations') || '').toString().trim();
-    const selectedCategory = (formData.get('category') || '').toString();
-    const customCategory = (formData.get('category-custom') || '').toString().trim();
-
-    let category = selectedCategory;
-    if (!category || category === '__custom__' || category === '__placeholder__') {
-      category = customCategory;
-    }
-    if (!category) {
-      alert('Informe uma categoria para a movimentação.');
-      return;
-    }
 
     const rawValue = formData.get('value');
     const numericValue = parseLocaleNumber(rawValue);
@@ -1289,28 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sanitizedValue = Math.round(Math.abs(numericValue) * 100) / 100;
 
     const normalizedType = normalizeText(type);
-    const paymentMethodRaw = (formData.get('payment-method') || '').toString().trim()
-      || movementPaymentMethodSelect?.value
-      || (normalizedType === 'saida' ? 'Cartão' : 'Dinheiro');
-    const paymentMethod = paymentMethodRaw || 'Dinheiro';
-    const normalizedPaymentMethod = normalizeText(paymentMethod);
-
-    const cashLimit = parseCashierCashLimitValue();
-    if (Number.isFinite(cashLimit) && normalizedType !== 'saida') {
-      const cashMethodNames = new Set(
-        getCashPaymentMethodNames().map(name => normalizeText(name)).filter(Boolean),
-      );
-      const isCashPayment = cashMethodNames.has(normalizedPaymentMethod) || isCashPaymentMethodName(paymentMethod);
-      if (isCashPayment) {
-        const currentCashOnHand = calculateCashOnHand();
-        const projectedCash = currentCashOnHand + sanitizedValue;
-        if (projectedCash > cashLimit) {
-          const formattedLimit = formatCurrencyBRL(cashLimit);
-          alert(`Esta operação ultrapassa o limite de caixa configurado (${formattedLimit}). Ajuste o valor ou selecione outra forma de pagamento.`);
-          return;
-        }
-      }
-    }
+    const defaultPayment = normalizedType === 'saida' ? 'Despesas' : 'Dinheiro';
 
     const newMovement = {
       id: `cashier-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
@@ -1320,7 +1282,7 @@ document.addEventListener('DOMContentLoaded', () => {
       valor: sanitizedValue,
       funcionario: employee,
       observacoes: observations,
-      formaPagamento: paymentMethod,
+      formaPagamento: defaultPayment,
     };
 
     cashierMovementsData = sortCashierMovements([newMovement, ...cashierMovementsData]);
@@ -1339,25 +1301,11 @@ document.addEventListener('DOMContentLoaded', () => {
     purgeLegacyCashierMovementsStorage();
     const storedMovements = loadCashierMovementsFromStorage();
     cashierMovementsData = Array.isArray(storedMovements) ? storedMovements : [];
-    populateCashierMovementFormOptions();
 
     setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
     renderCashierMovementsTable();
     recalculateCashierDashboardFromMovements();
     renderCashierReports(cashierMovementsData);
-
-    if (movementTypeSelect) {
-      movementTypeSelect.addEventListener('change', () => {
-        populateCashierCategoryOptions(movementTypeSelect.value);
-      });
-    }
-
-    if (movementCategorySelect) {
-      movementCategorySelect.addEventListener('change', () => {
-        const shouldShowCustom = movementCategorySelect.value === '__custom__';
-        toggleCustomCategoryInputVisibility(shouldShowCustom);
-      });
-    }
 
     if (cashierFilterButtons) {
       cashierFilterButtons.addEventListener('click', event => {
@@ -1372,7 +1320,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cashierRegisterMovementBtn) {
       cashierRegisterMovementBtn.addEventListener('click', () => {
         cashierMovementForm?.reset();
-        populateCashierMovementFormOptions();
         openCashierMovementModal();
       });
     }
@@ -1380,7 +1327,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cashierCancelMovementBtn) {
       cashierCancelMovementBtn.addEventListener('click', () => {
         cashierMovementForm?.reset();
-        populateCashierMovementFormOptions();
         closeCashierMovementModal();
       });
     }
@@ -1836,156 +1782,6 @@ document.addEventListener('DOMContentLoaded', () => {
     paymentMethods: DEFAULT_CASHIER_SETTINGS.paymentMethods.map(method => ({ ...method })),
   });
 
-  const resolveCashierCategoryTypeFromMovement = movementTypeValue => {
-    const normalized = normalizeText(movementTypeValue);
-    return normalized === 'saida' ? 'Despesa' : 'Receita';
-  };
-
-  const getActiveCashierCategories = movementTypeValue => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    const expectedType = resolveCashierCategoryTypeFromMovement(movementTypeValue);
-    return Array.isArray(cashierSettingsState?.categories)
-      ? cashierSettingsState.categories.filter(category => (
-        category
-        && category.status !== 'Inativo'
-        && category.type === expectedType
-        && typeof category.name === 'string'
-      ))
-      : [];
-  };
-
-  const getActiveCashierPaymentMethods = () => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    return Array.isArray(cashierSettingsState?.paymentMethods)
-      ? cashierSettingsState.paymentMethods.filter(method => (
-        method
-        && method.status !== 'Inativo'
-        && typeof method.name === 'string'
-      ))
-      : [];
-  };
-
-  const isCashPaymentMethodName = methodName => {
-    const normalized = normalizeText(methodName);
-    if (!normalized) return false;
-    return normalized.includes('dinheir') || normalized.includes('cash') || normalized.includes('espécie') || normalized.includes('especie');
-  };
-
-  const getCashPaymentMethodNames = () => {
-    const activeMethods = getActiveCashierPaymentMethods();
-    const names = activeMethods.map(method => method.name);
-    if (!names.some(name => isCashPaymentMethodName(name))) {
-      names.push('Dinheiro');
-    }
-    return names;
-  };
-
-  const parseCashierCashLimitValue = () => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    const raw = cashierSettingsState?.cashLimit;
-    const numeric = parseLocaleNumber(raw);
-    return Number.isFinite(numeric) && numeric > 0 ? numeric : Number.NaN;
-  };
-
-  const toggleCustomCategoryInputVisibility = shouldShow => {
-    if (!movementCategoryCustomInput) return;
-    movementCategoryCustomInput.classList.toggle('hidden', !shouldShow);
-    movementCategoryCustomInput.required = shouldShow;
-    if (!shouldShow) {
-      movementCategoryCustomInput.value = '';
-    } else {
-      movementCategoryCustomInput.focus();
-    }
-  };
-
-  const populateCashierCategoryOptions = movementTypeValue => {
-    if (!movementCategorySelect) return;
-    const categories = getActiveCashierCategories(movementTypeValue);
-    movementCategorySelect.innerHTML = '';
-
-    if (categories.length) {
-      categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category.name;
-        option.textContent = category.name;
-        movementCategorySelect.appendChild(option);
-      });
-      const customOption = document.createElement('option');
-      customOption.value = '__custom__';
-      customOption.textContent = 'Outra (digitar manualmente)';
-      movementCategorySelect.appendChild(customOption);
-      movementCategorySelect.disabled = false;
-      movementCategorySelect.value = categories[0].name;
-      toggleCustomCategoryInputVisibility(false);
-      return;
-    }
-
-    const fallbackOption = document.createElement('option');
-    fallbackOption.value = '__custom__';
-    fallbackOption.textContent = 'Nenhuma categoria configurada';
-    movementCategorySelect.appendChild(fallbackOption);
-    movementCategorySelect.value = '__custom__';
-    movementCategorySelect.disabled = true;
-    toggleCustomCategoryInputVisibility(true);
-  };
-
-  const populateCashierPaymentMethodOptions = () => {
-    if (!movementPaymentMethodSelect) return;
-    const methods = getActiveCashierPaymentMethods();
-    movementPaymentMethodSelect.innerHTML = '';
-
-    if (methods.length) {
-      methods.forEach(method => {
-        const option = document.createElement('option');
-        option.value = method.name;
-        option.textContent = method.name;
-        movementPaymentMethodSelect.appendChild(option);
-      });
-      movementPaymentMethodSelect.disabled = false;
-      movementPaymentMethodSelect.value = methods[0].name;
-      return;
-    }
-
-    const fallbackOption = document.createElement('option');
-    fallbackOption.value = 'Dinheiro';
-    fallbackOption.textContent = 'Dinheiro';
-    movementPaymentMethodSelect.appendChild(fallbackOption);
-    movementPaymentMethodSelect.disabled = true;
-    movementPaymentMethodSelect.value = 'Dinheiro';
-  };
-
-  const populateCashierMovementFormOptions = () => {
-    if (!cashierMovementForm) return;
-    const currentType = movementTypeSelect?.value || 'Entrada';
-    populateCashierCategoryOptions(currentType);
-    populateCashierPaymentMethodOptions();
-  };
-
-  const calculateCashOnHand = () => {
-    if (!Array.isArray(cashierMovementsData) || !cashierMovementsData.length) return 0;
-    const cashNames = getCashPaymentMethodNames()
-      .map(name => normalizeText(name))
-      .filter(Boolean);
-    const cashNamesSet = new Set(cashNames);
-    return cashierMovementsData.reduce((total, movement) => {
-      const method = normalizeText(movement?.formaPagamento);
-      if (!method) return total;
-      const isCashMovement = cashNamesSet.has(method) || isCashPaymentMethodName(method);
-      if (!isCashMovement) return total;
-      const amount = parseMovementAmount(movement);
-      if (!(amount > 0)) return total;
-      const type = normalizeText(movement?.tipo);
-      const sign = type === 'saida' ? -1 : 1;
-      return total + amount * sign;
-    }, 0);
-  };
-
   const normalizeCashierCategory = category => {
     if (!category || typeof category !== 'object') return null;
     const name = typeof category.name === 'string' ? category.name.trim() : '';
@@ -2119,8 +1915,6 @@ document.addEventListener('DOMContentLoaded', () => {
       row.append(nameCell, typeCell, statusCell, actionsCell);
       cashierSettingsCategoriesBody.appendChild(row);
     });
-
-    populateCashierMovementFormOptions();
   };
 
   const renderCashierSettingsPaymentMethods = () => {
@@ -2175,8 +1969,6 @@ document.addEventListener('DOMContentLoaded', () => {
       row.append(nameCell, statusCell, actionsCell);
       cashierSettingsPaymentMethodsBody.appendChild(row);
     });
-
-    populateCashierMovementFormOptions();
   };
 
   const updateCashierSettingsCashLimitInput = () => {
@@ -2190,7 +1982,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCashierSettingsCashLimitInput();
     renderCashierSettingsCategories();
     renderCashierSettingsPaymentMethods();
-    populateCashierMovementFormOptions();
   };
 
   const openCashierCategoryModal = (category = null) => {
