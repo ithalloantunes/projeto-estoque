@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const darkModeMediaQuery = typeof window !== 'undefined' && window.matchMedia
     ? window.matchMedia('(prefers-color-scheme: dark)')
     : null;
+  const THEME_STORAGE_KEY = 'projeto-estoque:theme';
+  let hasExplicitThemePreference = false;
 
   // Elementos de login
   const loginContainer = document.getElementById('login-container');
@@ -2322,22 +2324,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  const applyDarkModePreference = isDark => {
-    const shouldEnable = Boolean(isDark);
+  const getStoredThemePreference = () => {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      return window.localStorage.getItem(THEME_STORAGE_KEY);
+    } catch (error) {
+      console.warn('Não foi possível ler a preferência de tema:', error);
+      return null;
+    }
+  };
+
+  const setStoredThemePreference = theme => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch (error) {
+      console.warn('Não foi possível salvar a preferência de tema:', error);
+    }
+  };
+
+  const applyDarkModePreference = theme => {
+    const shouldEnable = theme === 'dark';
     document.documentElement.classList.toggle('dark', shouldEnable);
+    document.documentElement.dataset.theme = theme;
     updateDarkModeToggleState(shouldEnable);
   };
 
   const setupDarkMode = () => {
+    const storedTheme = getStoredThemePreference();
+    hasExplicitThemePreference = storedTheme !== null;
     const prefersDark = darkModeMediaQuery?.matches ?? false;
-    applyDarkModePreference(prefersDark);
+    const initialTheme = storedTheme ?? (prefersDark ? 'dark' : 'light');
+    applyDarkModePreference(initialTheme);
     refreshCashierReportsCharts();
 
     if (darkModeToggles.length) {
       darkModeToggles.forEach(button => {
         button.addEventListener('click', () => {
           const isDark = document.documentElement.classList.contains('dark');
-          applyDarkModePreference(!isDark);
+          const nextTheme = isDark ? 'light' : 'dark';
+          hasExplicitThemePreference = true;
+          setStoredThemePreference(nextTheme);
+          applyDarkModePreference(nextTheme);
           refreshCashierReportsCharts();
         });
       });
@@ -2345,8 +2373,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (darkModeMediaQuery) {
       darkModeMediaQuery.addEventListener('change', event => {
-        applyDarkModePreference(event.matches);
-        refreshCashierReportsCharts();
+        if (!hasExplicitThemePreference) {
+          applyDarkModePreference(event.matches ? 'dark' : 'light');
+          refreshCashierReportsCharts();
+        }
       });
     }
   };
