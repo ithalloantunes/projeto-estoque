@@ -25,10 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const FALLBACK_PRIMARY_RGB = { r: 109, g: 40, b: 217 };
   let profileImageFile = null;
   let isRefreshingAllData = false;
-  const ACTIVE_PAGE_STORAGE_KEY = 'acaiStock_active_page';
-  const ACTIVE_MODULE_STORAGE_KEY = 'acaiStock_active_module';
-  const SESSION_STORAGE_KEY = 'acaiStock_session';
-  const DARK_MODE_STORAGE_KEY = 'acaiStock_dark_mode';
   const AUTO_REFRESH_INTERVAL_MS = 60_000;
   let autoRefreshIntervalId = null;
   let activePageId = null;
@@ -289,23 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const storeActiveModule = moduleName => {
     activeModule = moduleName;
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      window.localStorage.setItem(ACTIVE_MODULE_STORAGE_KEY, moduleName);
-    } catch (error) {
-      console.warn('Não foi possível salvar o módulo selecionado:', error);
-    }
   };
 
-  const getStoredActiveModule = () => {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
-    try {
-      return window.localStorage.getItem(ACTIVE_MODULE_STORAGE_KEY);
-    } catch (error) {
-      console.warn('Não foi possível recuperar o módulo selecionado:', error);
-      return null;
-    }
-  };
+  const getStoredActiveModule = () => null;
 
   const switchToStockModule = ({ skipStore } = {}) => {
     applyModuleVisibility('stock');
@@ -343,6 +325,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openCashierSettingsPage = () => {
     switchToCashierModule();
+    loadCashierSettings({ silent: true }).catch(error => {
+      console.error('Erro ao atualizar configurações do caixa:', error);
+    });
     const settingsMenuLink = cashierMenu?.querySelector('a[data-page="cashier-settings-page"]');
     if (settingsMenuLink) {
       activateCashierMenuItem(settingsMenuLink);
@@ -395,43 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   closeMobileSidebar(true);
-
-  const persistSession = session => {
-    if (!session) return;
-    const { username, userId, role } = session;
-    if (!username || !userId || !role) return;
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ username, userId, role }));
-    } catch (error) {
-      console.warn('Não foi possível salvar a sessão:', error);
-    }
-  };
-
-  const getStoredSession = () => {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
-    try {
-      const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== 'object') return null;
-      const { username, userId, role } = parsed;
-      if (!username || !userId || !role) return null;
-      return { username, userId, role };
-    } catch (error) {
-      console.warn('Não foi possível recuperar a sessão:', error);
-      return null;
-    }
-  };
-
-  const clearStoredSession = () => {
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      window.localStorage.removeItem(SESSION_STORAGE_KEY);
-    } catch (error) {
-      console.warn('Não foi possível limpar a sessão:', error);
-    }
-  };
 
   // Utilitários -----------------------------------------------------------------
   const showLoader = () => loader?.classList.remove('hidden');
@@ -974,11 +922,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
-  const CASHIER_MOVEMENTS_STORAGE_KEY = 'acaiStock_cashier_movements_v2';
-  const LEGACY_CASHIER_MOVEMENTS_STORAGE_KEYS = Object.freeze([
-    'acaiStock_cashier_movements'
-  ]);
-
   const sortCashierMovements = (movements = []) => {
     return [...movements]
       .filter(item => item)
@@ -1044,42 +987,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
-  const purgeLegacyCashierMovementsStorage = () => {
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      LEGACY_CASHIER_MOVEMENTS_STORAGE_KEYS.forEach(key => {
-        if (key !== CASHIER_MOVEMENTS_STORAGE_KEY) {
-          window.localStorage.removeItem(key);
-        }
-      });
-    } catch (error) {
-      console.warn('Não foi possível limpar movimentações antigas do caixa:', error);
+  const fetchCashierMovementsFromServer = async () => {
+    const data = await authenticatedJsonFetch(`${BASE_URL}/api/cashier/movements`);
+    if (!Array.isArray(data)) {
+      return [];
     }
+    return data.map(normalizeCashierMovement).filter(Boolean);
   };
 
-  const loadCashierMovementsFromStorage = () => {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
+  const loadCashierMovements = async ({ silent = false } = {}) => {
     try {
-      const raw = window.localStorage.getItem(CASHIER_MOVEMENTS_STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return null;
-      return sortCashierMovements(parsed.map(normalizeCashierMovement).filter(Boolean));
+      if (!silent) showLoader();
+      const movements = await fetchCashierMovementsFromServer();
+      cashierMovementsData = sortCashierMovements(movements);
+      setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
+      renderCashierMovementsTable();
+      recalculateCashierDashboardFromMovements();
+      renderCashierReports(cashierMovementsData);
     } catch (error) {
-      console.warn('Não foi possível carregar as movimentações de caixa salvas:', error);
-      return null;
-    }
-  };
-
-  const saveCashierMovementsToStorage = movements => {
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      window.localStorage.setItem(
-        CASHIER_MOVEMENTS_STORAGE_KEY,
-        JSON.stringify(sortCashierMovements(movements))
-      );
-    } catch (error) {
-      console.warn('Não foi possível salvar as movimentações de caixa:', error);
+      console.error('Erro ao carregar movimentações do caixa:', error);
+      if (!silent) alert('Erro ao carregar movimentações do caixa: ' + error.message);
+    } finally {
+      if (!silent) hideLoader();
     }
   };
 
@@ -1260,7 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   const closeCashierMovementModal = () => closeModal('cashier-movement-modal');
 
-  const handleCashierMovementSubmit = event => {
+  const handleCashierMovementSubmit = async event => {
     event.preventDefault();
     if (!cashierMovementForm) return;
 
@@ -1312,9 +1241,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    const newMovement = {
-      id: `cashier-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
-      data: new Date().toISOString(),
+    const payload = {
       tipo: type,
       categoria: category,
       valor: sanitizedValue,
@@ -1323,22 +1250,35 @@ document.addEventListener('DOMContentLoaded', () => {
       formaPagamento: paymentMethod,
     };
 
-    cashierMovementsData = sortCashierMovements([newMovement, ...cashierMovementsData]);
-    saveCashierMovementsToStorage(cashierMovementsData);
-    setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
-    renderCashierMovementsTable();
-    recalculateCashierDashboardFromMovements();
-    renderCashierReports(cashierMovementsData);
-    cashierMovementForm.reset();
-    closeCashierMovementModal();
+    try {
+      showLoader();
+      const created = await authenticatedJsonFetch(`${BASE_URL}/api/cashier/movements`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const normalized = normalizeCashierMovement(created);
+      if (normalized) {
+        cashierMovementsData = sortCashierMovements([normalized, ...cashierMovementsData]);
+      }
+      setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
+      renderCashierMovementsTable();
+      recalculateCashierDashboardFromMovements();
+      renderCashierReports(cashierMovementsData);
+      cashierMovementForm.reset();
+      closeCashierMovementModal();
+    } catch (error) {
+      console.error('Erro ao registrar movimentação do caixa:', error);
+      alert('Erro ao registrar movimentação: ' + error.message);
+    } finally {
+      hideLoader();
+    }
   };
 
   const initializeCashierMovementsModule = () => {
     if (!cashierMovementsTableBody && !cashierMovementForm && !cashierFilterButtons) return;
 
-    purgeLegacyCashierMovementsStorage();
-    const storedMovements = loadCashierMovementsFromStorage();
-    cashierMovementsData = Array.isArray(storedMovements) ? storedMovements : [];
+    cashierMovementsData = [];
     populateCashierMovementFormOptions();
 
     setActiveCashierMovementFilterButton(cashierActiveMovementFilter);
@@ -1813,7 +1753,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Configurações do Caixa ------------------------------------------------------
-  const CASHIER_SETTINGS_STORAGE_KEY = 'acaiStock_cashier_settings';
   const DEFAULT_CASHIER_SETTINGS = Object.freeze({
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw',
     cashLimit: '',
@@ -1842,12 +1781,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const getActiveCashierCategories = movementTypeValue => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
+    const state = ensureCashierSettingsState();
     const expectedType = resolveCashierCategoryTypeFromMovement(movementTypeValue);
-    return Array.isArray(cashierSettingsState?.categories)
-      ? cashierSettingsState.categories.filter(category => (
+    return Array.isArray(state?.categories)
+      ? state.categories.filter(category => (
         category
         && category.status !== 'Inativo'
         && category.type === expectedType
@@ -1857,11 +1794,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const getActiveCashierPaymentMethods = () => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    return Array.isArray(cashierSettingsState?.paymentMethods)
-      ? cashierSettingsState.paymentMethods.filter(method => (
+    const state = ensureCashierSettingsState();
+    return Array.isArray(state?.paymentMethods)
+      ? state.paymentMethods.filter(method => (
         method
         && method.status !== 'Inativo'
         && typeof method.name === 'string'
@@ -1885,10 +1820,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const parseCashierCashLimitValue = () => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    const raw = cashierSettingsState?.cashLimit;
+    const state = ensureCashierSettingsState();
+    const raw = state?.cashLimit;
     const numeric = parseLocaleNumber(raw);
     return Number.isFinite(numeric) && numeric > 0 ? numeric : Number.NaN;
   };
@@ -2009,47 +1942,70 @@ document.addEventListener('DOMContentLoaded', () => {
     return { id, name, status };
   };
 
-  const loadCashierSettingsFromStorage = () => {
-    if (typeof window === 'undefined' || !window.localStorage) {
-      return cloneDefaultCashierSettings();
-    }
-    try {
-      const raw = window.localStorage.getItem(CASHIER_SETTINGS_STORAGE_KEY);
-      if (!raw) return cloneDefaultCashierSettings();
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== 'object') return cloneDefaultCashierSettings();
-      const next = cloneDefaultCashierSettings();
-      if (typeof parsed.logo === 'string' && parsed.logo.trim()) {
-        next.logo = parsed.logo;
-      }
-      if (typeof parsed.cashLimit === 'string') {
-        next.cashLimit = parsed.cashLimit;
-      }
-      if (Array.isArray(parsed.categories)) {
-        const normalizedCategories = parsed.categories.map(normalizeCashierCategory).filter(Boolean);
-        if (normalizedCategories.length) {
-          next.categories = normalizedCategories;
-        }
-      }
-      if (Array.isArray(parsed.paymentMethods)) {
-        const normalizedMethods = parsed.paymentMethods.map(normalizeCashierPaymentMethod).filter(Boolean);
-        if (normalizedMethods.length) {
-          next.paymentMethods = normalizedMethods;
-        }
-      }
+  const normalizeCashierSettings = raw => {
+    const next = cloneDefaultCashierSettings();
+    if (!raw || typeof raw !== 'object') {
       return next;
-    } catch (error) {
-      console.warn('Não foi possível carregar as configurações do caixa:', error);
-      return cloneDefaultCashierSettings();
     }
+    if (typeof raw.logo === 'string' && raw.logo.trim()) {
+      next.logo = raw.logo;
+    }
+    if (typeof raw.cashLimit === 'string') {
+      next.cashLimit = raw.cashLimit;
+    }
+    if (Array.isArray(raw.categories)) {
+      const normalizedCategories = raw.categories.map(normalizeCashierCategory).filter(Boolean);
+      if (normalizedCategories.length) {
+        next.categories = normalizedCategories;
+      }
+    }
+    if (Array.isArray(raw.paymentMethods)) {
+      const normalizedMethods = raw.paymentMethods.map(normalizeCashierPaymentMethod).filter(Boolean);
+      if (normalizedMethods.length) {
+        next.paymentMethods = normalizedMethods;
+      }
+    }
+    return next;
   };
 
-  const saveCashierSettingsToStorage = settings => {
-    if (typeof window === 'undefined' || !window.localStorage) return;
+  const ensureCashierSettingsState = () => {
+    if (!cashierSettingsState) {
+      cashierSettingsState = cloneDefaultCashierSettings();
+    }
+    return cashierSettingsState;
+  };
+
+  const setCashierSettingsState = nextState => {
+    cashierSettingsState = normalizeCashierSettings(nextState);
+    return cashierSettingsState;
+  };
+
+  const saveCashierSettingsToServer = async settings => {
+    const normalized = normalizeCashierSettings(settings);
+    const response = await authenticatedJsonFetch(`${BASE_URL}/api/cashier/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(normalized),
+    });
+    return setCashierSettingsState(response);
+  };
+
+  const fetchCashierSettingsFromServer = async () => {
+    const data = await authenticatedJsonFetch(`${BASE_URL}/api/cashier/settings`);
+    return normalizeCashierSettings(data);
+  };
+
+  const loadCashierSettings = async ({ silent = false } = {}) => {
     try {
-      window.localStorage.setItem(CASHIER_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+      if (!silent) showLoader();
+      const data = await fetchCashierSettingsFromServer();
+      setCashierSettingsState(data);
+      updateCashierSettingsUI();
     } catch (error) {
-      console.warn('Não foi possível salvar as configurações do caixa:', error);
+      console.error('Erro ao carregar configurações do caixa:', error);
+      if (!silent) alert('Erro ao carregar configurações do caixa: ' + error.message);
+    } finally {
+      if (!silent) hideLoader();
     }
   };
 
@@ -2157,19 +2113,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const isActive = method.status === 'Ativo';
       toggleButton.className = isActive ? 'text-danger hover:text-danger/80' : 'text-success hover:text-success/80';
       toggleButton.textContent = isActive ? 'Desativar' : 'Ativar';
-      toggleButton.addEventListener('click', () => {
-        if (!cashierSettingsState) {
-          cashierSettingsState = loadCashierSettingsFromStorage();
-        }
-        const nextMethods = cashierSettingsState.paymentMethods.map(item => (
+      toggleButton.addEventListener('click', async () => {
+        const state = ensureCashierSettingsState();
+        const nextMethods = state.paymentMethods.map(item => (
           item.id === method.id
             ? { ...item, status: item.status === 'Ativo' ? 'Inativo' : 'Ativo' }
             : item
         ));
-        cashierSettingsState = { ...cashierSettingsState, paymentMethods: nextMethods };
-        saveCashierSettingsToStorage(cashierSettingsState);
-        renderCashierSettingsPaymentMethods();
-        showCashierSettingsToast('Status do método atualizado.');
+        cashierSettingsState = { ...state, paymentMethods: nextMethods };
+        try {
+          cashierSettingsState = await saveCashierSettingsToServer(cashierSettingsState);
+          updateCashierSettingsUI();
+          showCashierSettingsToast('Status do método atualizado.');
+        } catch (error) {
+          console.error('Erro ao atualizar método de pagamento:', error);
+          showCashierSettingsToast('Não foi possível atualizar o método agora.');
+        }
       });
       actionsCell.appendChild(toggleButton);
       row.append(nameCell, statusCell, actionsCell);
@@ -2207,7 +2166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const closeCashierCategoryModal = () => closeModal('cashier-category-modal');
 
-  const handleCashierCategorySubmit = event => {
+  const handleCashierCategorySubmit = async event => {
     event.preventDefault();
     if (!cashierCategoryForm) return;
     const formData = new FormData(cashierCategoryForm);
@@ -2218,11 +2177,9 @@ document.addEventListener('DOMContentLoaded', () => {
       showCashierSettingsToast('Informe um nome válido para a categoria.');
       return;
     }
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
-    const categories = Array.isArray(cashierSettingsState.categories)
-      ? [...cashierSettingsState.categories]
+    const state = ensureCashierSettingsState();
+    const categories = Array.isArray(state.categories)
+      ? [...state.categories]
       : [];
     if (id) {
       const index = categories.findIndex(category => category.id === id);
@@ -2239,32 +2196,39 @@ document.addEventListener('DOMContentLoaded', () => {
         status: 'Ativo',
       });
     }
-    cashierSettingsState = { ...cashierSettingsState, categories };
-    saveCashierSettingsToStorage(cashierSettingsState);
-    renderCashierSettingsCategories();
-    closeCashierCategoryModal();
-    showCashierSettingsToast(id ? 'Categoria atualizada com sucesso!' : 'Categoria adicionada com sucesso!');
+    cashierSettingsState = { ...state, categories };
+    try {
+      cashierSettingsState = await saveCashierSettingsToServer(cashierSettingsState);
+      updateCashierSettingsUI();
+      closeCashierCategoryModal();
+      showCashierSettingsToast(id ? 'Categoria atualizada com sucesso!' : 'Categoria adicionada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar categoria:', error);
+      showCashierSettingsToast('Não foi possível salvar a categoria.');
+    }
   };
 
-  const handleCashierSettingsCashLimitSave = () => {
+  const handleCashierSettingsCashLimitSave = async () => {
     if (!cashierSettingsCashLimitInput) return;
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
+    const state = ensureCashierSettingsState();
     cashierSettingsState = {
-      ...cashierSettingsState,
+      ...state,
       cashLimit: cashierSettingsCashLimitInput.value.trim(),
     };
-    saveCashierSettingsToStorage(cashierSettingsState);
-    showCashierSettingsToast('Limite de caixa salvo com sucesso!');
+    try {
+      cashierSettingsState = await saveCashierSettingsToServer(cashierSettingsState);
+      updateCashierSettingsUI();
+      showCashierSettingsToast('Limite de caixa salvo com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar limite de caixa:', error);
+      showCashierSettingsToast('Não foi possível salvar o limite agora.');
+    }
   };
 
   const handleCashierSettingsBackup = () => {
-    if (!cashierSettingsState) {
-      cashierSettingsState = loadCashierSettingsFromStorage();
-    }
+    const state = ensureCashierSettingsState();
     try {
-      const data = JSON.stringify(cashierSettingsState, null, 2);
+      const data = JSON.stringify(state, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -2290,16 +2254,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = async e => {
       const result = typeof e.target?.result === 'string' ? e.target.result : null;
       if (!result) return;
-      if (!cashierSettingsState) {
-        cashierSettingsState = loadCashierSettingsFromStorage();
-      }
-      cashierSettingsState = { ...cashierSettingsState, logo: result };
+      const state = ensureCashierSettingsState();
+      cashierSettingsState = { ...state, logo: result };
       setCashierSettingsLogo(result);
-      saveCashierSettingsToStorage(cashierSettingsState);
-      showCashierSettingsToast('Logotipo alterado com sucesso!');
+      try {
+        cashierSettingsState = await saveCashierSettingsToServer(cashierSettingsState);
+        updateCashierSettingsUI();
+        showCashierSettingsToast('Logotipo alterado com sucesso!');
+      } catch (error) {
+        console.error('Erro ao salvar logotipo do caixa:', error);
+        showCashierSettingsToast('Não foi possível atualizar o logotipo.');
+      }
     };
     reader.readAsDataURL(file);
     event.target.value = '';
@@ -2314,7 +2282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ) {
       return;
     }
-    cashierSettingsState = loadCashierSettingsFromStorage();
+    cashierSettingsState = ensureCashierSettingsState();
     updateCashierSettingsUI();
     if (cashierSettingsChangeLogoBtn && cashierSettingsLogoUpload) {
       cashierSettingsChangeLogoBtn.addEventListener('click', () => cashierSettingsLogoUpload.click());
@@ -2346,18 +2314,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const getStoredDarkModePreference = () => {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
-    try {
-      const stored = window.localStorage.getItem(DARK_MODE_STORAGE_KEY);
-      if (stored === null) return null;
-      return stored === 'true';
-    } catch (error) {
-      console.warn('Não foi possível recuperar o tema salvo:', error);
-      return null;
-    }
-  };
-
   const updateDarkModeToggleState = isDark => {
     darkModeToggles.forEach(button => {
       button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
@@ -2366,22 +2322,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  const applyDarkModePreference = (isDark, { store = true } = {}) => {
+  const applyDarkModePreference = isDark => {
     const shouldEnable = Boolean(isDark);
     document.documentElement.classList.toggle('dark', shouldEnable);
     updateDarkModeToggleState(shouldEnable);
-    if (!store || typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      window.localStorage.setItem(DARK_MODE_STORAGE_KEY, shouldEnable ? 'true' : 'false');
-    } catch (error) {
-      console.warn('Não foi possível salvar a preferência de tema:', error);
-    }
   };
 
   const setupDarkMode = () => {
-    const storedPreference = getStoredDarkModePreference();
-    const prefersDark = storedPreference ?? (darkModeMediaQuery?.matches ?? false);
-    applyDarkModePreference(prefersDark, { store: storedPreference !== null });
+    const prefersDark = darkModeMediaQuery?.matches ?? false;
+    applyDarkModePreference(prefersDark);
     refreshCashierReportsCharts();
 
     if (darkModeToggles.length) {
@@ -2396,8 +2345,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (darkModeMediaQuery) {
       darkModeMediaQuery.addEventListener('change', event => {
-        if (getStoredDarkModePreference() !== null) return;
-        applyDarkModePreference(event.matches, { store: false });
+        applyDarkModePreference(event.matches);
         refreshCashierReportsCharts();
       });
     }
@@ -2440,14 +2388,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAllAvatars(defaultPic);
     profileModalImage.src = defaultPic;
     registerImageFallbacks(profileModalImage);
-    if (currentUser) {
-      localStorage.removeItem(`profilePhoto_${currentUser}`);
-    }
     profileImageFile = null;
     if (profileImageUpload) profileImageUpload.value = '';
   };
 
-  const initProfilePhoto = async () => {
+  const initProfilePhoto = async (initialPhoto = null) => {
     const defaultPic = getFullImageUrl(FALLBACK_AVATAR_IMAGE);
     if (!currentUserId) {
       updateAllAvatars(defaultPic);
@@ -2455,11 +2400,10 @@ document.addEventListener('DOMContentLoaded', () => {
       registerImageFallbacks(profileModalImage);
       return;
     }
-    const saved = currentUser ? localStorage.getItem(`profilePhoto_${currentUser}`) : null;
-    if (saved) {
-      const resolved = getFullImageUrl(saved);
-      updateAllAvatars(resolved);
-      profileModalImage.src = resolved;
+    if (initialPhoto) {
+      const resolvedInitial = getFullImageUrl(initialPhoto);
+      updateAllAvatars(resolvedInitial);
+      profileModalImage.src = resolvedInitial;
       registerImageFallbacks(profileModalImage);
       return;
     }
@@ -2469,17 +2413,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const resolved = getFullImageUrl(data.photo);
         updateAllAvatars(resolved);
         profileModalImage.src = resolved;
-        if (currentUser) {
-          localStorage.setItem(`profilePhoto_${currentUser}`, data.photo);
-        }
         registerImageFallbacks(profileModalImage);
         return;
       }
     } catch (err) {
       console.error('Erro ao buscar foto de perfil:', err);
-    }
-    if (currentUser) {
-      localStorage.removeItem(`profilePhoto_${currentUser}`);
     }
     updateAllAvatars(defaultPic);
     profileModalImage.src = defaultPic;
@@ -2537,18 +2475,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { id, photo } = payload;
       if (id && String(id) === String(currentUserId)) {
         try {
-          if (currentUser && typeof window !== 'undefined' && window.localStorage) {
-            if (photo) {
-              window.localStorage.setItem(`profilePhoto_${currentUser}`, photo);
-            } else {
-              window.localStorage.removeItem(`profilePhoto_${currentUser}`);
-            }
-          }
-        } catch (error) {
-          console.warn('Não foi possível atualizar a foto armazenada localmente:', error);
-        }
-        try {
-          await initProfilePhoto();
+          await initProfilePhoto(photo ?? null);
         } catch (error) {
           console.error('Erro ao sincronizar foto de perfil:', error);
         }
@@ -2571,7 +2498,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUser = username;
     currentUserId = userId;
     userRole = role;
-    persistSession({ username, userId, role });
     usersDataDirty = true;
     homeGreeting.textContent = `Bem-vindo de volta, ${username}!`;
     updateAllUserNames(username);
@@ -2579,14 +2505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginContainer.style.display = 'none';
     appContainer.classList.remove('hidden');
     const restoredModule = restoreStoredModule();
-    if (photo) {
-      try {
-        localStorage.setItem(`profilePhoto_${currentUser}`, photo);
-      } catch (error) {
-        console.warn('Não foi possível armazenar a foto de perfil:', error);
-      }
-    }
-    await initProfilePhoto();
+    await initProfilePhoto(photo ?? null);
     toggleAdminFeatures(userRole === 'admin');
     if (restoredModule === 'stock') {
       restoreStoredPage();
@@ -2697,7 +2616,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } finally {
-      clearStoredSession();
       disconnectSocket();
       currentUser = null;
       currentUserId = null;
@@ -2782,7 +2700,9 @@ document.addEventListener('DOMContentLoaded', () => {
       await Promise.all([
         loadStock(options),
         loadMovimentacoes(filterStart, filterEnd, options),
-        loadReports(filterStart, filterEnd, options)
+        loadReports(filterStart, filterEnd, options),
+        loadCashierMovements({ ...options, silent: true }),
+        loadCashierSettings({ ...options, silent: true })
       ]);
       updateHomePage();
     } finally {
@@ -3649,23 +3569,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Navegação ------------------------------------------------------------------
   const storeActivePage = pageId => {
     activePageId = pageId;
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      window.localStorage.setItem(ACTIVE_PAGE_STORAGE_KEY, pageId);
-    } catch (error) {
-      console.warn('Não foi possível salvar a aba ativa:', error);
-    }
   };
 
-  const getStoredActivePage = () => {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
-    try {
-      return window.localStorage.getItem(ACTIVE_PAGE_STORAGE_KEY);
-    } catch (error) {
-      console.warn('Não foi possível recuperar a aba ativa:', error);
-      return null;
-    }
-  };
+  const getStoredActivePage = () => null;
 
   const switchPage = (pageId, options = {}) => {
     storeActivePage(pageId);
@@ -3821,13 +3727,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const resolved = getFullImageUrl(uploadedPath) || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
         updateAllAvatars(resolved);
         profileModalImage.src = resolved;
-        if (currentUser) {
-          if (uploadedPath) {
-            localStorage.setItem(`profilePhoto_${currentUser}`, uploadedPath);
-          } else {
-            localStorage.removeItem(`profilePhoto_${currentUser}`);
-          }
-        }
+        await initProfilePhoto(uploadedPath ?? null);
         registerImageFallbacks(profileModalImage);
       } catch (err) {
         alert('Erro ao salvar foto: ' + err.message);
@@ -3881,7 +3781,6 @@ document.addEventListener('DOMContentLoaded', () => {
         photo: data.photo ?? null
       });
     } catch (error) {
-      clearStoredSession();
       showLoginScreen();
     } finally {
       hideLoader();
@@ -4074,15 +3973,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-  window.addEventListener('storage', event => {
-    if (event.key !== SESSION_STORAGE_KEY) return;
-    if (!event.newValue && currentUser) {
-      logout({ skipRequest: true }).catch(err => console.error('Erro ao sincronizar logout:', err));
-    } else if (event.newValue && !currentUser) {
-      initializeFromStoredSession().catch(err => console.error('Erro ao sincronizar sessão:', err));
-    }
-  });
 
   resetProfilePhoto();
   initializeFromStoredSession();

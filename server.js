@@ -455,6 +455,214 @@ const mapMovimentacaoRow = row => ({
   usuario: row.usuario,
 });
 
+const CASHIER_SETTINGS_ID = 'default';
+
+const DEFAULT_CASHIER_SETTINGS = Object.freeze({
+  logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw',
+  cashLimit: '',
+  categories: [
+    { id: 'category-1', name: 'Vendas', type: 'Receita', status: 'Ativo' },
+    { id: 'category-2', name: 'Despesas Operacionais', type: 'Despesa', status: 'Ativo' },
+    { id: 'category-3', name: 'Reforços', type: 'Receita', status: 'Ativo' },
+  ],
+  paymentMethods: [
+    { id: 'payment-1', name: 'Dinheiro', status: 'Ativo' },
+    { id: 'payment-2', name: 'Cartão de Crédito', status: 'Ativo' },
+    { id: 'payment-3', name: 'Pagamento Móvel', status: 'Inativo' },
+  ],
+});
+
+const cloneDefaultCashierSettings = () => ({
+  logo: DEFAULT_CASHIER_SETTINGS.logo,
+  cashLimit: DEFAULT_CASHIER_SETTINGS.cashLimit,
+  categories: DEFAULT_CASHIER_SETTINGS.categories.map(category => ({ ...category })),
+  paymentMethods: DEFAULT_CASHIER_SETTINGS.paymentMethods.map(method => ({ ...method })),
+});
+
+const normalizeCashierCategory = category => {
+  if (!category || typeof category !== 'object') return null;
+  const name = sanitizeText(category.name);
+  if (!name) return null;
+  const id = sanitizeText(category.id) || `category-${uuidv4()}`;
+  const type = sanitizeText(category.type) === 'Despesa' ? 'Despesa' : 'Receita';
+  const status = sanitizeText(category.status) === 'Inativo' ? 'Inativo' : 'Ativo';
+  return { id, name, type, status };
+};
+
+const normalizeCashierPaymentMethod = method => {
+  if (!method || typeof method !== 'object') return null;
+  const name = sanitizeText(method.name);
+  if (!name) return null;
+  const id = sanitizeText(method.id) || `payment-${uuidv4()}`;
+  const status = sanitizeText(method.status) === 'Inativo' ? 'Inativo' : 'Ativo';
+  return { id, name, status };
+};
+
+const mergeCashierSettings = settings => {
+  const base = cloneDefaultCashierSettings();
+  if (settings.logo) {
+    base.logo = sanitizeText(settings.logo) || base.logo;
+  }
+  if (settings.cashLimit !== undefined && settings.cashLimit !== null) {
+    base.cashLimit = sanitizeText(settings.cashLimit);
+  }
+  if (Array.isArray(settings.categories)) {
+    const normalizedCategories = settings.categories
+      .map(normalizeCashierCategory)
+      .filter(Boolean);
+    if (normalizedCategories.length) {
+      base.categories = normalizedCategories;
+    }
+  }
+  if (Array.isArray(settings.paymentMethods)) {
+    const normalizedMethods = settings.paymentMethods
+      .map(normalizeCashierPaymentMethod)
+      .filter(Boolean);
+    if (normalizedMethods.length) {
+      base.paymentMethods = normalizedMethods;
+    }
+  }
+  return base;
+};
+
+const mapCashierSettingsRow = row => mergeCashierSettings({
+  logo: row.logo,
+  cashLimit: row.cash_limit,
+  categories: row.categories,
+  paymentMethods: row.payment_methods,
+});
+
+const mapCashierMovementRow = row => ({
+  id: row.id,
+  userId: row.user_id,
+  data: row.data instanceof Date ? row.data.toISOString() : row.data,
+  tipo: row.tipo,
+  categoria: row.categoria,
+  valor: row.valor === null || row.valor === undefined ? 0 : Number(row.valor),
+  funcionario: row.funcionario,
+  observacoes: row.observacoes,
+  formaPagamento: row.forma_pagamento,
+  criadoEm: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+});
+
+const ensureDefaultCashierSettingsRow = async () => {
+  await query(
+    `INSERT INTO cashier_settings (id, logo, cash_limit, categories, payment_methods, updated_at)
+     VALUES ($1, $2, $3, $4::jsonb, $5::jsonb, NOW())
+     ON CONFLICT (id) DO NOTHING`,
+    [
+      CASHIER_SETTINGS_ID,
+      DEFAULT_CASHIER_SETTINGS.logo,
+      DEFAULT_CASHIER_SETTINGS.cashLimit,
+      JSON.stringify(DEFAULT_CASHIER_SETTINGS.categories),
+      JSON.stringify(DEFAULT_CASHIER_SETTINGS.paymentMethods),
+    ]
+  );
+};
+
+const getCashierSettings = async () => {
+  await ensureDefaultCashierSettingsRow();
+  const { rows } = await query(
+    'SELECT id, logo, cash_limit, categories, payment_methods FROM cashier_settings WHERE id = $1 LIMIT 1',
+    [CASHIER_SETTINGS_ID]
+  );
+  if (!rows[0]) {
+    return cloneDefaultCashierSettings();
+  }
+  return mapCashierSettingsRow(rows[0]);
+};
+
+const updateCashierSettings = async settings => {
+  await ensureDefaultCashierSettingsRow();
+  const merged = mergeCashierSettings(settings);
+  await query(
+    `UPDATE cashier_settings
+        SET logo = $2,
+            cash_limit = $3,
+            categories = $4::jsonb,
+            payment_methods = $5::jsonb,
+            updated_at = NOW()
+      WHERE id = $1`,
+    [
+      CASHIER_SETTINGS_ID,
+      merged.logo,
+      merged.cashLimit,
+      JSON.stringify(merged.categories),
+      JSON.stringify(merged.paymentMethods),
+    ]
+  );
+  return merged;
+};
+
+const listCashierMovements = async () => {
+  const { rows } = await query(
+    `SELECT id, user_id, data, tipo, categoria, valor, funcionario, observacoes, forma_pagamento, created_at
+       FROM cashier_movements
+   ORDER BY data DESC, created_at DESC`
+  );
+  return rows.map(mapCashierMovementRow);
+};
+
+const insertCashierMovement = async movement => {
+  const id = uuidv4();
+  const timestamp = movement.data ? new Date(movement.data) : new Date();
+  await query(
+    `INSERT INTO cashier_movements (id, user_id, data, tipo, categoria, valor, funcionario, observacoes, forma_pagamento, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())`,
+    [
+      id,
+      movement.userId ?? null,
+      timestamp,
+      movement.tipo,
+      movement.categoria,
+      movement.valor,
+      movement.funcionario,
+      movement.observacoes,
+      movement.formaPagamento,
+    ]
+  );
+  const { rows } = await query(
+    `SELECT id, user_id, data, tipo, categoria, valor, funcionario, observacoes, forma_pagamento, created_at
+       FROM cashier_movements
+      WHERE id = $1 LIMIT 1`,
+    [id]
+  );
+  return rows[0] ? mapCashierMovementRow(rows[0]) : null;
+};
+
+const sanitizeCashierMovementPayload = (payload, user) => {
+  const tipo = sanitizeText(payload?.tipo) || 'Entrada';
+  const categoria = sanitizeText(payload?.categoria);
+  if (!categoria) {
+    const error = new Error('Categoria inválida');
+    error.statusCode = 400;
+    throw error;
+  }
+  const rawValue = Number.parseFloat(payload?.valor);
+  if (!Number.isFinite(rawValue) || rawValue <= 0) {
+    const error = new Error('Valor inválido');
+    error.statusCode = 400;
+    throw error;
+  }
+  const valor = Math.round(Math.abs(rawValue) * 100) / 100;
+  const funcionario = sanitizeText(payload?.funcionario) || sanitizeText(user?.username) || 'Equipe';
+  const observacoes = sanitizeText(payload?.observacoes);
+  const formaPagamento = sanitizeText(payload?.formaPagamento) || 'Dinheiro';
+  const dataRaw = sanitizeText(payload?.data);
+  const parsedDate = dataRaw ? new Date(dataRaw) : new Date();
+  const data = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+  return {
+    userId: user?.id ?? null,
+    tipo,
+    categoria,
+    valor,
+    funcionario,
+    observacoes: observacoes || null,
+    formaPagamento,
+    data: data.toISOString(),
+  };
+};
+
 const getUserById = async id => {
   const { rows } = await query(
     'SELECT id, username, username_lower, password_hash, role, approved, photo FROM users WHERE id = $1 LIMIT 1',
@@ -723,12 +931,40 @@ const initializeDatabase = async () => {
     ) TABLESPACE pg_default
   `);
 
+  await query(`
+    CREATE TABLE IF NOT EXISTS cashier_settings (
+      id TEXT PRIMARY KEY,
+      logo TEXT,
+      cash_limit TEXT,
+      categories JSONB NOT NULL DEFAULT '[]'::jsonb,
+      payment_methods JSONB NOT NULL DEFAULT '[]'::jsonb,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    ) TABLESPACE pg_default
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS cashier_movements (
+      id UUID PRIMARY KEY,
+      user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+      data TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      tipo TEXT NOT NULL,
+      categoria TEXT NOT NULL,
+      valor NUMERIC(12,2) NOT NULL CHECK (valor >= 0),
+      funcionario TEXT NOT NULL,
+      observacoes TEXT,
+      forma_pagamento TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    ) TABLESPACE pg_default
+  `);
+
   await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower) TABLESPACE pg_default');
   await query('CREATE INDEX IF NOT EXISTS idx_inventory_produto ON inventory(produto) TABLESPACE pg_default');
   await query('CREATE INDEX IF NOT EXISTS idx_movimentacoes_data ON movimentacoes(data) TABLESPACE pg_default');
+  await query('CREATE INDEX IF NOT EXISTS idx_cashier_movements_date ON cashier_movements(data DESC, created_at DESC) TABLESPACE pg_default');
 
   await seedUsersFromFile();
   await seedInventoryFromFile();
+  await ensureDefaultCashierSettingsRow();
 };
 
 const seedUsersFromFile = async () => {
@@ -989,6 +1225,35 @@ app.get('/api/estoque', authMiddleware, asyncHandler(async (req, res) => {
 app.get('/api/movimentacoes', authMiddleware, asyncHandler(async (req, res) => {
   const logs = await listMovimentacoes({ start: req.query.start, end: req.query.end });
   res.json(logs);
+}));
+
+app.get('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res) => {
+  const movements = await listCashierMovements();
+  res.json(movements);
+}));
+
+app.post('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res) => {
+  try {
+    const sanitized = sanitizeCashierMovementPayload(req.body ?? {}, req.user);
+    const inserted = await insertCashierMovement(sanitized);
+    if (!inserted) {
+      return res.status(500).json({ error: 'Não foi possível registrar a movimentação.' });
+    }
+    res.status(201).json(inserted);
+  } catch (error) {
+    const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
+    res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
+  }
+}));
+
+app.get('/api/cashier/settings', authMiddleware, asyncHandler(async (req, res) => {
+  const settings = await getCashierSettings();
+  res.json(settings);
+}));
+
+app.put('/api/cashier/settings', authMiddleware, asyncHandler(async (req, res) => {
+  const updated = await updateCashierSettings(req.body ?? {});
+  res.json(updated);
 }));
 
 app.post('/api/estoque', authMiddleware, productUpload.single('image'), asyncHandler(async (req, res) => {

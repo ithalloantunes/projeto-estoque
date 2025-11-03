@@ -52,6 +52,31 @@ CREATE TABLE IF NOT EXISTS movimentacoes (
 )
 TABLESPACE pg_default;
 
+CREATE TABLE IF NOT EXISTS cashier_settings (
+  id TEXT PRIMARY KEY,
+  logo TEXT,
+  cash_limit TEXT,
+  categories JSONB NOT NULL DEFAULT '[]'::jsonb,
+  payment_methods JSONB NOT NULL DEFAULT '[]'::jsonb,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)
+TABLESPACE pg_default;
+
+CREATE TABLE IF NOT EXISTS cashier_movements (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  data TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  tipo TEXT NOT NULL,
+  categoria TEXT NOT NULL,
+  valor NUMERIC(12,2) NOT NULL CHECK (valor >= 0),
+  funcionario TEXT NOT NULL,
+  observacoes TEXT,
+  forma_pagamento TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)
+TABLESPACE pg_default;
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower) TABLESPACE pg_default;
 CREATE INDEX IF NOT EXISTS idx_inventory_produto ON inventory(produto) TABLESPACE pg_default;
 CREATE INDEX IF NOT EXISTS idx_movimentacoes_data ON movimentacoes(data) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_cashier_movements_date ON cashier_movements(data DESC, created_at DESC) TABLESPACE pg_default;
