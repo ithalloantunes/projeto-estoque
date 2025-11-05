@@ -186,7 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierSettingsLogoPreview = document.getElementById('cashier-settings-logo-preview');
   const cashierSettingsLogoUpload = document.getElementById('cashier-settings-logo-upload');
   const cashierSettingsChangeLogoBtn = document.getElementById('cashier-settings-change-logo-btn');
-  const cashierSettingsCategoriesBody = document.getElementById('cashier-settings-categories-body');
+  const cashierSettingsIncomeCategoriesBody = document.getElementById('cashier-settings-income-categories-body');
+  const cashierSettingsExpenseCategoriesBody = document.getElementById('cashier-settings-expense-categories-body');
   const cashierSettingsAddCategoryBtn = document.getElementById('cashier-settings-add-category-btn');
   const cashierSettingsCashLimitInput = document.getElementById('cashier-settings-cash-limit');
   const cashierSettingsSaveCashLimitBtn = document.getElementById('cashier-settings-save-cash-limit-btn');
@@ -2036,47 +2037,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const renderCashierSettingsCategories = () => {
-    if (!cashierSettingsCategoriesBody) return;
-    cashierSettingsCategoriesBody.innerHTML = '';
-    const categories = Array.isArray(cashierSettingsState?.categories) ? cashierSettingsState.categories : [];
+  const createCashierCategoryRow = category => {
+    const row = document.createElement('tr');
+    const nameCell = document.createElement('td');
+    nameCell.className = 'whitespace-nowrap font-medium text-text-light dark:text-text-dark';
+    nameCell.textContent = category.name;
+
+    const statusCell = document.createElement('td');
+    statusCell.className = 'whitespace-nowrap';
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `status-pill ${category.status === 'Ativo'
+      ? 'status-pill--active'
+      : 'status-pill--inactive'}`;
+    statusBadge.textContent = category.status;
+    statusCell.appendChild(statusBadge);
+
+    const actionsCell = document.createElement('td');
+    actionsCell.className = 'whitespace-nowrap text-right text-sm font-medium';
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'text-primary hover:text-primary/80';
+    editButton.textContent = 'Editar';
+    editButton.addEventListener('click', () => openCashierCategoryModal(category));
+    actionsCell.appendChild(editButton);
+
+    row.append(nameCell, statusCell, actionsCell);
+    return row;
+  };
+
+  const renderCashierCategoryGroup = (tableBody, categories, emptyMessage) => {
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+
     if (!categories.length) {
       const emptyRow = document.createElement('tr');
       const emptyCell = document.createElement('td');
-      emptyCell.colSpan = 4;
+      emptyCell.colSpan = 3;
       emptyCell.className = 'text-sm text-subtle-light dark:text-subtle-dark text-center';
-      emptyCell.textContent = 'Nenhuma categoria cadastrada.';
+      emptyCell.textContent = emptyMessage;
       emptyRow.appendChild(emptyCell);
-      cashierSettingsCategoriesBody.appendChild(emptyRow);
+      tableBody.appendChild(emptyRow);
       return;
     }
+
     categories.forEach(category => {
-      const row = document.createElement('tr');
-      const nameCell = document.createElement('td');
-      nameCell.className = 'whitespace-nowrap font-medium text-text-light dark:text-text-dark';
-      nameCell.textContent = category.name;
-      const typeCell = document.createElement('td');
-      typeCell.className = 'whitespace-nowrap text-subtle-light dark:text-subtle-dark';
-      typeCell.textContent = category.type;
-      const statusCell = document.createElement('td');
-      statusCell.className = 'whitespace-nowrap';
-      const statusBadge = document.createElement('span');
-      statusBadge.className = `status-pill ${category.status === 'Ativo'
-        ? 'status-pill--active'
-        : 'status-pill--inactive'}`;
-      statusBadge.textContent = category.status;
-      statusCell.appendChild(statusBadge);
-      const actionsCell = document.createElement('td');
-      actionsCell.className = 'whitespace-nowrap text-right text-sm font-medium';
-      const editButton = document.createElement('button');
-      editButton.type = 'button';
-      editButton.className = 'text-primary hover:text-primary/80';
-      editButton.textContent = 'Editar';
-      editButton.addEventListener('click', () => openCashierCategoryModal(category));
-      actionsCell.appendChild(editButton);
-      row.append(nameCell, typeCell, statusCell, actionsCell);
-      cashierSettingsCategoriesBody.appendChild(row);
+      tableBody.appendChild(createCashierCategoryRow(category));
     });
+  };
+
+  const renderCashierSettingsCategories = () => {
+    if (!cashierSettingsIncomeCategoriesBody && !cashierSettingsExpenseCategoriesBody) return;
+
+    const categories = Array.isArray(cashierSettingsState?.categories) ? cashierSettingsState.categories : [];
+    const incomeCategories = [];
+    const expenseCategories = [];
+
+    categories.forEach(category => {
+      if (category?.type === 'Despesa') {
+        expenseCategories.push(category);
+      } else {
+        incomeCategories.push(category);
+      }
+    });
+
+    renderCashierCategoryGroup(
+      cashierSettingsIncomeCategoriesBody,
+      incomeCategories,
+      'Nenhuma categoria de receita cadastrada.',
+    );
+    renderCashierCategoryGroup(
+      cashierSettingsExpenseCategoriesBody,
+      expenseCategories,
+      'Nenhuma categoria de despesa cadastrada.',
+    );
 
     populateCashierMovementFormOptions();
   };
@@ -2278,7 +2311,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const initializeCashierSettings = () => {
     if (
       !cashierSettingsLogoPreview
-      && !cashierSettingsCategoriesBody
+      && !cashierSettingsIncomeCategoriesBody
+      && !cashierSettingsExpenseCategoriesBody
       && !cashierSettingsPaymentMethodsBody
       && !cashierSettingsCashLimitInput
     ) {
