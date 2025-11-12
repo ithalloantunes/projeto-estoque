@@ -235,6 +235,9 @@ const isPrivateHost = host => {
       return true;
     }
   }
+  if (!normalized.includes('.')) {
+    return true;
+  }
   return false;
 };
 
@@ -306,16 +309,14 @@ const ensureDatabaseConnection = async () => {
   if (lastError) {
     const { candidate, error } = lastError;
     const host = tryParseHost(candidate?.value);
-    if (
-      error?.code === 'ECONNREFUSED' &&
-      host &&
-      isPrivateHost(host) &&
-      !isProduction &&
-      candidate?.type === 'primary'
-    ) {
+    const isPrimaryPrivateHost = host && isPrivateHost(host) && !isProduction && candidate?.type === 'primary';
+    if (isPrimaryPrivateHost && (error?.code === 'ECONNREFUSED' || error?.code === 'ENOTFOUND')) {
+      const baseMessage =
+        error?.code === 'ENOTFOUND'
+          ? `Não foi possível resolver o host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`
+          : `Não foi possível conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`;
       const message =
-        `Não foi possível conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}. ` +
-        'Esse endereço costuma estar disponível apenas dentro da infraestrutura do Render. ' +
+        `${baseMessage} Esse endereço costuma estar disponível apenas dentro da infraestrutura do Render. ` +
         'Defina `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa do banco ou utilize uma instância local do PostgreSQL.';
       throw new Error(message, { cause: error });
     }
