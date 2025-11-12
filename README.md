@@ -48,6 +48,7 @@ Para o banco criado com as credenciais abaixo, configure as variáveis no Render
 | Base de dados                                  | `acai` |
 | Usuário                                        | `acai` |
 | `DATABASE_URL`                                 | `postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a/acai` |
+| `DATABASE_URL_EXTERNAL`                        | `postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com/acai` |
 | Comando para testar via Shell do Render (PSQL) | `PGPASSWORD=ETShntq0lGuqd1z35WNdCBVRQEfEPF9P psql -h dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com -U acai acai` |
 
 
@@ -74,12 +75,12 @@ Para verificar se o web service está conversando com o banco:
 
 ```bash
 npm install
-# Use um Postgres local...
-DATABASE_URL="postgres://usuario:senha@localhost:5432/projeto_estoque" npm run dev
+# Use um Postgres local (ex.: banco criado na sua máquina com o nome `acai`)
+DATABASE_URL="postgres://usuario:senha@localhost:5432/acai" npm run dev
 
-# ...ou defina também a URL externa do Render para que o backend use-a automaticamente fora da infraestrutura deles.
-DATABASE_URL="postgres://usuario:senha@dpg-xxxxx.internal:5432/projeto_estoque" \
-DATABASE_URL_EXTERNAL="postgres://usuario:senha@dpg-xxxxx.oregon-postgres.render.com/projeto_estoque" \
+# ...ou utilize diretamente o banco provisionado no Render com as credenciais atuais
+DATABASE_URL="postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a/acai" \
+DATABASE_URL_EXTERNAL="postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com/acai" \
 npm run dev
 ```
 
