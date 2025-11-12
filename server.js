@@ -153,6 +153,9 @@ const primaryConnectionCandidates = [];
 const fallbackConnectionCandidates = [];
 const registeredConnectionStrings = new Set();
 
+const DEFAULT_DATABASE_URL = 'postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a/acai';
+const DEFAULT_DATABASE_URL_EXTERNAL = 'postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com/acai';
+
 const registerConnectionCandidate = (label, value, type) => {
   const normalized = normalizeConnectionString(value);
   if (!normalized || registeredConnectionStrings.has(normalized)) {
@@ -169,8 +172,10 @@ const registerConnectionCandidate = (label, value, type) => {
 
 registerConnectionCandidate('DATABASE_URL', process.env.DATABASE_URL, 'primary');
 registerConnectionCandidate('POSTGRES_URL', process.env.POSTGRES_URL, 'primary');
+registerConnectionCandidate('DEFAULT_DATABASE_URL', DEFAULT_DATABASE_URL, 'primary');
 registerConnectionCandidate('DATABASE_URL_EXTERNAL', process.env.DATABASE_URL_EXTERNAL, 'fallback');
 registerConnectionCandidate('RENDER_EXTERNAL_DATABASE_URL', process.env.RENDER_EXTERNAL_DATABASE_URL, 'fallback');
+registerConnectionCandidate('DEFAULT_DATABASE_URL_EXTERNAL', DEFAULT_DATABASE_URL_EXTERNAL, 'fallback');
 
 let pool = null;
 

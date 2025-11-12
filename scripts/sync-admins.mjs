@@ -17,6 +17,9 @@ const primaryCandidates = [];
 const fallbackCandidates = [];
 const registeredConnections = new Set();
 
+const DEFAULT_DATABASE_URL = 'postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a/acai';
+const DEFAULT_DATABASE_URL_EXTERNAL = 'postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com/acai';
+
 const registerCandidate = (label, value, type) => {
   const normalized = normalizeConnectionString(value);
   if (!normalized || registeredConnections.has(normalized)) {
@@ -33,8 +36,10 @@ const registerCandidate = (label, value, type) => {
 
 registerCandidate('DATABASE_URL', process.env.DATABASE_URL, 'primary');
 registerCandidate('POSTGRES_URL', process.env.POSTGRES_URL, 'primary');
+registerCandidate('DEFAULT_DATABASE_URL', DEFAULT_DATABASE_URL, 'primary');
 registerCandidate('DATABASE_URL_EXTERNAL', process.env.DATABASE_URL_EXTERNAL, 'fallback');
 registerCandidate('RENDER_EXTERNAL_DATABASE_URL', process.env.RENDER_EXTERNAL_DATABASE_URL, 'fallback');
+registerCandidate('DEFAULT_DATABASE_URL_EXTERNAL', DEFAULT_DATABASE_URL_EXTERNAL, 'fallback');
 
 const allCandidates = [...primaryCandidates, ...fallbackCandidates];
 
