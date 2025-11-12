@@ -17,6 +17,7 @@ import { Pool } from 'pg';
 import { sanitizeText, normalizeUsername, sanitizeCost, BCRYPT_SALT_ROUNDS, parsePositiveInt } from './lib/utils.js';
 import { sanitizeClosurePayload, buildClosureResponse, diffClosures } from './lib/cashier-closures.js';
 import { seedUsersFromFile as importUsersFromSeed } from './lib/user-seed.js';
+import { DEFAULT_DATABASE_URL, DEFAULT_DATABASE_URL_EXTERNAL } from './lib/db-defaults.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -152,9 +153,6 @@ const normalizeConnectionString = value => sanitizeText(value) || '';
 const primaryConnectionCandidates = [];
 const fallbackConnectionCandidates = [];
 const registeredConnectionStrings = new Set();
-
-const DEFAULT_DATABASE_URL = 'postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a/acai';
-const DEFAULT_DATABASE_URL_EXTERNAL = 'postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com/acai';
 
 const registerConnectionCandidate = (label, value, type) => {
   const normalized = normalizeConnectionString(value);
