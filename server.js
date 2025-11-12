@@ -172,15 +172,46 @@ registerConnectionCandidate('POSTGRES_URL', process.env.POSTGRES_URL, 'primary')
 registerConnectionCandidate('DATABASE_URL_EXTERNAL', process.env.DATABASE_URL_EXTERNAL, 'fallback');
 registerConnectionCandidate('RENDER_EXTERNAL_DATABASE_URL', process.env.RENDER_EXTERNAL_DATABASE_URL, 'fallback');
 
-const usesSSL = sanitizeText(process.env.DATABASE_SSL) !== 'disable' && isProduction;
-
 let pool = null;
 
-const createPoolInstance = connectionString => {
+const getSslConfigForCandidate = candidate => {
+  const sslPreferenceRaw = sanitizeText(process.env.DATABASE_SSL);
+  const sslPreference = sslPreferenceRaw ? sslPreferenceRaw.toLowerCase() : '';
+  const host = tryParseHost(candidate.value);
+  const isRenderHost = host?.endsWith('.render.com');
+  const label = formatConnectionLabel(candidate);
+
+  if (sslPreference === 'disable') {
+    if (isRenderHost) {
+      console.warn(
+        `DATABASE_SSL=disable foi definido enquanto ${label} aponta para um host do Render (${host}). ` +
+        'Essa configuração costuma falhar, pois o Render exige TLS.'
+      );
+    }
+    return false;
+  }
+
+  if (sslPreference === 'require') {
+    return { rejectUnauthorized: false };
+  }
+
+  if (isRenderHost) {
+    if (!sslPreference) {
+      console.info(
+        `Host do Render detectado em ${label}. SSL habilitado automaticamente (rejectUnauthorized: false).`
+      );
+    }
+    return { rejectUnauthorized: false };
+  }
+
+  return isProduction ? { rejectUnauthorized: false } : false;
+};
+
+const createPoolInstance = (connectionString, sslConfig) => {
   const instance = new Pool({
     connectionString,
     max: Number.parseInt(process.env.PGPOOL_MAX || '10', 10),
-    ssl: usesSSL ? { rejectUnauthorized: false } : false,
+    ssl: sslConfig,
   });
   instance.on('error', error => {
     console.error('Erro inesperado na conexão com o banco de dados:', error);
@@ -262,7 +293,7 @@ const ensureDatabaseConnection = async () => {
   let lastError = null;
 
   for (const candidate of connectionCandidates) {
-    const instance = createPoolInstance(candidate.value);
+    const instance = createPoolInstance(candidate.value, getSslConfigForCandidate(candidate));
     const host = tryParseHost(candidate.value);
 
     if (candidate.type === 'fallback') {

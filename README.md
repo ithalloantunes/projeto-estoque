@@ -58,6 +58,8 @@ Para o banco criado com as credenciais abaixo, configure as variáveis no Render
 
 > **Importante:** o Render exige conexão segura; não altere `DATABASE_SSL` em produção. Localmente, caso esteja usando um PostgreSQL sem TLS, defina `DATABASE_SSL=disable`.
 
+> A API habilita automaticamente o SSL quando detecta um host do Render (`*.render.com`) em `DATABASE_URL`/`POSTGRES_URL`, evitando erros ao usar a External Database URL fora da infraestrutura deles. Caso precise controlar manualmente o comportamento, use `DATABASE_SSL=require` para forçar TLS ou `DATABASE_SSL=disable` para desativá-lo (não recomendado para hosts do Render).
+
 ### Testando a conexão dentro do Render
 
 Para verificar se o web service está conversando com o banco:
