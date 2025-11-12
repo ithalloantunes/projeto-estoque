@@ -80,6 +80,28 @@ O servidor cria as tabelas automaticamente. O arquivo [`db/schema.sql`](db/schem
 - `index.html`, `javascript.js`, `estilos.css` – interface web existente.
 - `data/` – dados de exemplo usados para popular o banco na primeira execução.
 
+## Módulo de fechamento de caixa
+
+- Registro diário consolidando meios de pagamento (`dinheiro_sistema`, cartões do sistema, on-line e PIX), cartões na maquininha, abertura/reforço, gastos e depósito.
+- Cálculos automáticos:
+  - `total_sistema = dinheiro_sistema + credito_sistema + debito_sistema + pag_online + pix`.
+  - `dinheiro_em_gaveta = abertura + reforco + dinheiro_sistema - gastos - valor_para_deposito`.
+  - `variavel_caixa = dinheiro_em_gaveta - total_caixa_dinheiro` (pode ser negativo).
+- Endpoints protegidos (`admin`) em `/api/cashier/closures`:
+  - `GET /api/cashier/closures?de=AAAA-MM-DD&ate=AAAA-MM-DD` – lista por período.
+  - `GET /api/cashier/closures/:id` – detalha um fechamento (inclui cálculo da gaveta).
+  - `GET /api/cashier/closures/:id/logs` – histórico de alterações com responsável, data e diffs.
+  - `POST /api/cashier/closures` – cria/fecha o dia calculando campos derivados.
+  - `PUT /api/cashier/closures/:id` – atualiza mantendo as validações e registrando log.
+- Novo esquema PostgreSQL: tabelas `cashier_closures` (1 registro por data, com índices para data/funcionário) e `cashier_closure_logs` (auditoria das mudanças).
+- Campos numéricos aceitam decimais (`NUMERIC(12,2)`), contagens (`INTEGER`) e observações livres.
+
+### Suposições
+
+- Apenas usuários com perfil `admin` têm acesso aos endpoints de fechamento (o sistema atual não possui o papel "gerente").
+- O responsável pelo fechamento armazenado é o usuário autenticado no momento da criação; edições mantêm o vínculo original.
+- Exportação CSV/Excel poderá ser adicionada futuramente conforme necessidade.
+
 ## Scripts
 
 - `npm run dev` – inicia o servidor com `nodemon`.

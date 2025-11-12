@@ -76,7 +76,49 @@ CREATE TABLE IF NOT EXISTS cashier_movements (
 )
 TABLESPACE pg_default;
 
+CREATE TABLE IF NOT EXISTS cashier_closures (
+  id UUID PRIMARY KEY,
+  data_operacao DATE NOT NULL UNIQUE,
+  funcionario_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  funcionario_nome TEXT,
+  dinheiro_sistema NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (dinheiro_sistema >= 0),
+  credito_sistema NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (credito_sistema >= 0),
+  debito_sistema NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (debito_sistema >= 0),
+  credito_maquina NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (credito_maquina >= 0),
+  debito_maquina NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (debito_maquina >= 0),
+  pag_online NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (pag_online >= 0),
+  pix NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (pix >= 0),
+  total_sistema NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (total_sistema >= 0),
+  total_caixa_dinheiro NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (total_caixa_dinheiro >= 0),
+  abertura NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (abertura >= 0),
+  reforco NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (reforco >= 0),
+  gastos NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (gastos >= 0),
+  valor_para_deposito NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (valor_para_deposito >= 0),
+  variavel_caixa NUMERIC(12,2) NOT NULL,
+  entrega_cartao INTEGER NOT NULL DEFAULT 0 CHECK (entrega_cartao >= 0),
+  picoles_sist INTEGER NOT NULL DEFAULT 0 CHECK (picoles_sist >= 0),
+  informacoes TEXT,
+  criado_por UUID REFERENCES users(id) ON DELETE SET NULL,
+  atualizado_por UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)
+TABLESPACE pg_default;
+
+CREATE TABLE IF NOT EXISTS cashier_closure_logs (
+  id UUID PRIMARY KEY,
+  closure_id UUID NOT NULL REFERENCES cashier_closures(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  acao TEXT NOT NULL,
+  detalhes JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)
+TABLESPACE pg_default;
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower) TABLESPACE pg_default;
 CREATE INDEX IF NOT EXISTS idx_inventory_produto ON inventory(produto) TABLESPACE pg_default;
 CREATE INDEX IF NOT EXISTS idx_movimentacoes_data ON movimentacoes(data) TABLESPACE pg_default;
 CREATE INDEX IF NOT EXISTS idx_cashier_movements_date ON cashier_movements(data DESC, created_at DESC) TABLESPACE pg_default;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cashier_closures_date ON cashier_closures(data_operacao) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_cashier_closures_funcionario ON cashier_closures(funcionario_id) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_cashier_closure_logs_closure ON cashier_closure_logs(closure_id, created_at DESC) TABLESPACE pg_default;
