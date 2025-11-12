@@ -39,7 +39,7 @@ Aplicação web para gerenciamento de estoque com autenticação, controle de pr
 
 ### Variáveis com os dados fornecidos pelo Render
 
-Para o banco criado com as credenciais abaixo, configure as variáveis no Render exatamente assim (substitua **SUA_SENHA_AQUI** pela senha real fornecida pelo Render):
+Para o banco criado com as credenciais abaixo, configure as variáveis no Render exatamente assim utilizando a senha atualmente provisionada pelo serviço:
 
 | Campo Render                                   | Valor                                                                                                       |
 |------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
@@ -47,14 +47,14 @@ Para o banco criado com as credenciais abaixo, configure as variáveis no Render
 | Porta                                          | `5432`                                                                                                      |
 | Base de dados                                  | `banco_de_dados_acai_da_barra`                                                                              |
 | Usuário                                        | `banco_de_dados_acai_da_barra_user`                                                                         |
-| `DATABASE_URL`                                 | `postgresql://banco_de_dados_acai_da_barra_user:SUA_SENHA_AQUI@dpg-d3mkd5juibrs738v4fbg-a/banco_de_dados_acai_da_barra` |
-| Comando para testar via Shell do Render (PSQL) | `PGPASSWORD=SUA_SENHA_AQUI psql -h dpg-d3mkd5juibrs738v4fbg-a.oregon-postgres.render.com -U banco_de_dados_acai_da_barra_user banco_de_dados_acai_da_barra` |
+| `DATABASE_URL`                                 | `postgresql://banco_de_dados_acai_da_barra_user:cd3kfEB8zSUXQddmQm3mN6MNGW5Q6jXA@dpg-d3mkd5juibrs738v4fbg-a/banco_de_dados_acai_da_barra` |
+| Comando para testar via Shell do Render (PSQL) | `PGPASSWORD=cd3kfEB8zSUXQddmQm3mN6MNGW5Q6jXA psql -h dpg-d3mkd5juibrs738v4fbg-a.oregon-postgres.render.com -U banco_de_dados_acai_da_barra_user banco_de_dados_acai_da_barra` |
 
 > **Importante:** mantenha a senha fora do repositório. Defina-a apenas como variável de ambiente (`DATABASE_URL`) ou em comandos temporários como o `psql` acima.
 
 > ⚠️ Fora da infraestrutura do Render, o host interno (`dpg-d3mkd5juibrs738v4fbg-a`) não é resolvido e causa o erro `getaddrinfo ENOTFOUND`. Defina também `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa terminada em `.render.com` para que a aplicação consiga se conectar ao banco durante o desenvolvimento local.
 
-> **Dica:** caso precise acessar o banco externamente (por exemplo, a partir do seu computador), utilize a **External Database URL** disponibilizada pelo Render: `postgresql://banco_de_dados_acai_da_barra_user:SUA_SENHA_AQUI@dpg-d3mkd5juibrs738v4fbg-a.oregon-postgres.render.com/banco_de_dados_acai_da_barra`.
+> **Dica:** caso precise acessar o banco externamente (por exemplo, a partir do seu computador), utilize a **External Database URL** disponibilizada pelo Render: `postgresql://banco_de_dados_acai_da_barra_user:cd3kfEB8zSUXQddmQm3mN6MNGW5Q6jXA@dpg-d3mkd5juibrs738v4fbg-a.oregon-postgres.render.com/banco_de_dados_acai_da_barra`.
 
 > **Importante:** o Render exige conexão segura; não altere `DATABASE_SSL` em produção. Localmente, caso esteja usando um PostgreSQL sem TLS, defina `DATABASE_SSL=disable`.
 

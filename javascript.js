@@ -1,6 +1,6 @@
 const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 const isLocalEnvironment = /127\.0\.0\.1|localhost/.test(currentOrigin);
-const BASE_URL = isLocalEnvironment ? '' : 'https://projeto-estoque-o1x5.onrender.com';
+const BASE_URL = isLocalEnvironment ? '' : 'https://acai-da-barra.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Estado global

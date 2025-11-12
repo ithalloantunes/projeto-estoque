@@ -41,7 +41,7 @@ const parseAdditionalOrigins = raw => {
 };
 
 const allowedOrigins = new Set([
-  normalizeOrigin('https://projeto-estoque-o1x5.onrender.com')
+  normalizeOrigin('https://acai-da-barra.onrender.com')
 ]);
 
 if (!isProduction) {
