@@ -1048,6 +1048,29 @@ tbody tr.removing {
 }
 
 /* Ajustes específicos da página de estoque moderna */
+#stock-page .stock-product-image {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+#stock-page .stock-product-image--grid {
+    min-height: 18rem;
+    height: clamp(18rem, 28vw, 24rem);
+}
+
+#stock-page .stock-product-image--list {
+    min-height: 14rem;
+    height: clamp(14rem, 26vw, 18rem);
+}
+
+@media (min-width: 768px) {
+    #stock-page .stock-product-image--list {
+        min-height: 12rem;
+        height: clamp(12rem, 18vw, 14rem);
+    }
+}
+
 #product-container {
     display: flex;
     flex-direction: column;
