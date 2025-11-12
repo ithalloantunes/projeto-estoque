@@ -1819,50 +1819,55 @@ app.post('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res)
   }
 }));
 
-app.get('/api/cashier/closures', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
-  const closures = await listCashierClosures({ start: req.query.de, end: req.query.ate });
-  res.json(closures);
-}));
+const registerCashierClosureRoutes = basePath => {
+  app.get(basePath, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    const closures = await listCashierClosures({ start: req.query.de, end: req.query.ate });
+    res.json(closures);
+  }));
 
-app.get('/api/cashier/closures/:id', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
-  const row = await getCashierClosureRowById(req.params.id);
-  if (!row) {
-    return res.status(404).json({ error: 'Fechamento não encontrado' });
-  }
-  res.json(mapCashierClosureRow(row));
-}));
-
-app.get('/api/cashier/closures/:id/logs', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
-  const row = await getCashierClosureRowById(req.params.id);
-  if (!row) {
-    return res.status(404).json({ error: 'Fechamento não encontrado' });
-  }
-  const logs = await listCashierClosureLogs(req.params.id);
-  res.json(logs);
-}));
-
-app.post('/api/cashier/closures', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
-  try {
-    const closure = await createCashierClosure(req.body ?? {}, req.user);
-    res.status(201).json(closure);
-  } catch (error) {
-    const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
-    res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
-  }
-}));
-
-app.put('/api/cashier/closures/:id', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
-  try {
-    const updated = await updateCashierClosureRecord(req.params.id, req.body ?? {}, req.user);
-    if (!updated) {
+  app.get(`${basePath}/:id`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    const row = await getCashierClosureRowById(req.params.id);
+    if (!row) {
       return res.status(404).json({ error: 'Fechamento não encontrado' });
     }
-    res.json(updated);
-  } catch (error) {
-    const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
-    res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
-  }
-}));
+    res.json(mapCashierClosureRow(row));
+  }));
+
+  app.get(`${basePath}/:id/logs`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    const row = await getCashierClosureRowById(req.params.id);
+    if (!row) {
+      return res.status(404).json({ error: 'Fechamento não encontrado' });
+    }
+    const logs = await listCashierClosureLogs(req.params.id);
+    res.json(logs);
+  }));
+
+  app.post(basePath, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    try {
+      const closure = await createCashierClosure(req.body ?? {}, req.user);
+      res.status(201).json(closure);
+    } catch (error) {
+      const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
+      res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
+    }
+  }));
+
+  app.put(`${basePath}/:id`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    try {
+      const updated = await updateCashierClosureRecord(req.params.id, req.body ?? {}, req.user);
+      if (!updated) {
+        return res.status(404).json({ error: 'Fechamento não encontrado' });
+      }
+      res.json(updated);
+    } catch (error) {
+      const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
+      res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
+    }
+  }));
+};
+
+registerCashierClosureRoutes('/api/cashier/closures');
+registerCashierClosureRoutes('/api/fechamentos');
 
 app.get('/api/cashier/settings', authMiddleware, asyncHandler(async (req, res) => {
   const settings = await getCashierSettings();

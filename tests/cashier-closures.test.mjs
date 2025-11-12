@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  calculateDinheiroEmGaveta,
   calculateTotalSistema,
   calculateVariavelCaixa,
   normalizeClosureLabels,
@@ -17,6 +18,17 @@ test('calculateTotalSistema soma os meios do sistema', () => {
     pix: 5,
   });
   assert.equal(total, 215);
+});
+
+test('calculateDinheiroEmGaveta reflete a fórmula da planilha', () => {
+  const dinheiro = calculateDinheiroEmGaveta({
+    abertura: 80,
+    reforco: 20,
+    dinheiroSistema: 150,
+    gastos: 30,
+    valorParaDeposito: 40,
+  });
+  assert.equal(dinheiro, 180);
 });
 
 test('calculateVariavelCaixa considera abertura, reforço, gastos e depósito', () => {

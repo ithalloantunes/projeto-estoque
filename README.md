@@ -95,12 +95,12 @@ O servidor cria as tabelas automaticamente. O arquivo [`db/schema.sql`](db/schem
   - `total_sistema = dinheiro_sistema + credito_sistema + debito_sistema + pag_online + pix`.
   - `dinheiro_em_gaveta = abertura + reforco + dinheiro_sistema - gastos - valor_para_deposito`.
   - `variavel_caixa = dinheiro_em_gaveta - total_caixa_dinheiro` (pode ser negativo).
-- Endpoints protegidos (`admin`) em `/api/cashier/closures`:
-  - `GET /api/cashier/closures?de=AAAA-MM-DD&ate=AAAA-MM-DD` – lista por período.
-  - `GET /api/cashier/closures/:id` – detalha um fechamento (inclui cálculo da gaveta).
-  - `GET /api/cashier/closures/:id/logs` – histórico de alterações com responsável, data e diffs.
-  - `POST /api/cashier/closures` – cria/fecha o dia calculando campos derivados.
-  - `PUT /api/cashier/closures/:id` – atualiza mantendo as validações e registrando log.
+- Endpoints protegidos (`admin`) disponíveis tanto em `/api/cashier/closures` quanto em `/api/fechamentos` (alias em PT-BR):
+  - `GET ...?de=AAAA-MM-DD&ate=AAAA-MM-DD` – lista por período.
+  - `GET .../:id` – detalha um fechamento (inclui cálculo da gaveta).
+  - `GET .../:id/logs` – histórico de alterações com responsável, data e diffs.
+  - `POST ...` – cria/fecha o dia calculando campos derivados.
+  - `PUT .../:id` – atualiza mantendo as validações e registrando log.
 - Novo esquema PostgreSQL: tabelas `cashier_closures` (1 registro por data, com índices para data/funcionário) e `cashier_closure_logs` (auditoria das mudanças).
 - Campos numéricos aceitam decimais (`NUMERIC(12,2)`), contagens (`INTEGER`) e observações livres.
 
