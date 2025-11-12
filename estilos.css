@@ -1055,19 +1055,19 @@ tbody tr.removing {
 }
 
 #stock-page .stock-product-image--grid {
-    min-height: 18rem;
-    height: clamp(18rem, 28vw, 24rem);
+    min-height: 14rem;
+    height: clamp(16rem, 22vw, 20rem);
 }
 
 #stock-page .stock-product-image--list {
-    min-height: 14rem;
-    height: clamp(14rem, 26vw, 18rem);
+    min-height: 11rem;
+    height: clamp(12rem, 20vw, 16rem);
 }
 
 @media (min-width: 768px) {
     #stock-page .stock-product-image--list {
-        min-height: 12rem;
-        height: clamp(12rem, 18vw, 14rem);
+        min-height: 10rem;
+        height: clamp(11rem, 16vw, 14rem);
     }
 }
 
