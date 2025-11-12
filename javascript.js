@@ -2907,7 +2907,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.innerHTML = `
           <div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">${product.tipo || '-'}</div>
           ${expiryBadge}
-          <img alt="${product.produto}" class="w-full h-40 object-cover" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
+          <img alt="${product.produto}" class="stock-product-image stock-product-image--grid" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
           <div class="p-4 flex-grow flex flex-col">
             <h3 class="font-bold">${product.produto}</h3>
             <div class="mt-2 flex items-center justify-between">
@@ -2933,10 +2933,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const row = document.createElement('div');
         row.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm flex flex-col md:flex-row md:items-center p-4 gap-4 transition-shadow hover:shadow-md w-full';
         row.innerHTML = `
-          <div class="relative w-full md:w-24 md:h-24 md:flex-shrink-0">
+          <div class="relative w-full md:w-40 lg:w-48 md:flex-shrink-0">
             <div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">${product.tipo || '-'}</div>
             ${expiryBadge}
-            <img alt="${product.produto}" class="w-full h-48 md:h-24 object-cover rounded-lg" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
+            <img alt="${product.produto}" class="stock-product-image stock-product-image--list rounded-lg" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
           </div>
           <div class="flex-1 w-full md:ml-4 grid grid-cols-1 md:grid-cols-5 items-start md:items-center gap-4">
             <div>
