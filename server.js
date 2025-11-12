@@ -15,6 +15,7 @@ import jwt from 'jsonwebtoken';
 import { Pool } from 'pg';
 
 import { sanitizeText, normalizeUsername, sanitizeCost, BCRYPT_SALT_ROUNDS, parsePositiveInt } from './lib/utils.js';
+import { sanitizeClosurePayload, buildClosureResponse, diffClosures } from './lib/cashier-closures.js';
 import { seedUsersFromFile as importUsersFromSeed } from './lib/user-seed.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -545,6 +546,376 @@ const mapCashierMovementRow = row => ({
   criadoEm: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
 });
 
+const formatDateOnly = input => {
+  if (!input) return null;
+  if (input instanceof Date) {
+    const year = input.getFullYear();
+    const month = `${input.getMonth() + 1}`.padStart(2, '0');
+    const day = `${input.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  const text = sanitizeText(input);
+  if (!text) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+    return text;
+  }
+  const parsed = new Date(text);
+  if (Number.isNaN(parsed.getTime())) return null;
+  const year = parsed.getFullYear();
+  const month = `${parsed.getMonth() + 1}`.padStart(2, '0');
+  const day = `${parsed.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const toNumberFromDb = value => {
+  if (value === null || value === undefined) return 0;
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.round(parsed * 100) / 100;
+};
+
+const toIntegerFromDb = value => {
+  if (value === null || value === undefined) return 0;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return 0;
+  return parsed;
+};
+
+const CASHIER_CLOSURE_COLUMNS = `
+  id,
+  data_operacao,
+  funcionario_id,
+  funcionario_nome,
+  dinheiro_sistema,
+  credito_sistema,
+  debito_sistema,
+  credito_maquina,
+  debito_maquina,
+  pag_online,
+  pix,
+  total_sistema,
+  total_caixa_dinheiro,
+  abertura,
+  reforco,
+  gastos,
+  valor_para_deposito,
+  variavel_caixa,
+  entrega_cartao,
+  picoles_sist,
+  informacoes,
+  criado_por,
+  atualizado_por,
+  created_at,
+  updated_at
+`;
+
+const toClosureDomain = row => ({
+  id: row.id,
+  dataOperacao: formatDateOnly(row.data_operacao),
+  funcionarioId: row.funcionario_id,
+  funcionarioNome: row.funcionario_nome,
+  dinheiroSistema: toNumberFromDb(row.dinheiro_sistema),
+  creditoSistema: toNumberFromDb(row.credito_sistema),
+  debitoSistema: toNumberFromDb(row.debito_sistema),
+  creditoMaquina: toNumberFromDb(row.credito_maquina),
+  debitoMaquina: toNumberFromDb(row.debito_maquina),
+  pagOnline: toNumberFromDb(row.pag_online),
+  pix: toNumberFromDb(row.pix),
+  totalSistema: toNumberFromDb(row.total_sistema),
+  totalCaixaDinheiro: toNumberFromDb(row.total_caixa_dinheiro),
+  abertura: toNumberFromDb(row.abertura),
+  reforco: toNumberFromDb(row.reforco),
+  gastos: toNumberFromDb(row.gastos),
+  valorParaDeposito: toNumberFromDb(row.valor_para_deposito),
+  variavelCaixa: toNumberFromDb(row.variavel_caixa),
+  entregaCartao: toIntegerFromDb(row.entrega_cartao),
+  picolesSist: toIntegerFromDb(row.picoles_sist),
+  informacoes: row.informacoes,
+});
+
+const mapCashierClosureRow = row => {
+  const domain = toClosureDomain(row);
+  const base = buildClosureResponse(domain);
+  return {
+    ...base,
+    funcionarioId: row.funcionario_id,
+    criadoPor: row.criado_por,
+    atualizadoPor: row.atualizado_por,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+    updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+  };
+};
+
+const serializeClosureForLog = (closure, dataOperacao) => ({
+  dataOperacao: dataOperacao ?? formatDateOnly(closure?.dataOperacao),
+  funcionarioNome: closure?.funcionarioNome ?? null,
+  dinheiroSistema: closure?.dinheiroSistema ?? 0,
+  creditoSistema: closure?.creditoSistema ?? 0,
+  debitoSistema: closure?.debitoSistema ?? 0,
+  creditoMaquina: closure?.creditoMaquina ?? 0,
+  debitoMaquina: closure?.debitoMaquina ?? 0,
+  pagOnline: closure?.pagOnline ?? 0,
+  pix: closure?.pix ?? 0,
+  totalSistema: closure?.totalSistema ?? 0,
+  totalCaixaDinheiro: closure?.totalCaixaDinheiro ?? 0,
+  abertura: closure?.abertura ?? 0,
+  reforco: closure?.reforco ?? 0,
+  gastos: closure?.gastos ?? 0,
+  valorParaDeposito: closure?.valorParaDeposito ?? 0,
+  variavelCaixa: closure?.variavelCaixa ?? 0,
+  entregaCartao: closure?.entregaCartao ?? 0,
+  picolesSist: closure?.picolesSist ?? 0,
+  informacoes: closure?.informacoes ?? null,
+});
+
+const getCashierClosureRowById = async id => {
+  const { rows } = await query(
+    `SELECT ${CASHIER_CLOSURE_COLUMNS}
+       FROM cashier_closures
+      WHERE id = $1
+      LIMIT 1`,
+    [id]
+  );
+  return rows[0] || null;
+};
+
+const getCashierClosureRowByDate = async dataOperacao => {
+  const { rows } = await query(
+    `SELECT ${CASHIER_CLOSURE_COLUMNS}
+       FROM cashier_closures
+      WHERE data_operacao = $1
+      LIMIT 1`,
+    [dataOperacao]
+  );
+  return rows[0] || null;
+};
+
+const listCashierClosures = async ({ start, end } = {}) => {
+  const clauses = [];
+  const params = [];
+  if (start) {
+    const formatted = formatDateOnly(start);
+    if (formatted) {
+      clauses.push(`data_operacao >= $${params.length + 1}`);
+      params.push(formatted);
+    }
+  }
+  if (end) {
+    const formatted = formatDateOnly(end);
+    if (formatted) {
+      clauses.push(`data_operacao <= $${params.length + 1}`);
+      params.push(formatted);
+    }
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const { rows } = await query(
+    `SELECT ${CASHIER_CLOSURE_COLUMNS}
+       FROM cashier_closures
+       ${where}
+   ORDER BY data_operacao DESC, created_at DESC`,
+    params
+  );
+  return rows.map(mapCashierClosureRow);
+};
+
+const insertCashierClosureLog = async ({ closureId, userId, acao, detalhes }) => {
+  await query(
+    `INSERT INTO cashier_closure_logs (id, closure_id, user_id, acao, detalhes, created_at)
+     VALUES ($1, $2, $3, $4, $5::jsonb, NOW())`,
+    [uuidv4(), closureId, userId ?? null, acao, JSON.stringify(detalhes ?? {})]
+  );
+};
+
+const listCashierClosureLogs = async closureId => {
+  const { rows } = await query(
+    `SELECT id, closure_id, user_id, acao, detalhes, created_at
+       FROM cashier_closure_logs
+      WHERE closure_id = $1
+   ORDER BY created_at DESC, id DESC`,
+    [closureId]
+  );
+  return rows.map(row => ({
+    id: row.id,
+    closureId: row.closure_id,
+    userId: row.user_id,
+    acao: row.acao,
+    detalhes: row.detalhes,
+    criadoEm: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  }));
+};
+
+const createCashierClosure = async (payload, user) => {
+  const sanitized = sanitizeClosurePayload(payload, { defaultFuncionarioNome: sanitizeText(user?.username) });
+  const dataOperacao = formatDateOnly(sanitized.dataOperacao);
+  if (!dataOperacao) {
+    const error = new Error('Data da operação inválida.');
+    error.statusCode = 400;
+    throw error;
+  }
+  const existing = await getCashierClosureRowByDate(dataOperacao);
+  if (existing) {
+    const error = new Error('Já existe um fechamento registrado para esta data.');
+    error.statusCode = 409;
+    throw error;
+  }
+  const id = uuidv4();
+  const userId = user?.id ?? null;
+  const params = [
+    id,
+    dataOperacao,
+    userId,
+    sanitized.funcionarioNome,
+    sanitized.dinheiroSistema,
+    sanitized.creditoSistema,
+    sanitized.debitoSistema,
+    sanitized.creditoMaquina,
+    sanitized.debitoMaquina,
+    sanitized.pagOnline,
+    sanitized.pix,
+    sanitized.totalSistema,
+    sanitized.totalCaixaDinheiro,
+    sanitized.abertura,
+    sanitized.reforco,
+    sanitized.gastos,
+    sanitized.valorParaDeposito,
+    sanitized.variavelCaixa,
+    sanitized.entregaCartao,
+    sanitized.picolesSist,
+    sanitized.informacoes,
+    userId,
+    userId,
+  ];
+  const { rows } = await query(
+    `INSERT INTO cashier_closures (
+       id,
+       data_operacao,
+       funcionario_id,
+       funcionario_nome,
+       dinheiro_sistema,
+       credito_sistema,
+       debito_sistema,
+       credito_maquina,
+       debito_maquina,
+       pag_online,
+       pix,
+       total_sistema,
+       total_caixa_dinheiro,
+       abertura,
+       reforco,
+       gastos,
+       valor_para_deposito,
+       variavel_caixa,
+       entrega_cartao,
+       picoles_sist,
+     informacoes,
+     criado_por,
+     atualizado_por,
+      created_at,
+      updated_at
+    ) VALUES (
+      $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,NOW(),NOW()
+    )
+     RETURNING ${CASHIER_CLOSURE_COLUMNS}`,
+    params
+  );
+  const inserted = rows[0];
+  const mapped = mapCashierClosureRow(inserted);
+  await insertCashierClosureLog({
+    closureId: id,
+    userId,
+    acao: 'criado',
+    detalhes: { novosValores: serializeClosureForLog(sanitized, dataOperacao) },
+  });
+  return mapped;
+};
+
+const updateCashierClosureRecord = async (id, payload, user) => {
+  const currentRow = await getCashierClosureRowById(id);
+  if (!currentRow) return null;
+  const currentDomain = toClosureDomain(currentRow);
+  const sanitized = sanitizeClosurePayload(payload, {
+    defaultFuncionarioNome: currentDomain.funcionarioNome || sanitizeText(user?.username),
+  });
+  const dataOperacao = formatDateOnly(sanitized.dataOperacao);
+  if (!dataOperacao) {
+    const error = new Error('Data da operação inválida.');
+    error.statusCode = 400;
+    throw error;
+  }
+  const currentDate = formatDateOnly(currentRow.data_operacao);
+  if (dataOperacao !== currentDate) {
+    const existing = await getCashierClosureRowByDate(dataOperacao);
+    if (existing && existing.id !== id) {
+      const error = new Error('Já existe um fechamento registrado para esta data.');
+      error.statusCode = 409;
+      throw error;
+    }
+  }
+  const userId = user?.id ?? null;
+  const params = [
+    id,
+    dataOperacao,
+    sanitized.funcionarioNome,
+    sanitized.dinheiroSistema,
+    sanitized.creditoSistema,
+    sanitized.debitoSistema,
+    sanitized.creditoMaquina,
+    sanitized.debitoMaquina,
+    sanitized.pagOnline,
+    sanitized.pix,
+    sanitized.totalSistema,
+    sanitized.totalCaixaDinheiro,
+    sanitized.abertura,
+    sanitized.reforco,
+    sanitized.gastos,
+    sanitized.valorParaDeposito,
+    sanitized.variavelCaixa,
+    sanitized.entregaCartao,
+    sanitized.picolesSist,
+    sanitized.informacoes,
+    userId,
+  ];
+  const { rows } = await query(
+    `UPDATE cashier_closures
+        SET data_operacao = $2,
+            funcionario_nome = $3,
+            dinheiro_sistema = $4,
+            credito_sistema = $5,
+            debito_sistema = $6,
+            credito_maquina = $7,
+            debito_maquina = $8,
+            pag_online = $9,
+            pix = $10,
+            total_sistema = $11,
+            total_caixa_dinheiro = $12,
+            abertura = $13,
+            reforco = $14,
+            gastos = $15,
+            valor_para_deposito = $16,
+            variavel_caixa = $17,
+            entrega_cartao = $18,
+            picoles_sist = $19,
+            informacoes = $20,
+            atualizado_por = $21,
+            updated_at = NOW()
+      WHERE id = $1
+      RETURNING ${CASHIER_CLOSURE_COLUMNS}`,
+    params
+  );
+  const updatedRow = rows[0];
+  const mapped = mapCashierClosureRow(updatedRow);
+  const diff = diffClosures(currentDomain, toClosureDomain(updatedRow));
+  if (Object.keys(diff).length) {
+    await insertCashierClosureLog({
+      closureId: id,
+      userId,
+      acao: 'atualizado',
+      detalhes: diff,
+    });
+  }
+  return mapped;
+};
+
 const ensureDefaultCashierSettingsRow = async () => {
   await query(
     `INSERT INTO cashier_settings (id, logo, cash_limit, categories, payment_methods, updated_at)
@@ -957,10 +1328,54 @@ const initializeDatabase = async () => {
     ) TABLESPACE pg_default
   `);
 
+  await query(`
+    CREATE TABLE IF NOT EXISTS cashier_closures (
+      id UUID PRIMARY KEY,
+      data_operacao DATE NOT NULL UNIQUE,
+      funcionario_id UUID REFERENCES users(id) ON DELETE SET NULL,
+      funcionario_nome TEXT,
+      dinheiro_sistema NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (dinheiro_sistema >= 0),
+      credito_sistema NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (credito_sistema >= 0),
+      debito_sistema NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (debito_sistema >= 0),
+      credito_maquina NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (credito_maquina >= 0),
+      debito_maquina NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (debito_maquina >= 0),
+      pag_online NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (pag_online >= 0),
+      pix NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (pix >= 0),
+      total_sistema NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (total_sistema >= 0),
+      total_caixa_dinheiro NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (total_caixa_dinheiro >= 0),
+      abertura NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (abertura >= 0),
+      reforco NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (reforco >= 0),
+      gastos NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (gastos >= 0),
+      valor_para_deposito NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (valor_para_deposito >= 0),
+      variavel_caixa NUMERIC(12,2) NOT NULL,
+      entrega_cartao INTEGER NOT NULL DEFAULT 0 CHECK (entrega_cartao >= 0),
+      picoles_sist INTEGER NOT NULL DEFAULT 0 CHECK (picoles_sist >= 0),
+      informacoes TEXT,
+      criado_por UUID REFERENCES users(id) ON DELETE SET NULL,
+      atualizado_por UUID REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    ) TABLESPACE pg_default
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS cashier_closure_logs (
+      id UUID PRIMARY KEY,
+      closure_id UUID NOT NULL REFERENCES cashier_closures(id) ON DELETE CASCADE,
+      user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+      acao TEXT NOT NULL,
+      detalhes JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    ) TABLESPACE pg_default
+  `);
+
   await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower) TABLESPACE pg_default');
   await query('CREATE INDEX IF NOT EXISTS idx_inventory_produto ON inventory(produto) TABLESPACE pg_default');
   await query('CREATE INDEX IF NOT EXISTS idx_movimentacoes_data ON movimentacoes(data) TABLESPACE pg_default');
   await query('CREATE INDEX IF NOT EXISTS idx_cashier_movements_date ON cashier_movements(data DESC, created_at DESC) TABLESPACE pg_default');
+  await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_cashier_closures_date ON cashier_closures(data_operacao) TABLESPACE pg_default');
+  await query('CREATE INDEX IF NOT EXISTS idx_cashier_closures_funcionario ON cashier_closures(funcionario_id) TABLESPACE pg_default');
+  await query('CREATE INDEX IF NOT EXISTS idx_cashier_closure_logs_closure ON cashier_closure_logs(closure_id, created_at DESC) TABLESPACE pg_default');
 
   await seedUsersFromFile();
   await seedInventoryFromFile();
@@ -1240,6 +1655,51 @@ app.post('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res)
       return res.status(500).json({ error: 'Não foi possível registrar a movimentação.' });
     }
     res.status(201).json(inserted);
+  } catch (error) {
+    const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
+    res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
+  }
+}));
+
+app.get('/api/cashier/closures', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  const closures = await listCashierClosures({ start: req.query.de, end: req.query.ate });
+  res.json(closures);
+}));
+
+app.get('/api/cashier/closures/:id', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  const row = await getCashierClosureRowById(req.params.id);
+  if (!row) {
+    return res.status(404).json({ error: 'Fechamento não encontrado' });
+  }
+  res.json(mapCashierClosureRow(row));
+}));
+
+app.get('/api/cashier/closures/:id/logs', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  const row = await getCashierClosureRowById(req.params.id);
+  if (!row) {
+    return res.status(404).json({ error: 'Fechamento não encontrado' });
+  }
+  const logs = await listCashierClosureLogs(req.params.id);
+  res.json(logs);
+}));
+
+app.post('/api/cashier/closures', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  try {
+    const closure = await createCashierClosure(req.body ?? {}, req.user);
+    res.status(201).json(closure);
+  } catch (error) {
+    const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
+    res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
+  }
+}));
+
+app.put('/api/cashier/closures/:id', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  try {
+    const updated = await updateCashierClosureRecord(req.params.id, req.body ?? {}, req.user);
+    if (!updated) {
+      return res.status(404).json({ error: 'Fechamento não encontrado' });
+    }
+    res.json(updated);
   } catch (error) {
     const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
     res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
