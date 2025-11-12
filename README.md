@@ -52,6 +52,8 @@ Para o banco criado com as credenciais abaixo, configure as variáveis no Render
 
 > **Importante:** mantenha a senha fora do repositório. Defina-a apenas como variável de ambiente (`DATABASE_URL`) ou em comandos temporários como o `psql` acima.
 
+> ⚠️ Fora da infraestrutura do Render, o host interno (`dpg-d3mkd5juibrs738v4fbg-a`) não é resolvido e causa o erro `getaddrinfo ENOTFOUND`. Defina também `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa terminada em `.render.com` para que a aplicação consiga se conectar ao banco durante o desenvolvimento local.
+
 > **Dica:** caso precise acessar o banco externamente (por exemplo, a partir do seu computador), utilize a **External Database URL** disponibilizada pelo Render: `postgresql://banco_de_dados_acai_da_barra_user:SUA_SENHA_AQUI@dpg-d3mkd5juibrs738v4fbg-a.oregon-postgres.render.com/banco_de_dados_acai_da_barra`.
 
 > **Importante:** o Render exige conexão segura; não altere `DATABASE_SSL` em produção. Localmente, caso esteja usando um PostgreSQL sem TLS, defina `DATABASE_SSL=disable`.
