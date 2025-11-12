@@ -14,6 +14,7 @@ Aplicação web para gerenciamento de estoque com autenticação, controle de pr
 |---------------------|---------------------------------------------------------------------------------------------|
 | `PORT`              | Porta utilizada pelo servidor HTTP (padrão: `3000`).                                        |
 | `DATABASE_URL`      | URL de conexão PostgreSQL. Ex.: `postgres://usuario:senha@host:5432/base`. **Obrigatória**. |
+| `DATABASE_URL_EXTERNAL` | (Opcional) URL externa do banco, usada automaticamente ao rodar fora da infraestrutura do Render caso o host interno não seja acessível. |
 | `DATABASE_SSL`      | Defina como `disable` para desativar SSL (apenas ambientes locais).                         |
 | `JWT_SECRET`        | (Opcional) Segredo customizado para assinar os tokens JWT.                                  |
 | `PGPOOL_MAX`        | (Opcional) Número máximo de conexões simultâneas no pool (`10` por padrão).                 |
@@ -27,6 +28,7 @@ Aplicação web para gerenciamento de estoque com autenticação, controle de pr
 1. Crie um novo **PostgreSQL** em *Render → Databases* escolhendo a versão 17.
 2. No painel do banco, abra a aba **Connections** e copie o valor de **Internal Database URL** (ex.: `postgres://usuario:senha@dpg-xxxxx.internal:5432/nome`)
    - Use a URL interna para que a comunicação ocorra dentro da rede privada do Render, evitando exposição pública e garantindo TLS automático.
+   - Para executar a aplicação localmente (fora do Render) utilize também a **External Database URL** na variável `DATABASE_URL_EXTERNAL`, pois o host interno não é acessível fora da infraestrutura do Render.
 3. Crie um novo serviço *Web Service* apontando para este repositório (botão **New → Web Service**).
 4. Na tela de criação (ou em **Settings → Environment** após o deploy):
    - Adicione a variável `DATABASE_URL` com a URL interna copiada.
@@ -67,7 +69,13 @@ Para verificar se o web service está conversando com o banco:
 
 ```bash
 npm install
+# Use um Postgres local...
 DATABASE_URL="postgres://usuario:senha@localhost:5432/projeto_estoque" npm run dev
+
+# ...ou defina também a URL externa do Render para que o backend use-a automaticamente fora da infraestrutura deles.
+DATABASE_URL="postgres://usuario:senha@dpg-xxxxx.internal:5432/projeto_estoque" \
+DATABASE_URL_EXTERNAL="postgres://usuario:senha@dpg-xxxxx.oregon-postgres.render.com/projeto_estoque" \
+npm run dev
 ```
 
 O servidor cria as tabelas automaticamente. O arquivo [`db/schema.sql`](db/schema.sql) contém o esquema completo caso queira aplicar manualmente.
