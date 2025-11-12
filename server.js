@@ -41,17 +41,26 @@ const parseAdditionalOrigins = raw => {
     .filter(Boolean);
 };
 
-const allowedOrigins = new Set([
-  normalizeOrigin('https://acai-da-barra.onrender.com')
-]);
+const allowedOrigins = new Set();
+
+const registerAllowedOrigin = origin => {
+  const normalized = normalizeOrigin(origin);
+  if (normalized) {
+    allowedOrigins.add(normalized);
+  }
+};
+
+registerAllowedOrigin('https://acai-da-barra.onrender.com');
+registerAllowedOrigin(process.env.RENDER_EXTERNAL_URL);
+registerAllowedOrigin(process.env.PUBLIC_APP_URL);
 
 if (!isProduction) {
-  allowedOrigins.add(normalizeOrigin('http://localhost:3000'));
-  allowedOrigins.add(normalizeOrigin('http://127.0.0.1:3000'));
+  registerAllowedOrigin('http://localhost:3000');
+  registerAllowedOrigin('http://127.0.0.1:3000');
 }
 
 for (const origin of parseAdditionalOrigins(process.env.CORS_ALLOWED_ORIGINS)) {
-  allowedOrigins.add(origin);
+  registerAllowedOrigin(origin);
 }
 
 const RATE_LIMIT_WINDOW_MS = parsePositiveInt(
@@ -367,17 +376,29 @@ const isOriginAllowed = origin => {
   return allowedOrigins.has(normalizeOrigin(origin));
 };
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (isOriginAllowed(origin)) {
-      callback(null, true);
-    } else {
-      const error = new Error('Origem n√£o autorizada pela configura√ß√£o de CORS.');
-      error.statusCode = 403;
-      callback(error);
-    }
-  },
-  credentials: true
+const doesOriginMatchRequestHost = (origin, hostHeader) => {
+  if (!origin || !hostHeader) return false;
+  try {
+    const originUrl = new URL(origin);
+    const originHost = sanitizeHostHeader(originUrl.host);
+    const requestHost = sanitizeHostHeader(hostHeader);
+    return Boolean(originHost && requestHost && originHost === requestHost);
+  } catch {
+    return false;
+  }
+};
+
+const corsOptionsDelegate = (req, callback) => {
+  const origin = req.headers.origin;
+  const hostHeader = req.headers.host;
+  const isSameHost = doesOriginMatchRequestHost(origin, hostHeader);
+  if (isSameHost || isOriginAllowed(origin)) {
+    callback(null, { origin: true, credentials: true });
+  } else {
+    const error = new Error('Origem n„o autorizada pela configuraÁ„o de CORS.');
+    error.statusCode = 403;
+    callback(error);
+  }
 };
 
 const app = express();
@@ -411,7 +432,7 @@ if (shouldEnforceHttps) {
 }
 
 app.use(cookieParser());
-app.use(cors(corsOptions));
+app.use(cors(corsOptionsDelegate));
 app.use(express.json({ limit: '1mb' }));
 
 app.use((req, res, next) => {
@@ -2257,3 +2278,5 @@ startServer().catch(error => {
   console.error('N√£o foi poss√≠vel iniciar o servidor:', error);
   process.exit(1);
 });
+
+
