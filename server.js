@@ -156,6 +156,14 @@ const registeredConnectionStrings = new Set();
 const DEFAULT_DATABASE_URL = 'postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d3mkd5juibrs738v4fbg-a/acai';
 const DEFAULT_DATABASE_URL_EXTERNAL = 'postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d3mkd5juibrs738v4fbg-a.oregon-postgres.render.com/acai';
 
+const shouldUseInMemoryDbFallback = () => {
+  if (isProduction) {
+    return false;
+  }
+  const preference = sanitizeText(process.env.USE_IN_MEMORY_DB ?? process.env.ENABLE_IN_MEMORY_DB);
+  return preference !== 'disable';
+};
+
 const registerConnectionCandidate = (label, value, type) => {
   const normalized = normalizeConnectionString(value);
   if (!normalized || registeredConnectionStrings.has(normalized)) {
@@ -178,6 +186,7 @@ registerConnectionCandidate('RENDER_EXTERNAL_DATABASE_URL', process.env.RENDER_E
 registerConnectionCandidate('DEFAULT_DATABASE_URL_EXTERNAL', DEFAULT_DATABASE_URL_EXTERNAL, 'fallback');
 
 let pool = null;
+let inMemoryPool = null;
 
 const getSslConfigForCandidate = candidate => {
   const sslPreferenceRaw = sanitizeText(process.env.DATABASE_SSL);
@@ -224,6 +233,47 @@ const createPoolInstance = (connectionString, sslConfig) => {
   return instance;
 };
 
+const loadSchemaForInMemoryDb = async dbInstance => {
+  const schemaPath = path.join(__dirname, 'db', 'schema.sql');
+  const rawSchema = await fs.promises.readFile(schemaPath, 'utf8');
+  const sanitizedSchema = rawSchema.replace(/\s+TABLESPACE\s+\w+/gi, '');
+  dbInstance.public.none(sanitizedSchema);
+};
+
+const createInMemoryPool = async () => {
+  if (inMemoryPool) {
+    return inMemoryPool;
+  }
+
+  let newDbFactory;
+  try {
+    ({ newDb: newDbFactory } = await import('pg-mem'));
+  } catch (error) {
+    const message = 'pg-mem não está disponível. Instale-o (npm install --save-dev pg-mem) ou defina USE_IN_MEMORY_DB=disable.';
+    console.error(message, error);
+    throw new Error(message, { cause: error });
+  }
+
+  const dbInstance = newDbFactory({ autoCreateForeignKeyIndices: true });
+
+  try {
+    await loadSchemaForInMemoryDb(dbInstance);
+  } catch (error) {
+    console.error('Falha ao carregar o schema SQL para o banco em memória:', error);
+    throw error;
+  }
+
+  const { Pool: MemoryPool } = dbInstance.adapters.createPg();
+  const memoryPoolInstance = new MemoryPool();
+  memoryPoolInstance.on('error', error => {
+    console.error('Erro inesperado na conexão com o banco de dados em memória:', error);
+  });
+
+  inMemoryPool = memoryPoolInstance;
+  console.warn('Banco de dados em memória inicializado. Os dados serão perdidos ao encerrar o processo.');
+  return inMemoryPool;
+};
+
 const closePool = async () => {
   if (!pool) return;
   const current = pool;
@@ -232,6 +282,9 @@ const closePool = async () => {
     await current.end();
   } catch (error) {
     console.error('Erro ao encerrar o pool de conexões:', error);
+  }
+  if (current === inMemoryPool) {
+    inMemoryPool = null;
   }
 };
 
@@ -339,6 +392,20 @@ const ensureDatabaseConnection = async () => {
       }
 
       lastError = { candidate, error };
+    }
+  }
+
+  if (shouldUseInMemoryDbFallback()) {
+    try {
+      console.warn('Não foi possível conectar ao PostgreSQL. Iniciando banco de dados em memória (pg-mem)...');
+      pool = await createInMemoryPool();
+      return pool;
+    } catch (fallbackError) {
+      console.error('Falha ao inicializar o banco de dados em memória:', fallbackError);
+      if (lastError?.error) {
+        fallbackError.cause = lastError.error;
+      }
+      throw fallbackError;
     }
   }
 
