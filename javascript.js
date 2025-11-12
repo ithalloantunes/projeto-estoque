@@ -2896,6 +2896,7 @@ document.addEventListener('DOMContentLoaded', () => {
           expiryBadge = `<div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 z-10" title="Vencendo em breve"><span class="material-icons">warning</span></div>`;
         }
       }
+      const validityText = product.validade ? formatDate(product.validade) : 'Sem validade';
       const stockPercentage = Math.min(Math.round((quantity / 150) * 100), 100);
       let stockColor = 'bg-green-500';
       if (stockPercentage < 50) stockColor = 'bg-yellow-500';
@@ -2912,9 +2913,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="font-bold">${product.produto}</h3>
             <div class="mt-2 flex items-center justify-between">
               <span class="text-3xl font-bold text-primary">${quantity}</span>
-              <div class="flex items-center text-sm text-subtle-light dark:text-subtle-dark">
-                <span class="material-icons text-base mr-1">calendar_today</span>
-                <span>${formatDate(product.validade)}</span>
+              <div class="flex flex-col items-end text-sm text-subtle-light dark:text-subtle-dark leading-tight">
+                <span class="text-xs uppercase tracking-wide text-subtle-light dark:text-subtle-dark">Validade</span>
+                <div class="flex items-center gap-1 mt-0.5">
+                  <span class="material-icons text-base">calendar_today</span>
+                  <span>${validityText}</span>
+                </div>
               </div>
             </div>
             <div class="mt-auto pt-4">
@@ -2948,9 +2952,12 @@ document.addEventListener('DOMContentLoaded', () => {
               <p class="text-xs text-subtle-light dark:text-subtle-dark">Unidades</p>
             </div>
             <div class="text-left md:text-center">
-              <div class="flex items-center md:justify-center text-sm text-subtle-light dark:text-subtle-dark">
-                <span class="material-icons text-base mr-1">calendar_today</span>
-                <span>${formatDate(product.validade)}</span>
+              <div class="flex flex-col md:items-center text-sm text-subtle-light dark:text-subtle-dark leading-tight">
+                <span class="text-xs uppercase tracking-wide text-subtle-light dark:text-subtle-dark mb-0.5">Validade</span>
+                <div class="flex items-center gap-1 md:justify-center">
+                  <span class="material-icons text-base">calendar_today</span>
+                  <span>${validityText}</span>
+                </div>
               </div>
             </div>
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
