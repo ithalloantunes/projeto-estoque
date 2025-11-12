@@ -11,9 +11,34 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 const usersFile = path.join(projectRoot, 'data', 'users.json');
 
-const connectionString = sanitizeText(process.env.DATABASE_URL) || sanitizeText(process.env.POSTGRES_URL);
+const normalizeConnectionString = value => sanitizeText(value) || '';
 
-if (!connectionString) {
+const primaryCandidates = [];
+const fallbackCandidates = [];
+const registeredConnections = new Set();
+
+const registerCandidate = (label, value, type) => {
+  const normalized = normalizeConnectionString(value);
+  if (!normalized || registeredConnections.has(normalized)) {
+    return;
+  }
+  registeredConnections.add(normalized);
+  const candidate = { label, value: normalized, type };
+  if (type === 'fallback') {
+    fallbackCandidates.push(candidate);
+  } else {
+    primaryCandidates.push(candidate);
+  }
+};
+
+registerCandidate('DATABASE_URL', process.env.DATABASE_URL, 'primary');
+registerCandidate('POSTGRES_URL', process.env.POSTGRES_URL, 'primary');
+registerCandidate('DATABASE_URL_EXTERNAL', process.env.DATABASE_URL_EXTERNAL, 'fallback');
+registerCandidate('RENDER_EXTERNAL_DATABASE_URL', process.env.RENDER_EXTERNAL_DATABASE_URL, 'fallback');
+
+const allCandidates = [...primaryCandidates, ...fallbackCandidates];
+
+if (!allCandidates.length) {
   console.error('A variável de ambiente DATABASE_URL (ou POSTGRES_URL) é obrigatória para sincronizar os administradores.');
   process.exit(1);
 }
@@ -27,33 +52,121 @@ const parseConnection = raw => {
   }
 };
 
-const parsedConnection = parseConnection(connectionString);
-const sslPreference = sanitizeText(process.env.DATABASE_SSL).toLowerCase();
-const isRenderHost = parsedConnection?.hostname?.endsWith('.render.com');
-
-const shouldUseSSL = () => {
-  if (sslPreference === 'disable') return false;
-  if (sslPreference === 'require') return true;
-  if (isRenderHost) return true;
-  return process.env.NODE_ENV === 'production';
+const isPrivateHost = host => {
+  if (!host) return false;
+  const normalized = host.toLowerCase();
+  if (normalized === 'localhost' || normalized === '127.0.0.1' || normalized === '::1') {
+    return false;
+  }
+  if (normalized.endsWith('.internal')) {
+    return true;
+  }
+  if (/^10\./.test(normalized) || /^192\.168\./.test(normalized)) {
+    return true;
+  }
+  const match = normalized.match(/^172\.(\d{1,3})\./);
+  if (match) {
+    const secondOctet = Number.parseInt(match[1], 10);
+    if (Number.isInteger(secondOctet) && secondOctet >= 16 && secondOctet <= 31) {
+      return true;
+    }
+  }
+  return false;
 };
 
-const sslEnabled = shouldUseSSL();
+const formatLabel = candidate => candidate?.label || 'DATABASE_URL';
 
-if (sslPreference !== 'disable' && isRenderHost && !sslPreference) {
-  console.info('Host do Render detectado. SSL habilitado automaticamente para a sincronização.');
-}
+let pool = null;
 
-if (!sslEnabled && isRenderHost) {
-  console.warn('Você está desativando o SSL para um host Render. Isso normalmente não é recomendado.');
-}
-
-const pool = new Pool({
+const createPoolInstance = (connectionString, sslEnabled) => new Pool({
   connectionString,
   ssl: sslEnabled ? { rejectUnauthorized: false } : false,
 });
 
-const query = (text, params = []) => pool.query(text, params);
+const connectToDatabase = async () => {
+  if (pool) return pool;
+
+  let lastError = null;
+
+  for (const candidate of allCandidates) {
+    const parsedConnection = parseConnection(candidate.value);
+    const sslPreference = sanitizeText(process.env.DATABASE_SSL).toLowerCase();
+    const isRenderHost = parsedConnection?.hostname?.endsWith('.render.com');
+
+    const shouldUseSSL = () => {
+      if (sslPreference === 'disable') return false;
+      if (sslPreference === 'require') return true;
+      if (isRenderHost) return true;
+      return process.env.NODE_ENV === 'production';
+    };
+
+    const sslEnabled = shouldUseSSL();
+
+    if (sslPreference !== 'disable' && isRenderHost && !sslPreference && candidate.type === 'primary') {
+      console.info('Host do Render detectado. SSL habilitado automaticamente para a sincronização.');
+    }
+
+    if (!sslEnabled && isRenderHost) {
+      console.warn('Você está desativando o SSL para um host Render. Isso normalmente não é recomendado.');
+    }
+
+    const instance = createPoolInstance(candidate.value, sslEnabled);
+
+    try {
+      await instance.query('SELECT 1');
+      pool = instance;
+
+      if (candidate.type === 'fallback') {
+        console.warn(`Conexão principal indisponível. Utilizando ${formatLabel(candidate)}.`);
+      } else if (isPrivateHost(parsedConnection?.hostname) && !process.env.RENDER) {
+        console.warn(
+          `Aviso: ${formatLabel(candidate)} aponta para um host privado (${parsedConnection?.hostname}). ` +
+            'Fora do Render utilize a variável `DATABASE_URL_EXTERNAL` com a URL externa do banco.'
+        );
+      }
+
+      return pool;
+    } catch (error) {
+      await instance.end().catch(() => {});
+      lastError = { candidate, error };
+
+      if (candidate.type === 'primary' && fallbackCandidates.length) {
+        const host = parsedConnection?.hostname;
+        if (host && isPrivateHost(host)) {
+          console.warn(
+            `Falha ao conectar ao host interno "${host}" definido em ${formatLabel(candidate)}. ` +
+              'Tentando utilizar as variáveis de fallback...'
+          );
+        } else {
+          console.warn(`Falha ao conectar usando ${formatLabel(candidate)}: ${error.message}`);
+        }
+      } else {
+        console.warn(`Falha ao conectar usando ${formatLabel(candidate)}: ${error.message}`);
+      }
+    }
+  }
+
+  if (lastError) {
+    const { candidate, error } = lastError;
+    const host = parseConnection(candidate?.value)?.hostname;
+    if (error?.code === 'ECONNREFUSED' && host && isPrivateHost(host)) {
+      console.error(
+        `Não foi possível conectar ao host interno "${host}" definido em ${formatLabel(candidate)}. ` +
+          'Esse endereço costuma estar acessível apenas dentro do Render. Configure `DATABASE_URL_EXTERNAL` com a URL externa ou utilize um Postgres local.'
+      );
+    }
+    throw error;
+  }
+
+  throw new Error('Não foi possível estabelecer conexão com o banco de dados.');
+};
+
+const query = (text, params = []) => {
+  if (!pool) {
+    throw new Error('Pool de conexões não inicializado.');
+  }
+  return pool.query(text, params);
+};
 
 const mapUserRow = row => ({
   id: row.id,
@@ -130,6 +243,7 @@ const updateUserFromSeed = async (id, user) => {
 const filterAdmins = entry => (entry.role || '').toLowerCase() === 'admin';
 
 const run = async () => {
+  await connectToDatabase();
   await ensureUsersTable();
   const result = await importUsersFromSeed({
     usersFile,
@@ -147,13 +261,15 @@ run()
     const connectionHints = new Set(['ENOTFOUND', 'ENETUNREACH', 'ECONNREFUSED']);
     if (connectionHints.has(error?.code)) {
       console.error(
-        'Não foi possível conectar ao banco. Verifique se a variável DATABASE_URL aponta para um host acessível. '
-          + 'Quando executar fora da infraestrutura do Render, utilize a External Database URL (terminada em .render.com).'
+        'Não foi possível conectar ao banco. Verifique se as variáveis de conexão apontam para um host acessível. '
+          + 'Quando executar fora da infraestrutura do Render, utilize a External Database URL em `DATABASE_URL_EXTERNAL`.'
       );
     }
     console.error('Falha ao sincronizar administradores:', error);
     process.exitCode = 1;
   })
   .finally(() => {
-    pool.end().catch(() => {});
+    if (pool) {
+      pool.end().catch(() => {});
+    }
   });

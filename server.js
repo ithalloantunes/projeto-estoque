@@ -147,26 +147,184 @@ function sendFileWithHeaders(res, absolutePath, cacheControl = STATIC_CACHE_CONT
 const SESSION_COOKIE_NAME = 'session';
 const JWT_EXPIRATION = '12h';
 
-const connectionString = sanitizeText(process.env.DATABASE_URL) || sanitizeText(process.env.POSTGRES_URL);
+const normalizeConnectionString = value => sanitizeText(value) || '';
 
-if (!connectionString) {
-  console.error('A variável de ambiente DATABASE_URL é obrigatória para iniciar o servidor.');
-  process.exit(1);
-}
+const primaryConnectionCandidates = [];
+const fallbackConnectionCandidates = [];
+const registeredConnectionStrings = new Set();
+
+const registerConnectionCandidate = (label, value, type) => {
+  const normalized = normalizeConnectionString(value);
+  if (!normalized || registeredConnectionStrings.has(normalized)) {
+    return;
+  }
+  registeredConnectionStrings.add(normalized);
+  const candidate = { label, value: normalized, type };
+  if (type === 'fallback') {
+    fallbackConnectionCandidates.push(candidate);
+  } else {
+    primaryConnectionCandidates.push(candidate);
+  }
+};
+
+registerConnectionCandidate('DATABASE_URL', process.env.DATABASE_URL, 'primary');
+registerConnectionCandidate('POSTGRES_URL', process.env.POSTGRES_URL, 'primary');
+registerConnectionCandidate('DATABASE_URL_EXTERNAL', process.env.DATABASE_URL_EXTERNAL, 'fallback');
+registerConnectionCandidate('RENDER_EXTERNAL_DATABASE_URL', process.env.RENDER_EXTERNAL_DATABASE_URL, 'fallback');
 
 const usesSSL = sanitizeText(process.env.DATABASE_SSL) !== 'disable' && isProduction;
 
-const pool = new Pool({
-  connectionString,
-  max: Number.parseInt(process.env.PGPOOL_MAX || '10', 10),
-  ssl: usesSSL ? { rejectUnauthorized: false } : false,
-});
+let pool = null;
 
-pool.on('error', error => {
-  console.error('Erro inesperado na conexão com o banco de dados:', error);
-});
+const createPoolInstance = connectionString => {
+  const instance = new Pool({
+    connectionString,
+    max: Number.parseInt(process.env.PGPOOL_MAX || '10', 10),
+    ssl: usesSSL ? { rejectUnauthorized: false } : false,
+  });
+  instance.on('error', error => {
+    console.error('Erro inesperado na conexão com o banco de dados:', error);
+  });
+  return instance;
+};
 
-const query = (text, params = []) => pool.query(text, params);
+const closePool = async () => {
+  if (!pool) return;
+  const current = pool;
+  pool = null;
+  try {
+    await current.end();
+  } catch (error) {
+    console.error('Erro ao encerrar o pool de conexões:', error);
+  }
+};
+
+const getPool = () => {
+  if (!pool) {
+    throw new Error('Pool de conexões não inicializado.');
+  }
+  return pool;
+};
+
+const query = (text, params = []) => getPool().query(text, params);
+
+const tryParseHost = connectionString => {
+  try {
+    return new URL(connectionString).hostname;
+  } catch (error) {
+    return null;
+  }
+};
+
+const isPrivateHost = host => {
+  if (!host) return false;
+  const normalized = host.toLowerCase();
+  if (normalized === 'localhost' || normalized === '127.0.0.1' || normalized === '::1') {
+    return false;
+  }
+  if (normalized.endsWith('.internal')) {
+    return true;
+  }
+  if (/^10\./.test(normalized) || /^192\.168\./.test(normalized)) {
+    return true;
+  }
+  const match = normalized.match(/^172\.(\d{1,3})\./);
+  if (match) {
+    const secondOctet = Number.parseInt(match[1], 10);
+    if (Number.isInteger(secondOctet) && secondOctet >= 16 && secondOctet <= 31) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const formatConnectionLabel = candidate => {
+  if (!candidate) return 'DATABASE_URL';
+  return candidate.label || 'DATABASE_URL';
+};
+
+const ensureDatabaseConnection = async () => {
+  if (pool) return pool;
+
+  const connectionCandidates = [
+    ...primaryConnectionCandidates,
+    ...fallbackConnectionCandidates
+  ];
+
+  if (!connectionCandidates.length) {
+    console.error('A variável de ambiente DATABASE_URL é obrigatória para iniciar o servidor.');
+    process.exit(1);
+  }
+
+  let lastError = null;
+
+  for (const candidate of connectionCandidates) {
+    const instance = createPoolInstance(candidate.value);
+    const host = tryParseHost(candidate.value);
+
+    if (candidate.type === 'fallback') {
+      console.warn(`Tentando conexão alternativa definida em ${formatConnectionLabel(candidate)}...`);
+    }
+
+    try {
+      await instance.query('SELECT 1');
+      pool = instance;
+      const activeConnectionLabel = formatConnectionLabel(candidate);
+
+      if (!isProduction && host && isPrivateHost(host)) {
+        console.warn(
+          `Aviso: a URL de conexão (${activeConnectionLabel}) usa o host privado "${host}". ` +
+          'Se estiver executando fora do Render, utilize uma URL externa (`DATABASE_URL_EXTERNAL` ou `RENDER_EXTERNAL_DATABASE_URL`) ou um banco acessível localmente.'
+        );
+      }
+
+      if (candidate.type === 'fallback') {
+        console.warn(`Conexão principal indisponível. Utilizando ${activeConnectionLabel}.`);
+      }
+
+      return pool;
+    } catch (error) {
+      await instance.end().catch(() => {});
+
+      if (candidate.type === 'primary' && fallbackConnectionCandidates.length) {
+        if (host && isPrivateHost(host)) {
+          console.warn(
+            `Falha ao conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}. ` +
+            'Tentando utilizar as variáveis de fallback...'
+          );
+        } else {
+          console.warn(`Falha ao conectar usando ${formatConnectionLabel(candidate)}: ${error.message}`);
+        }
+      } else {
+        console.warn(`Falha ao conectar usando ${formatConnectionLabel(candidate)}: ${error.message}`);
+      }
+
+      lastError = { candidate, error };
+    }
+  }
+
+  if (lastError) {
+    const { candidate, error } = lastError;
+    const host = tryParseHost(candidate?.value);
+    if (
+      error?.code === 'ECONNREFUSED' &&
+      host &&
+      isPrivateHost(host) &&
+      !isProduction &&
+      candidate?.type === 'primary'
+    ) {
+      const message =
+        `Não foi possível conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}. ` +
+        'Esse endereço costuma estar disponível apenas dentro da infraestrutura do Render. ' +
+        'Defina `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa do banco ou utilize uma instância local do PostgreSQL.';
+      throw new Error(message, { cause: error });
+    }
+
+    throw error;
+  }
+
+  throw new Error('Não foi possível estabelecer conexão com o banco de dados.');
+};
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 const isOriginAllowed = origin => {
@@ -2030,9 +2188,7 @@ const shutdown = async signal => {
   try {
     await Promise.allSettled([
       closeHttpServer(),
-      pool.end().catch(error => {
-        console.error('Erro ao encerrar o pool de conexões:', error);
-      })
+      closePool()
     ]);
   } finally {
     clearTimeout(timeout);
@@ -2050,6 +2206,7 @@ for (const signal of ['SIGTERM', 'SIGINT']) {
 }
 
 const startServer = async () => {
+  await ensureDatabaseConnection();
   await initializeDatabase();
   server.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
