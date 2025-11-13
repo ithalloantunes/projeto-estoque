@@ -993,12 +993,12 @@
                                             </div>
                                         </div>
                                     </section>
-                                    <section class="cashier-settings-card rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                    <section class="cashier-settings-card rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6">
                                         <div>
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Categorias de Movimento</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina categorias para receitas e despesas.</p>
                                         </div>
-                                        <div class="flex flex-col gap-4">
+                                        <div class="cashier-settings-scroll gap-4">
                                             <div class="table-wrapper">
                                                 <div class="table-scroll">
                                                     <table class="modern-table">
@@ -1014,12 +1014,12 @@
                                                     </table>
                                                 </div>
                                             </div>
-                                            <div class="flex justify-start">
+                                            <div class="flex justify-center">
                                                 <button id="cashier-settings-add-category-btn" class="rounded bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90">Adicionar Categoria</button>
                                             </div>
                                         </div>
                                     </section>
-                                    <section class="cashier-settings-card rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                    <section class="cashier-settings-card rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6">
                                         <div>
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Limites de Caixa</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Defina o limite máximo de dinheiro para transações.</p>
@@ -1032,14 +1032,15 @@
                                             </div>
                                         </div>
                                     </section>
-                                    <section class="cashier-settings-card rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
+                                    <section class="cashier-settings-card rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6">
                                         <div>
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Métodos de Pagamento</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Ative ou desative os métodos de pagamento disponíveis.</p>
                                         </div>
-                                        <div class="table-wrapper">
-                                            <div class="table-scroll">
-                                                <table class="modern-table">
+                                        <div class="cashier-settings-scroll">
+                                            <div class="table-wrapper">
+                                                <div class="table-scroll">
+                                                    <table class="modern-table">
                                                     <thead>
                                                         <tr>
                                                             <th scope="col">Método de Pagamento</th>
@@ -1049,15 +1050,16 @@
                                                     </thead>
                                                     <tbody id="cashier-settings-payment-methods-body"></tbody>
                                                 </table>
+                                                </div>
                                             </div>
                                         </div>
                                     </section>
-                                    <section class="cashier-settings-card rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8 lg:grid lg:grid-cols-[minmax(200px,240px)_1fr]">
-                                        <div>
+                                    <section class="cashier-settings-card rounded-xl border border-border-color bg-surface-light dark:bg-surface-dark/60 p-6 lg:p-8 flex flex-col gap-6">
+                                        <div class="text-center">
                                             <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Gerenciamento de Dados</h3>
                                             <p class="mt-1 text-sm text-subtle-light dark:text-subtle-dark">Faça backup e exporte os dados do seu sistema.</p>
                                         </div>
-                                        <div class="flex flex-col sm:flex-row gap-4">
+                                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
                                             <button id="cashier-settings-backup-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40">Fazer Backup dos Dados</button>
                                             <button id="cashier-settings-export-btn" class="w-full sm:w-auto flex-1 rounded bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/30 dark:hover:bg-primary/40" type="button" disabled>Exportar Dados</button>
                                         </div>
