@@ -2647,7 +2647,7 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     const username = inputUsuario.value.trim();
     const password = inputClave.value.trim();
-    if (!username || !password || !recoveryCode) {
+    if (!username || !password) {
       alert('Preencha usuÃ¡rio e senha.');
       return;
     }
