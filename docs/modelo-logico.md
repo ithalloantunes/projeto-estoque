@@ -12,6 +12,8 @@ O modelo lógico traduz o DER em um esquema relacional compatível com PostgreSQ
 - `role` TEXT NOT NULL CHECK (`role` ∈ {`admin`, `user`})
 - `approved` BOOLEAN NOT NULL DEFAULT FALSE
 - `photo` TEXT NULL
+- `photo_mime` TEXT NULL
+- `photo_data` BYTEA NULL
 
 Índices adicionais: `idx_users_username_lower` sobre `username_lower` para autenticação e busca eficiente.
 
@@ -24,6 +26,7 @@ O modelo lógico traduz o DER em um esquema relacional compatível com PostgreSQ
 - `validade` DATE NULL
 - `custo` NUMERIC(12,2) NOT NULL CHECK (≥ 0)
 - `image` TEXT NULL
+- `image_mime` TEXT NULL (MIME type persistido junto ao binário)
 - `image_data` BYTEA NULL (armazenamento binário da imagem)
 - `created_at` TIMESTAMPTZ NOT NULL DEFAULT NOW()
 - `updated_at` TIMESTAMPTZ NOT NULL DEFAULT NOW()

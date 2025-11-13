@@ -1,6 +1,6 @@
-# Modelo Conceitual de Dados
+﻿# Modelo Conceitual de Dados
 
-Este documento apresenta o Modelo Conceitual de Dados do sistema de controle de estoque. O objetivo é descrever as principais entidades, atributos e relacionamentos identificados a partir dos requisitos funcionais da aplicação web existente.
+Este documento apresenta o Modelo Conceitual de Dados do sistema de controle de estoque. O objetivo Ã© descrever as principais entidades, atributos e relacionamentos identificados a partir dos requisitos funcionais da aplicaÃ§Ã£o web existente.
 
 ## Diagrama Entidade-Relacionamento (DER)
 
@@ -17,6 +17,8 @@ erDiagram
         TEXT role
         BOOLEAN approved
         TEXT photo
+        TEXT photo_mime
+        BYTEA photo_data
     }
 
     INVENTORY {
@@ -28,6 +30,7 @@ erDiagram
         DATE validade
         NUMERIC custo
         TEXT image
+        TEXT image_mime
         BYTEA image_data
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
@@ -49,13 +52,16 @@ erDiagram
 
 ## Entidades
 
-- **Users**: representa os usuários autenticados do sistema. Os atributos contemplam identificação (`id`), credenciais (`username`, `password_hash`), papéis (`role`), status de aprovação (`approved`) e referência opcional à foto de perfil (`photo`). O atributo `username_lower` é derivado para facilitar buscas case-insensitive.
-- **Inventory**: corresponde ao catálogo de itens controlados no estoque. Inclui dados de identificação (`id`, `produto`, `tipo`, `lote`), controle quantitativo (`quantidade`, `custo`, `validade`) e recursos multimídia (`image`, `image_data`, `created_at`, `updated_at`).
-- **Movimentacoes**: registra o histórico das movimentações de estoque. Armazena o identificador do registro (`id`), referência ao item movimentado (`produto_id`), descrição textual (`produto`), classificação da movimentação (`tipo`), variação de quantidades, motivo, usuário responsável e carimbo temporal.
+- **Users**: representa os usuários autenticados do sistema. Os atributos contemplam identificação (`id`), credenciais (`username`, `password_hash`), papéis (`role`), status de aprovação (`approved`) e referência opcional à foto de perfil (`photo`, `photo_mime`, `photo_data`). O atributo `username_lower` é derivado para facilitar buscas case-insensitive.
+- **Inventory**: corresponde ao catálogo de itens controlados no estoque. Inclui dados de identificação (`id`, `produto`, `tipo`, `lote`), controle quantitativo (`quantidade`, `custo`, `validade`) e recursos multimídia (`image`, `image_mime`, `image_data`, `created_at`, `updated_at`).
+- **Movimentacoes**: registra o histÃ³rico das movimentaÃ§Ãµes de estoque. Armazena o identificador do registro (`id`), referÃªncia ao item movimentado (`produto_id`), descriÃ§Ã£o textual (`produto`), classificaÃ§Ã£o da movimentaÃ§Ã£o (`tipo`), variaÃ§Ã£o de quantidades, motivo, usuÃ¡rio responsÃ¡vel e carimbo temporal.
 
 ## Relacionamentos
 
-- **Users 1:N Movimentacoes** – cada movimentação é executada por um único usuário autenticado, enquanto um usuário pode gerar diversas movimentações ao longo do tempo.
-- **Inventory 1:N Movimentacoes** – cada movimentação está associada a um item específico do estoque, porém o histórico de um item pode conter várias movimentações (entradas, saídas, edições e exclusões).
+- **Users 1:N Movimentacoes** â€“ cada movimentaÃ§Ã£o Ã© executada por um Ãºnico usuÃ¡rio autenticado, enquanto um usuÃ¡rio pode gerar diversas movimentaÃ§Ãµes ao longo do tempo.
+- **Inventory 1:N Movimentacoes** â€“ cada movimentaÃ§Ã£o estÃ¡ associada a um item especÃ­fico do estoque, porÃ©m o histÃ³rico de um item pode conter vÃ¡rias movimentaÃ§Ãµes (entradas, saÃ­das, ediÃ§Ãµes e exclusÃµes).
 
-As cardinalidades opcionais ("zero ou mais") refletem o fato de que movimentações podem manter o campo `produto_id` nulo quando o item correspondente é removido fisicamente do estoque, mantendo-se apenas a descrição textual para fins históricos.
+As cardinalidades opcionais ("zero ou mais") refletem o fato de que movimentaÃ§Ãµes podem manter o campo `produto_id` nulo quando o item correspondente Ã© removido fisicamente do estoque, mantendo-se apenas a descriÃ§Ã£o textual para fins histÃ³ricos.
+
+
+

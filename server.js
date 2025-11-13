@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import fs from 'fs';
@@ -107,7 +107,7 @@ const createRateLimiter = ({ windowMs, max, message }) => rateLimit({
 const apiRateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
   max: RATE_LIMIT_MAX_REQUESTS,
-  message: 'Muitas solicitações. Tente novamente mais tarde.'
+  message: 'Muitas solicitaÃ§Ãµes. Tente novamente mais tarde.'
 });
 
 const loginRateLimiter = createRateLimiter({
@@ -197,7 +197,7 @@ const getSslConfigForCandidate = candidate => {
     if (isRenderHost) {
       console.warn(
         `DATABASE_SSL=disable foi definido enquanto ${label} aponta para um host do Render (${host}). ` +
-        'Essa configuração costuma falhar, pois o Render exige TLS.'
+        'Essa configuraÃ§Ã£o costuma falhar, pois o Render exige TLS.'
       );
     }
     return false;
@@ -226,7 +226,7 @@ const createPoolInstance = (connectionString, sslConfig) => {
     ssl: sslConfig,
   });
   instance.on('error', error => {
-    console.error('Erro inesperado na conexão com o banco de dados:', error);
+    console.error('Erro inesperado na conexÃ£o com o banco de dados:', error);
   });
   return instance;
 };
@@ -238,13 +238,13 @@ const closePool = async () => {
   try {
     await current.end();
   } catch (error) {
-    console.error('Erro ao encerrar o pool de conexões:', error);
+    console.error('Erro ao encerrar o pool de conexÃµes:', error);
   }
 };
 
 const getPool = () => {
   if (!pool) {
-    throw new Error('Pool de conexões não inicializado.');
+    throw new Error('Pool de conexÃµes nÃ£o inicializado.');
   }
   return pool;
 };
@@ -298,7 +298,7 @@ const ensureDatabaseConnection = async () => {
   ];
 
   if (!connectionCandidates.length) {
-    console.error('A variável de ambiente DATABASE_URL é obrigatória para iniciar o servidor.');
+    console.error('A variÃ¡vel de ambiente DATABASE_URL Ã© obrigatÃ³ria para iniciar o servidor.');
     process.exit(1);
   }
 
@@ -309,7 +309,7 @@ const ensureDatabaseConnection = async () => {
     const host = tryParseHost(candidate.value);
 
     if (candidate.type === 'fallback') {
-      console.warn(`Tentando conexão alternativa definida em ${formatConnectionLabel(candidate)}...`);
+      console.warn(`Tentando conexÃ£o alternativa definida em ${formatConnectionLabel(candidate)}...`);
     }
 
     try {
@@ -319,13 +319,13 @@ const ensureDatabaseConnection = async () => {
 
       if (!isProduction && host && isPrivateHost(host)) {
         console.warn(
-          `Aviso: a URL de conexão (${activeConnectionLabel}) usa o host privado "${host}". ` +
-          'Se estiver executando fora do Render, utilize uma URL externa (`DATABASE_URL_EXTERNAL` ou `RENDER_EXTERNAL_DATABASE_URL`) ou um banco acessível localmente.'
+          `Aviso: a URL de conexÃ£o (${activeConnectionLabel}) usa o host privado "${host}". ` +
+          'Se estiver executando fora do Render, utilize uma URL externa (`DATABASE_URL_EXTERNAL` ou `RENDER_EXTERNAL_DATABASE_URL`) ou um banco acessÃ­vel localmente.'
         );
       }
 
       if (candidate.type === 'fallback') {
-        console.warn(`Conexão principal indisponível. Utilizando ${activeConnectionLabel}.`);
+        console.warn(`ConexÃ£o principal indisponÃ­vel. Utilizando ${activeConnectionLabel}.`);
       }
 
       return pool;
@@ -336,7 +336,7 @@ const ensureDatabaseConnection = async () => {
         if (host && isPrivateHost(host)) {
           console.warn(
             `Falha ao conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}. ` +
-            'Tentando utilizar as variáveis de fallback...'
+            'Tentando utilizar as variÃ¡veis de fallback...'
           );
         } else {
           console.warn(`Falha ao conectar usando ${formatConnectionLabel(candidate)}: ${error.message}`);
@@ -356,18 +356,18 @@ const ensureDatabaseConnection = async () => {
     if (isPrimaryPrivateHost && (error?.code === 'ECONNREFUSED' || error?.code === 'ENOTFOUND')) {
       const baseMessage =
         error?.code === 'ENOTFOUND'
-          ? `Não foi possível resolver o host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`
-          : `Não foi possível conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`;
+          ? `NÃ£o foi possÃ­vel resolver o host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`
+          : `NÃ£o foi possÃ­vel conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`;
       const message =
-        `${baseMessage} Esse endereço costuma estar disponível apenas dentro da infraestrutura do Render. ` +
-        'Defina `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa do banco ou utilize uma instância local do PostgreSQL.';
+        `${baseMessage} Esse endereÃ§o costuma estar disponÃ­vel apenas dentro da infraestrutura do Render. ` +
+        'Defina `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa do banco ou utilize uma instÃ¢ncia local do PostgreSQL.';
       throw new Error(message, { cause: error });
     }
 
     throw error;
   }
 
-  throw new Error('Não foi possível estabelecer conexão com o banco de dados.');
+  throw new Error('NÃ£o foi possÃ­vel estabelecer conexÃ£o com o banco de dados.');
 };
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
@@ -395,7 +395,7 @@ const corsOptionsDelegate = (req, callback) => {
   if (isSameHost || isOriginAllowed(origin)) {
     callback(null, { origin: true, credentials: true });
   } else {
-    const error = new Error('Origem n�o autorizada pela configura��o de CORS.');
+    const error = new Error('Origem não autorizada pela configuração de CORS.');
     error.statusCode = 403;
     callback(error);
   }
@@ -425,7 +425,7 @@ if (shouldEnforceHttps) {
     }
     const sanitizedHost = sanitizeHostHeader(req.headers.host);
     if (!sanitizedHost) {
-      return res.status(400).json({ error: 'Host inválido' });
+      return res.status(400).json({ error: 'Host invÃ¡lido' });
     }
     return res.redirect(301, `https://${sanitizedHost}${req.originalUrl}`);
   });
@@ -437,7 +437,7 @@ app.use(express.json({ limit: '1mb' }));
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/data')) {
-    return res.status(404).json({ error: 'Recurso não encontrado' });
+    return res.status(404).json({ error: 'Recurso nÃ£o encontrado' });
   }
   return next();
 });
@@ -562,7 +562,7 @@ const MAX_UPLOAD_SIZE_MB_LABEL = formatMegabytesLabel(MAX_UPLOAD_SIZE_MB);
 
 const imageFileFilter = (req, file, cb) => {
   if (!file.mimetype || !file.mimetype.startsWith('image/')) {
-    cb(new Error('Arquivo de imagem inválido.'));
+    cb(new Error('Arquivo de imagem invÃ¡lido.'));
   } else {
     cb(null, true);
   }
@@ -607,7 +607,7 @@ const removeStoredFile = relativePath => {
     try {
       fs.unlinkSync(absolutePath);
     } catch (error) {
-      console.warn(`Não foi possível remover o arquivo ${absolutePath}:`, error.message);
+      console.warn(`NÃ£o foi possÃ­vel remover o arquivo ${absolutePath}:`, error.message);
     }
   }
 };
@@ -622,22 +622,114 @@ const readUploadedFileBuffer = async file => {
   }
 };
 
-const mapUserRow = row => ({
-  id: row.id,
-  username: row.username,
-  usernameLower: row.username_lower,
-  passwordHash: row.password_hash,
-  role: row.role,
-  approved: row.approved,
-  photo: row.photo,
-});
+const mapUserRow = (row, { includePhotoData = false } = {}) => {
+  const mapped = {
+    id: row.id,
+    username: row.username,
+    usernameLower: row.username_lower,
+    passwordHash: row.password_hash,
+    role: row.role,
+    approved: row.approved,
+    photo: row.photo,
+    photoMime: row.photo_mime,
+  };
+  if (includePhotoData) {
+    mapped.photoData = row.photo_data ?? null;
+  }
+  return mapped;
+};
 
 const sanitizeUserForResponse = user => ({
   id: user.id,
   username: user.username,
   role: user.role,
   approved: Boolean(user.approved),
-  photo: toPublicPath(user.photo) || null,
+  photo: buildUserPhotoResponse(user),
+});
+
+const DEFAULT_IMAGE_MIME = 'image/png';
+
+const sanitizeMimeType = value => {
+  const sanitized = sanitizeText(value);
+  if (!sanitized) return null;
+  const normalized = sanitized.toLowerCase();
+  if (!normalized.startsWith('image/')) return null;
+  return normalized;
+};
+
+const inferMimeFromFilename = filename => {
+  if (!filename) return null;
+  const extension = path.extname(filename).toLowerCase();
+  switch (extension) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.png':
+      return 'image/png';
+    case '.gif':
+      return 'image/gif';
+    case '.webp':
+      return 'image/webp';
+    default:
+      return null;
+  }
+};
+
+const encodeImageBufferToDataUrl = (buffer, mimeType) => {
+  if (!buffer) return null;
+  const source = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+  const normalizedMime = sanitizeMimeType(mimeType) || DEFAULT_IMAGE_MIME;
+  return `data:${normalizedMime};base64,${source.toString('base64')}`;
+};
+
+const buildProductImageResponse = item => {
+  if (item?.imageData) {
+    const mime = sanitizeMimeType(item.imageMime) || inferMimeFromFilename(item.image) || DEFAULT_IMAGE_MIME;
+    return encodeImageBufferToDataUrl(item.imageData, mime);
+  }
+  if (item?.image) {
+    return toPublicPath(item.image);
+  }
+  return null;
+};
+
+const buildUserPhotoResponse = user => {
+  if (user?.photoData) {
+    const mime = sanitizeMimeType(user.photoMime) || inferMimeFromFilename(user.photo) || DEFAULT_IMAGE_MIME;
+    return encodeImageBufferToDataUrl(user.photoData, mime);
+  }
+  if (user?.photo) {
+    return toPublicPath(user.photo);
+  }
+  return null;
+};
+
+const buildUserSelectColumns = ({ includePhotoData = false } = {}) => {
+  const columns = [
+    'id',
+    'username',
+    'username_lower',
+    'password_hash',
+    'role',
+    'approved',
+    'photo',
+    'photo_mime',
+  ];
+  if (includePhotoData) {
+    columns.push('photo_data');
+  }
+  return columns.join(', ');
+};
+
+const serializeInventoryItem = item => ({
+  id: item.id,
+  produto: item.produto,
+  tipo: item.tipo,
+  lote: item.lote,
+  quantidade: item.quantidade,
+  validade: item.validade,
+  custo: item.custo,
+  image: buildProductImageResponse(item),
 });
 
 const mapInventoryRow = (row, { includeImageData = false } = {}) => {
@@ -650,6 +742,7 @@ const mapInventoryRow = (row, { includeImageData = false } = {}) => {
     validade: row.validade ? (row.validade instanceof Date ? row.validade.toISOString().slice(0, 10) : row.validade) : null,
     custo: row.custo === null || row.custo === undefined ? null : Number(row.custo),
     image: row.image,
+    imageMime: row.image_mime,
   };
   if (includeImageData) {
     mapped.imageData = row.image_data ?? null;
@@ -678,12 +771,12 @@ const DEFAULT_CASHIER_SETTINGS = Object.freeze({
   categories: [
     { id: 'category-1', name: 'Vendas', type: 'Receita', status: 'Ativo' },
     { id: 'category-2', name: 'Despesas Operacionais', type: 'Despesa', status: 'Ativo' },
-    { id: 'category-3', name: 'Reforços', type: 'Receita', status: 'Ativo' },
+    { id: 'category-3', name: 'ReforÃ§os', type: 'Receita', status: 'Ativo' },
   ],
   paymentMethods: [
     { id: 'payment-1', name: 'Dinheiro', status: 'Ativo' },
-    { id: 'payment-2', name: 'Cartão de Crédito', status: 'Ativo' },
-    { id: 'payment-3', name: 'Pagamento Móvel', status: 'Inativo' },
+    { id: 'payment-2', name: 'CartÃ£o de CrÃ©dito', status: 'Ativo' },
+    { id: 'payment-3', name: 'Pagamento MÃ³vel', status: 'Inativo' },
   ],
 });
 
@@ -962,13 +1055,13 @@ const createCashierClosure = async (payload, user) => {
   const sanitized = sanitizeClosurePayload(payload, { defaultFuncionarioNome: sanitizeText(user?.username) });
   const dataOperacao = formatDateOnly(sanitized.dataOperacao);
   if (!dataOperacao) {
-    const error = new Error('Data da operação inválida.');
+    const error = new Error('Data da operaÃ§Ã£o invÃ¡lida.');
     error.statusCode = 400;
     throw error;
   }
   const existing = await getCashierClosureRowByDate(dataOperacao);
   if (existing) {
-    const error = new Error('Já existe um fechamento registrado para esta data.');
+    const error = new Error('JÃ¡ existe um fechamento registrado para esta data.');
     error.statusCode = 409;
     throw error;
   }
@@ -1052,7 +1145,7 @@ const updateCashierClosureRecord = async (id, payload, user) => {
   });
   const dataOperacao = formatDateOnly(sanitized.dataOperacao);
   if (!dataOperacao) {
-    const error = new Error('Data da operação inválida.');
+    const error = new Error('Data da operaÃ§Ã£o invÃ¡lida.');
     error.statusCode = 400;
     throw error;
   }
@@ -1060,7 +1153,7 @@ const updateCashierClosureRecord = async (id, payload, user) => {
   if (dataOperacao !== currentDate) {
     const existing = await getCashierClosureRowByDate(dataOperacao);
     if (existing && existing.id !== id) {
-      const error = new Error('Já existe um fechamento registrado para esta data.');
+      const error = new Error('JÃ¡ existe um fechamento registrado para esta data.');
       error.statusCode = 409;
       throw error;
     }
@@ -1219,13 +1312,13 @@ const sanitizeCashierMovementPayload = (payload, user) => {
   const tipo = sanitizeText(payload?.tipo) || 'Entrada';
   const categoria = sanitizeText(payload?.categoria);
   if (!categoria) {
-    const error = new Error('Categoria inválida');
+    const error = new Error('Categoria invÃ¡lida');
     error.statusCode = 400;
     throw error;
   }
   const rawValue = Number.parseFloat(payload?.valor);
   if (!Number.isFinite(rawValue) || rawValue <= 0) {
-    const error = new Error('Valor inválido');
+    const error = new Error('Valor invÃ¡lido');
     error.statusCode = 400;
     throw error;
   }
@@ -1248,23 +1341,25 @@ const sanitizeCashierMovementPayload = (payload, user) => {
   };
 };
 
-const getUserById = async id => {
+const getUserById = async (id, { includePhotoData = false } = {}) => {
+  const columns = buildUserSelectColumns({ includePhotoData });
   const { rows } = await query(
-    'SELECT id, username, username_lower, password_hash, role, approved, photo FROM users WHERE id = $1 LIMIT 1',
+    `SELECT ${columns} FROM users WHERE id = $1 LIMIT 1`,
     [id]
   );
-  return rows[0] ? mapUserRow(rows[0]) : null;
+  return rows[0] ? mapUserRow(rows[0], { includePhotoData }) : null;
 };
 
-const getUserByUsernameLower = async usernameLower => {
+const getUserByUsernameLower = async (usernameLower, { includePhotoData = false } = {}) => {
+  const columns = buildUserSelectColumns({ includePhotoData });
   const { rows } = await query(
-    'SELECT id, username, username_lower, password_hash, role, approved, photo FROM users WHERE username_lower = $1 LIMIT 1',
+    `SELECT ${columns} FROM users WHERE username_lower = $1 LIMIT 1`,
     [usernameLower]
   );
-  return rows[0] ? mapUserRow(rows[0]) : null;
+  return rows[0] ? mapUserRow(rows[0], { includePhotoData }) : null;
 };
 
-const listUsers = async ({ approved } = {}) => {
+const listUsers = async ({ approved, includePhotoData = false } = {}) => {
   const clauses = [];
   const params = [];
   if (approved !== undefined) {
@@ -1272,17 +1367,18 @@ const listUsers = async ({ approved } = {}) => {
     params.push(approved);
   }
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const columns = buildUserSelectColumns({ includePhotoData });
   const { rows } = await query(
-    `SELECT id, username, username_lower, password_hash, role, approved, photo FROM users ${where} ORDER BY username_lower`,
+    `SELECT ${columns} FROM users ${where} ORDER BY username_lower`,
     params
   );
-  return rows.map(mapUserRow);
+  return rows.map(row => mapUserRow(row, { includePhotoData }));
 };
 
 const insertUser = async user => {
   await query(
-    `INSERT INTO users (id, username, username_lower, password_hash, role, approved, photo)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    `INSERT INTO users (id, username, username_lower, password_hash, role, approved, photo, photo_mime, photo_data)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
     [
       user.id,
       user.username,
@@ -1290,7 +1386,9 @@ const insertUser = async user => {
       user.passwordHash,
       user.role,
       user.approved,
-      user.photo,
+      user.photo ?? null,
+      user.photoMime ?? null,
+      user.photoData ?? null,
     ]
   );
 };
@@ -1303,9 +1401,11 @@ const updateUserFromSeed = async (id, user) => {
             password_hash = $4,
             role = $5,
             approved = $6,
-            photo = $7
+            photo = $7,
+            photo_mime = $8,
+            photo_data = $9
       WHERE id = $1
-  RETURNING id, username, username_lower, password_hash, role, approved, photo`,
+  RETURNING ${buildUserSelectColumns({ includePhotoData: true })}`,
     [
       id,
       user.username,
@@ -1313,26 +1413,33 @@ const updateUserFromSeed = async (id, user) => {
       user.passwordHash,
       user.role,
       user.approved,
-      user.photo,
+      user.photo ?? null,
+      user.photoMime ?? null,
+      user.photoData ?? null,
     ]
   );
-  return rows[0] ? mapUserRow(rows[0]) : null;
+  return rows[0] ? mapUserRow(rows[0], { includePhotoData: true }) : null;
 };
 
 const updateUserApproval = async (id, approved) => {
   const { rows } = await query(
-    `UPDATE users SET approved = $2 WHERE id = $1 RETURNING id, username, username_lower, password_hash, role, approved, photo`,
+    `UPDATE users SET approved = $2 WHERE id = $1 RETURNING ${buildUserSelectColumns({ includePhotoData: true })}`,
     [id, approved]
   );
-  return rows[0] ? mapUserRow(rows[0]) : null;
+  return rows[0] ? mapUserRow(rows[0], { includePhotoData: true }) : null;
 };
 
-const updateUserPhoto = async (id, photoPath) => {
+const updateUserPhoto = async (id, { photoPath = null, photoMime = null, photoData = null } = {}) => {
   const { rows } = await query(
-    `UPDATE users SET photo = $2 WHERE id = $1 RETURNING id, username, username_lower, password_hash, role, approved, photo`,
-    [id, photoPath]
+    `UPDATE users
+        SET photo = $2,
+            photo_mime = $3,
+            photo_data = $4
+      WHERE id = $1
+  RETURNING ${buildUserSelectColumns({ includePhotoData: true })}`,
+    [id, photoPath, photoMime, photoData]
   );
-  return rows[0] ? mapUserRow(rows[0]) : null;
+  return rows[0] ? mapUserRow(rows[0], { includePhotoData: true }) : null;
 };
 
 const deleteUserById = async id => {
@@ -1343,16 +1450,30 @@ const deleteUserById = async id => {
   return rows[0] ?? null;
 };
 
-const listInventory = async () => {
+const listInventory = async ({ includeImageData = false } = {}) => {
+  const columns = [
+    'id',
+    'produto',
+    'tipo',
+    'lote',
+    'quantidade',
+    'validade',
+    'custo',
+    'image',
+    'image_mime',
+  ];
+  if (includeImageData) {
+    columns.push('image_data');
+  }
   const { rows } = await query(
-    'SELECT id, produto, tipo, lote, quantidade, validade, custo, image FROM inventory ORDER BY produto ASC'
+    `SELECT ${columns.join(', ')} FROM inventory ORDER BY produto ASC`
   );
-  return rows.map(mapInventoryRow);
+  return rows.map(row => mapInventoryRow(row, { includeImageData }));
 };
 
 const getInventoryItemById = async id => {
   const { rows } = await query(
-    'SELECT id, produto, tipo, lote, quantidade, validade, custo, image, image_data FROM inventory WHERE id = $1 LIMIT 1',
+    'SELECT id, produto, tipo, lote, quantidade, validade, custo, image, image_mime, image_data FROM inventory WHERE id = $1 LIMIT 1',
     [id]
   );
   return rows[0] ? mapInventoryRow(rows[0], { includeImageData: true }) : null;
@@ -1360,8 +1481,8 @@ const getInventoryItemById = async id => {
 
 const insertInventoryItem = async item => {
   await query(
-    `INSERT INTO inventory (id, produto, tipo, lote, quantidade, validade, custo, image, image_data, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10)`,
+    `INSERT INTO inventory (id, produto, tipo, lote, quantidade, validade, custo, image, image_mime, image_data, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11)`,
     [
       item.id,
       item.produto,
@@ -1371,6 +1492,7 @@ const insertInventoryItem = async item => {
       item.validade,
       item.custo,
       item.image,
+      item.imageMime ?? null,
       item.imageData ?? null,
       new Date(),
     ]
@@ -1387,7 +1509,8 @@ const updateInventoryItem = async item => {
             validade = $6,
             custo = $7,
             image = $8,
-            image_data = $9,
+            image_mime = $9,
+            image_data = $10,
             updated_at = NOW()
       WHERE id = $1`,
     [
@@ -1399,6 +1522,7 @@ const updateInventoryItem = async item => {
       item.validade,
       item.custo,
       item.image,
+      item.imageMime ?? null,
       item.imageData ?? null,
     ]
   );
@@ -1469,12 +1593,16 @@ const initializeDatabase = async () => {
       role TEXT NOT NULL,
       approved BOOLEAN NOT NULL DEFAULT FALSE,
       photo TEXT,
+      photo_mime TEXT,
+      photo_data BYTEA,
       CONSTRAINT users_username_unique UNIQUE (username),
       CONSTRAINT users_role_check CHECK (role IN ('admin', 'user')),
       CONSTRAINT users_username_format CHECK (char_length(username) >= 3),
       CONSTRAINT users_username_lower_format CHECK (username_lower = lower(username))
     ) TABLESPACE pg_default
   `);
+  await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_mime TEXT');
+  await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_data BYTEA');
 
   await query(`
     CREATE TABLE IF NOT EXISTS inventory (
@@ -1486,11 +1614,13 @@ const initializeDatabase = async () => {
       validade DATE,
       custo NUMERIC(12,2) NOT NULL CHECK (custo >= 0),
       image TEXT,
+      image_mime TEXT,
       image_data BYTEA,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     ) TABLESPACE pg_default
   `);
+  await query('ALTER TABLE inventory ADD COLUMN IF NOT EXISTS image_mime TEXT');
 
   await query(`
     CREATE TABLE IF NOT EXISTS movimentacoes (
@@ -1606,7 +1736,7 @@ const seedUsersFromFile = async () => {
       logger: console,
     });
   } catch (error) {
-    console.error('Falha ao importar usuários iniciais:', error);
+    console.error('Falha ao importar usuÃ¡rios iniciais:', error);
   }
 };
 
@@ -1630,6 +1760,7 @@ const seedInventoryFromFile = async () => {
         validade: entry.validade ? entry.validade : null,
         custo,
         image: entry.image ? sanitizeText(entry.image) : null,
+        imageMime: null,
         imageData: null,
       });
     }
@@ -1659,14 +1790,14 @@ const createSessionToken = user => jwt.sign({
 const authMiddleware = asyncHandler(async (req, res, next) => {
   const token = req.cookies?.[SESSION_COOKIE_NAME];
   if (!token) {
-    return res.status(401).json({ error: 'Não autenticado' });
+    return res.status(401).json({ error: 'NÃ£o autenticado' });
   }
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    const user = await getUserById(payload.userId);
+    const user = await getUserById(payload.userId, { includePhotoData: false });
     if (!user || !user.approved) {
       clearSessionCookie(res);
-      return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.' });
+      return res.status(401).json({ error: 'SessÃ£o invÃ¡lida. FaÃ§a login novamente.' });
     }
     req.user = {
       id: user.id,
@@ -1676,7 +1807,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
     return next();
   } catch (error) {
     clearSessionCookie(res);
-    return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
+    return res.status(401).json({ error: 'SessÃ£o expirada. FaÃ§a login novamente.' });
   }
 });
 
@@ -1692,10 +1823,10 @@ app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => 
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
   if (!username || !password) {
-    return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
+    return res.status(400).json({ error: 'UsuÃ¡rio e senha sÃ£o obrigatÃ³rios' });
   }
   if (username.length < 3) {
-    return res.status(400).json({ error: 'O usuário deve ter pelo menos 3 caracteres.' });
+    return res.status(400).json({ error: 'O usuÃ¡rio deve ter pelo menos 3 caracteres.' });
   }
   if (password.length < 8) {
     return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
@@ -1704,7 +1835,7 @@ app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => 
   const normalized = normalizeUsername(username);
   const existing = await getUserByUsernameLower(normalized);
   if (existing) {
-    return res.status(400).json({ error: 'Usuário já existe' });
+    return res.status(400).json({ error: 'UsuÃ¡rio jÃ¡ existe' });
   }
 
   const passwordHash = bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
@@ -1716,10 +1847,12 @@ app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => 
     role: 'user',
     approved: false,
     photo: null,
+    photoMime: null,
+    photoData: null,
   });
 
   broadcastUsersUpdated();
-  res.json({ message: 'Cadastro enviado para aprovação' });
+  res.json({ message: 'Cadastro enviado para aprovaÃ§Ã£o' });
 }));
 
 app.post('/api/login', loginRateLimiter, asyncHandler(async (req, res) => {
@@ -1727,13 +1860,13 @@ app.post('/api/login', loginRateLimiter, asyncHandler(async (req, res) => {
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
   if (!username || !password) {
-    return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
+    return res.status(400).json({ error: 'UsuÃ¡rio e senha sÃ£o obrigatÃ³rios' });
   }
 
   const normalized = normalizeUsername(username);
-  const user = await getUserByUsernameLower(normalized);
+  const user = await getUserByUsernameLower(normalized, { includePhotoData: true });
   if (!user) {
-    return res.status(401).json({ error: 'Credenciais inválidas' });
+    return res.status(401).json({ error: 'Credenciais invÃ¡lidas' });
   }
 
   const passwordMatches = user.passwordHash
@@ -1741,10 +1874,10 @@ app.post('/api/login', loginRateLimiter, asyncHandler(async (req, res) => {
     : false;
 
   if (!passwordMatches) {
-    return res.status(401).json({ error: 'Credenciais inválidas' });
+    return res.status(401).json({ error: 'Credenciais invÃ¡lidas' });
   }
   if (!user.approved) {
-    return res.status(403).json({ error: 'Usuário pendente de aprovação' });
+    return res.status(403).json({ error: 'UsuÃ¡rio pendente de aprovaÃ§Ã£o' });
   }
 
   const token = createSessionToken(user);
@@ -1755,21 +1888,21 @@ app.post('/api/login', loginRateLimiter, asyncHandler(async (req, res) => {
     userId: user.id,
     username: user.username,
     role: user.role,
-    photo: toPublicPath(user.photo),
+    photo: buildUserPhotoResponse(user),
   });
 }));
 
 app.get('/api/session', authMiddleware, asyncHandler(async (req, res) => {
-  const user = await getUserById(req.user.id);
+  const user = await getUserById(req.user.id, { includePhotoData: true });
   if (!user || !user.approved) {
     clearSessionCookie(res);
-    return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.' });
+    return res.status(401).json({ error: 'SessÃ£o invÃ¡lida. FaÃ§a login novamente.' });
   }
   res.json({
     userId: user.id,
     username: user.username,
     role: user.role,
-    photo: toPublicPath(user.photo),
+    photo: buildUserPhotoResponse(user),
   });
 }));
 
@@ -1779,42 +1912,42 @@ app.post('/api/logout', (req, res) => {
 });
 
 app.get('/api/users/pending', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
-  const users = await listUsers({ approved: false });
+  const users = await listUsers({ approved: false, includePhotoData: true });
   res.json(users.map(sanitizeUserForResponse));
 }));
 
 app.get('/api/users', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
-  const users = await listUsers();
+  const users = await listUsers({ includePhotoData: true });
   res.json(users.map(sanitizeUserForResponse));
 }));
 
 app.post('/api/users/:id/approve', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
   const updated = await updateUserApproval(req.params.id, true);
-  if (!updated) return res.status(404).json({ error: 'Usuário não encontrado' });
+  if (!updated) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
   broadcastUsersUpdated();
-  res.json({ message: 'Usuário aprovado' });
+  res.json({ message: 'UsuÃ¡rio aprovado' });
 }));
 
 app.delete('/api/users/:id', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
   const deleted = await deleteUserById(req.params.id);
-  if (!deleted) return res.status(404).json({ error: 'Usuário não encontrado' });
+  if (!deleted) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
   if (deleted.photo) removeStoredFile(deleted.photo);
   broadcastUsersUpdated();
-  res.json({ message: 'Usuário excluído' });
+  res.json({ message: 'UsuÃ¡rio excluÃ­do' });
 }));
 
 app.put('/api/users/:id/photo', authMiddleware, userUpload.single('photo'), asyncHandler(async (req, res) => {
   const { remove } = req.body;
   const userId = req.params.id;
-  const target = await getUserById(userId);
-  if (!target) return res.status(404).json({ error: 'Usuário não encontrado' });
+  const target = await getUserById(userId, { includePhotoData: false });
+  if (!target) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
   if (req.user.id !== userId && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Acesso restrito' });
   }
 
   if (remove === 'true') {
     if (target.photo) removeStoredFile(target.photo);
-    await updateUserPhoto(userId, null);
+    await updateUserPhoto(userId, { photoPath: null, photoMime: null, photoData: null });
     broadcastUsersUpdated();
     broadcastUserPhotoUpdated({ id: userId, photo: null });
     return res.json({ message: 'Foto removida', photo: null });
@@ -1837,17 +1970,14 @@ app.get('/api/users/:id/photo', authMiddleware, asyncHandler(async (req, res) =>
   if (req.user.id !== req.params.id && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Acesso restrito' });
   }
-  const user = await getUserById(req.params.id);
-  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-  res.json({ photo: toPublicPath(user.photo) });
+  const user = await getUserById(req.params.id, { includePhotoData: true });
+  if (!user) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
+  res.json({ photo: buildUserPhotoResponse(user) });
 }));
 
 app.get('/api/estoque', authMiddleware, asyncHandler(async (req, res) => {
-  const estoque = await listInventory();
-  const response = estoque.map(item => ({
-    ...item,
-    image: item?.image ? toPublicPath(item.image) : null,
-  }));
+  const estoque = await listInventory({ includeImageData: true });
+  const response = estoque.map(serializeInventoryItem);
   res.json(response);
 }));
 
@@ -1866,12 +1996,12 @@ app.post('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res)
     const sanitized = sanitizeCashierMovementPayload(req.body ?? {}, req.user);
     const inserted = await insertCashierMovement(sanitized);
     if (!inserted) {
-      return res.status(500).json({ error: 'Não foi possível registrar a movimentação.' });
+      return res.status(500).json({ error: 'NÃ£o foi possÃ­vel registrar a movimentaÃ§Ã£o.' });
     }
     res.status(201).json(inserted);
   } catch (error) {
     const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
-    res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
+    res.status(statusCode).json({ error: error.message || 'Dados invÃ¡lidos' });
   }
 }));
 
@@ -1884,7 +2014,7 @@ const registerCashierClosureRoutes = basePath => {
   app.get(`${basePath}/:id`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
     const row = await getCashierClosureRowById(req.params.id);
     if (!row) {
-      return res.status(404).json({ error: 'Fechamento não encontrado' });
+      return res.status(404).json({ error: 'Fechamento nÃ£o encontrado' });
     }
     res.json(mapCashierClosureRow(row));
   }));
@@ -1892,7 +2022,7 @@ const registerCashierClosureRoutes = basePath => {
   app.get(`${basePath}/:id/logs`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
     const row = await getCashierClosureRowById(req.params.id);
     if (!row) {
-      return res.status(404).json({ error: 'Fechamento não encontrado' });
+      return res.status(404).json({ error: 'Fechamento nÃ£o encontrado' });
     }
     const logs = await listCashierClosureLogs(req.params.id);
     res.json(logs);
@@ -1904,7 +2034,7 @@ const registerCashierClosureRoutes = basePath => {
       res.status(201).json(closure);
     } catch (error) {
       const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
-      res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
+      res.status(statusCode).json({ error: error.message || 'Dados invÃ¡lidos' });
     }
   }));
 
@@ -1912,12 +2042,12 @@ const registerCashierClosureRoutes = basePath => {
     try {
       const updated = await updateCashierClosureRecord(req.params.id, req.body ?? {}, req.user);
       if (!updated) {
-        return res.status(404).json({ error: 'Fechamento não encontrado' });
+        return res.status(404).json({ error: 'Fechamento nÃ£o encontrado' });
       }
       res.json(updated);
     } catch (error) {
       const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
-      res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
+      res.status(statusCode).json({ error: error.message || 'Dados invÃ¡lidos' });
     }
   }));
 };
@@ -1947,28 +2077,30 @@ app.post('/api/estoque', authMiddleware, productUpload.single('image'), asyncHan
 
   if (!produto || quantidadeBruta === undefined) {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-    return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
+    return res.status(400).json({ error: 'Produto e quantidade sÃ£o obrigatÃ³rios' });
   }
   if (custoBruto === undefined || custoBruto === null || custoBruto === '') {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-    return res.status(400).json({ error: 'Custo é obrigatório' });
+    return res.status(400).json({ error: 'Custo Ã© obrigatÃ³rio' });
   }
 
   const custoSanitizado = sanitizeCost(custoBruto);
   if (custoSanitizado === null) {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-    return res.status(400).json({ error: 'Custo inválido' });
+    return res.status(400).json({ error: 'Custo invÃ¡lido' });
   }
 
   const quantidadeNumerica = Number.parseInt(quantidadeBruta, 10);
   const quantidadeFinal = Number.isNaN(quantidadeNumerica) ? 0 : quantidadeNumerica;
   const id = uuidv4();
-  const imagePath = uploadedImagePath;
+  let imagePath = null;
   let imageBuffer = null;
+  let imageMime = null;
 
   if (req.file) {
     try {
       imageBuffer = await readUploadedFileBuffer(req.file);
+      imageMime = sanitizeMimeType(req.file.mimetype) || inferMimeFromFilename(req.file.originalname) || DEFAULT_IMAGE_MIME;
     } catch (error) {
       if (uploadedImagePath) removeStoredFile(uploadedImagePath);
       return res.status(500).json({ error: 'Falha ao processar a imagem enviada' });
@@ -1984,8 +2116,12 @@ app.post('/api/estoque', authMiddleware, productUpload.single('image'), asyncHan
     validade: validade || null,
     custo: custoSanitizado,
     image: imagePath,
+    imageMime,
     imageData: imageBuffer,
   });
+  if (uploadedImagePath) {
+    removeStoredFile(uploadedImagePath);
+  }
 
   await insertMovimentacao({
     id: uuidv4(),
@@ -2001,10 +2137,15 @@ app.post('/api/estoque', authMiddleware, productUpload.single('image'), asyncHan
   });
 
   broadcastDataUpdated();
+  const responseImage = buildProductImageResponse({
+    imageData: imageBuffer,
+    imageMime,
+    image: imagePath,
+  });
   res.json({
     message: 'Produto adicionado com sucesso',
     id,
-    image: toPublicPath(imagePath)
+    image: responseImage
   });
 }));
 
@@ -2015,7 +2156,7 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
   const atual = await getInventoryItemById(itemId);
   if (!atual) {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-    return res.status(404).json({ error: 'Produto não encontrado' });
+    return res.status(404).json({ error: 'Produto nÃ£o encontrado' });
   }
 
   const quantidadeBruta = req.body.quantidade;
@@ -2032,18 +2173,20 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
     const custoSanitizado = sanitizeCost(req.body.custo);
     if (custoSanitizado === null) {
       if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-      return res.status(400).json({ error: 'Custo inválido' });
+      return res.status(400).json({ error: 'Custo invÃ¡lido' });
     }
     custoAtualizado = custoSanitizado;
   }
 
   let imagemAtualizada = atual.image;
   let imagemDadosAtualizados = atual.imageData ?? null;
+  let imagemMimeAtualizada = atual.imageMime ?? null;
   if (req.body.removeImage === 'true') {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
     if (atual.image) removeStoredFile(atual.image);
     imagemAtualizada = null;
     imagemDadosAtualizados = null;
+    imagemMimeAtualizada = null;
   } else if (uploadedImagePath) {
     let novoBuffer;
     try {
@@ -2053,8 +2196,10 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
       return res.status(500).json({ error: 'Falha ao processar a imagem enviada' });
     }
     if (atual.image) removeStoredFile(atual.image);
-    imagemAtualizada = uploadedImagePath;
+    imagemAtualizada = null;
     imagemDadosAtualizados = novoBuffer;
+    imagemMimeAtualizada = sanitizeMimeType(req.file.mimetype) || inferMimeFromFilename(req.file.originalname) || DEFAULT_IMAGE_MIME;
+    removeStoredFile(uploadedImagePath);
   }
 
   const produtoAtualizado = req.body.produto ? req.body.produto.trim() : atual.produto;
@@ -2071,6 +2216,7 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
     validade: validadeAtualizada,
     custo: hasCusto ? custoAtualizado : atual.custo,
     image: imagemAtualizada,
+    imageMime: imagemMimeAtualizada,
     imageData: imagemDadosAtualizados,
   });
 
@@ -2089,9 +2235,14 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
   });
 
   broadcastDataUpdated();
+  const responseImage = buildProductImageResponse({
+    imageData: imagemDadosAtualizados,
+    imageMime: imagemMimeAtualizada,
+    image: imagemAtualizada,
+  });
   res.json({
     message: 'Produto atualizado com sucesso',
-    image: toPublicPath(imagemAtualizada)
+    image: responseImage
   });
 }));
 
@@ -2099,12 +2250,12 @@ app.delete('/api/estoque/:id', authMiddleware, asyncHandler(async (req, res) => 
   const itemId = req.params.id;
   const { motivo } = req.body;
   if (!motivo) {
-    return res.status(400).json({ error: 'Motivo é obrigatório' });
+    return res.status(400).json({ error: 'Motivo Ã© obrigatÃ³rio' });
   }
 
   const removed = await deleteInventoryItemById(itemId);
   if (!removed) {
-    return res.status(404).json({ error: 'Produto não encontrado' });
+    return res.status(404).json({ error: 'Produto nÃ£o encontrado' });
   }
 
   if (removed?.image) {
@@ -2125,7 +2276,7 @@ app.delete('/api/estoque/:id', authMiddleware, asyncHandler(async (req, res) => 
   });
 
   broadcastDataUpdated();
-  res.json({ message: 'Produto excluído com sucesso!' });
+  res.json({ message: 'Produto excluÃ­do com sucesso!' });
 }));
 
 app.get('/api/report/summary', authMiddleware, asyncHandler(async (req, res) => {
@@ -2203,7 +2354,7 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ error: `Arquivo de imagem excede o limite de ${MAX_UPLOAD_SIZE_MB_LABEL} MB.` });
   }
   if (err?.statusCode) {
-    return res.status(err.statusCode).json({ error: err.message || 'Operação não permitida.' });
+    return res.status(err.statusCode).json({ error: err.message || 'OperaÃ§Ã£o nÃ£o permitida.' });
   }
   if (typeof err.message === 'string' && err.message.toLowerCase().includes('imagem')) {
     return res.status(400).json({ error: err.message });
@@ -2214,7 +2365,7 @@ app.use((err, req, res, next) => {
 
 app.get('*', (req, res, next) => {
   if (req.path === '/api' || req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'Recurso não encontrado' });
+    return res.status(404).json({ error: 'Recurso nÃ£o encontrado' });
   }
   return sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL);
 });
@@ -2241,7 +2392,7 @@ const shutdown = async signal => {
   shuttingDown = true;
   console.info(`Sinal ${signal} recebido. Iniciando desligamento gracioso...`);
   const timeout = setTimeout(() => {
-    console.warn('Tempo limite ao encerrar. Forçando finalização.');
+    console.warn('Tempo limite ao encerrar. ForÃ§ando finalizaÃ§Ã£o.');
     process.exit(1);
   }, 10000);
   timeout.unref();
@@ -2260,7 +2411,7 @@ const shutdown = async signal => {
 for (const signal of ['SIGTERM', 'SIGINT']) {
   process.on(signal, () => {
     shutdown(signal).catch(error => {
-      console.error('Falha ao encerrar aplicação:', error);
+      console.error('Falha ao encerrar aplicaÃ§Ã£o:', error);
       process.exit(1);
     });
   });
@@ -2275,8 +2426,11 @@ const startServer = async () => {
 };
 
 startServer().catch(error => {
-  console.error('Não foi possível iniciar o servidor:', error);
+  console.error('NÃ£o foi possÃ­vel iniciar o servidor:', error);
   process.exit(1);
 });
+
+
+
 
 

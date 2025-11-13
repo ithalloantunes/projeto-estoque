@@ -179,6 +179,7 @@ const mapUserRow = row => ({
   role: row.role,
   approved: row.approved,
   photo: row.photo,
+  photoMime: row.photo_mime,
 });
 
 const ensureUsersTable = async () => {
@@ -190,16 +191,20 @@ const ensureUsersTable = async () => {
       password_hash TEXT NOT NULL,
       role TEXT NOT NULL,
       approved BOOLEAN NOT NULL DEFAULT FALSE,
-      photo TEXT
+      photo TEXT,
+      photo_mime TEXT,
+      photo_data BYTEA
     ) TABLESPACE pg_default
   `);
 
+  await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_mime TEXT');
+  await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_data BYTEA');
   await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(username_lower) TABLESPACE pg_default');
 };
 
 const getUserByUsernameLower = async usernameLower => {
   const { rows } = await query(
-    'SELECT id, username, username_lower, password_hash, role, approved, photo FROM users WHERE username_lower = $1 LIMIT 1',
+    'SELECT id, username, username_lower, password_hash, role, approved, photo, photo_mime FROM users WHERE username_lower = $1 LIMIT 1',
     [usernameLower]
   );
   return rows[0] ? mapUserRow(rows[0]) : null;
@@ -207,8 +212,8 @@ const getUserByUsernameLower = async usernameLower => {
 
 const insertUser = async user => {
   await query(
-    `INSERT INTO users (id, username, username_lower, password_hash, role, approved, photo)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    `INSERT INTO users (id, username, username_lower, password_hash, role, approved, photo, photo_mime, photo_data)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
     [
       user.id,
       user.username,
@@ -216,7 +221,9 @@ const insertUser = async user => {
       user.passwordHash,
       user.role,
       user.approved,
-      user.photo,
+      user.photo ?? null,
+      user.photoMime ?? null,
+      user.photoData ?? null,
     ]
   );
 };
@@ -229,7 +236,9 @@ const updateUserFromSeed = async (id, user) => {
             password_hash = $4,
             role = $5,
             approved = $6,
-            photo = $7
+            photo = $7,
+            photo_mime = $8,
+            photo_data = $9
       WHERE id = $1`,
     [
       id,
@@ -238,7 +247,9 @@ const updateUserFromSeed = async (id, user) => {
       user.passwordHash,
       user.role,
       user.approved,
-      user.photo,
+      user.photo ?? null,
+      user.photoMime ?? null,
+      user.photoData ?? null,
     ]
   );
 };

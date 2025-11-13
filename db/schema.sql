@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT NOT NULL,
   approved BOOLEAN NOT NULL DEFAULT FALSE,
   photo TEXT,
+  photo_mime TEXT,
+  photo_data BYTEA,
   CONSTRAINT users_username_unique UNIQUE (username),
   CONSTRAINT users_role_check CHECK (role IN ('admin', 'user')),
   CONSTRAINT users_username_format CHECK (char_length(username) >= 3),
@@ -23,6 +25,7 @@ CREATE TABLE IF NOT EXISTS inventory (
   validade DATE,
   custo NUMERIC(12,2) NOT NULL CHECK (custo >= 0),
   image TEXT,
+  image_mime TEXT,
   image_data BYTEA,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

@@ -1,0 +1,19 @@
+const isOriginAllowed = origin => {
+  if (!origin) return true;
+  return allowedOrigins.has(normalizeOrigin(origin));
+};
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+      callback(null, true);
+    } else {
+      const error = new Error('Origem não autorizada pela configuração de CORS.');
+      error.statusCode = 403;
+      callback(error);
+    }
+  },
+  credentials: true
+};
+
+
