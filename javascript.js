@@ -2602,7 +2602,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newPassword = forgotPasswordNewPasswordInput?.value.trim() || '';
     const confirmPassword = forgotPasswordConfirmInput?.value.trim() || '';
 
-    if (!username || !password || !recoveryCode) {
+    if (!username || !password) {
       alert('Preencha usuário, senha e o código de recuperação.');
       return;
     if (recoveryCode.length < 4) {
