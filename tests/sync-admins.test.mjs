@@ -81,10 +81,7 @@ const createTestDatabase = async () => {
               password_hash = $4,
               role = $5,
               approved = $6,
-              photo = $7,
-              photo_mime = $8,
-              photo_data = $9,
-              recovery_code_hash = $10
+              recovery_code_hash = $7
         WHERE id = $1`,
       [
         id,
@@ -93,9 +90,6 @@ const createTestDatabase = async () => {
         user.passwordHash,
         user.role,
         user.approved,
-        user.photo ?? null,
-        user.photoMime ?? null,
-        user.photoData ?? null,
         user.recoveryCodeHash ?? null,
       ]
     );
