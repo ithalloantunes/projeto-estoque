@@ -157,11 +157,14 @@ function createStaticMiddleware(relativePath, { cacheControl = STATIC_CACHE_CONT
   );
 }
 
-function sendFileWithHeaders(res, absolutePath, cacheControl = STATIC_CACHE_CONTROL) {
+function sendFileWithHeaders(res, absolutePath, cacheControl = STATIC_CACHE_CONTROL, contentType) {
   if (cacheControl) {
     res.setHeader('Cache-Control', cacheControl);
   }
   setNoSniffHeader(res);
+  if (contentType) {
+    res.setHeader('Content-Type', contentType);
+  }
   res.sendFile(absolutePath);
 }
 
@@ -460,19 +463,19 @@ app.use('/img', createStaticMiddleware('img'));
 app.use('/vendor', createStaticMiddleware('vendor'));
 
 app.get('/javascript.js', (req, res) => {
-  sendFileWithHeaders(res, path.join(__dirname, 'javascript.js'));
+  sendFileWithHeaders(res, path.join(__dirname, 'javascript.js'), STATIC_CACHE_CONTROL, 'application/javascript; charset=utf-8');
 });
 
 app.get('/estilos.css', (req, res) => {
-  sendFileWithHeaders(res, path.join(__dirname, 'estilos.css'));
+  sendFileWithHeaders(res, path.join(__dirname, 'estilos.css'), STATIC_CACHE_CONTROL, 'text/css; charset=utf-8');
 });
 
 app.get('/', (req, res) => {
-  sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL);
+  sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL, 'text/html; charset=utf-8');
 });
 
 app.get('/index.html', (req, res) => {
-  sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL);
+  sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL, 'text/html; charset=utf-8');
 });
 
 const server = http.createServer(app);
