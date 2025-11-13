@@ -4,6 +4,7 @@
     --layout-max-width: min(1200px, 94vw);
     --layout-padding: clamp(1rem, 1.5vw + 0.5rem, 2.75rem);
     --sidebar-width: clamp(15rem, 18vw, 20rem);
+    --sidebar-width-desktop: 17rem;
     --font-size-base: clamp(0.95rem, 0.92rem + 0.25vw, 1.05rem);
     --font-size-heading-lg: clamp(2rem, 1.6rem + 1.5vw, 3rem);
     --font-size-heading-md: clamp(1.25rem, 1.1rem + 0.7vw, 1.75rem);
@@ -185,7 +186,7 @@ body.sidebar-locked {
 }
 
 .app-sidebar {
-    width: min(18rem, 85vw);
+    width: min(var(--sidebar-width-desktop), 85vw);
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -349,21 +350,26 @@ body.sidebar-locked {
 @media (min-width: 640px) {
     .app-shell {
         background: transparent;
+        align-items: stretch;
     }
 
     .app-sidebar {
-        position: static;
+        position: sticky;
+        top: 0;
         transform: none !important;
-        width: clamp(15rem, 18vw, 19rem);
+        width: var(--sidebar-width-desktop);
+        min-width: var(--sidebar-width-desktop);
+        max-width: var(--sidebar-width-desktop);
+        flex: 0 0 var(--sidebar-width-desktop);
         box-shadow: none;
         pointer-events: auto;
         backdrop-filter: none;
-        max-height: none;
+        height: 100vh;
     }
 
     .app-sidebar nav {
         padding-bottom: 1.5rem;
-        overflow: visible;
+        overflow-y: auto;
     }
 
     .app-sidebar-backdrop {
