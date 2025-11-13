@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const trend = metric?.trend === 'down' ? 'down' : changeValue < 0 ? 'down' : 'up';
       iconEl.textContent = trend === 'down' ? 'arrow_downward' : 'arrow_upward';
       const sign = changeValue > 0 ? '+' : '';
-      changeTextEl.textContent = `${sign}${changeValue}% vs mÃªs passado`;
+      changeTextEl.textContent = `${sign}${changeValue}% vs o mês passado`;
       changeWrapper.classList.remove('text-success', 'text-danger');
       changeWrapper.classList.add(trend === 'down' ? 'text-danger' : 'text-success');
     });
@@ -1072,7 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const td = document.createElement('td');
       td.colSpan = 6;
       td.className = 'px-6 py-6 text-center text-sm text-subtle-light dark:text-subtle-dark';
-      td.textContent = 'Nenhuma movimentaÃ§Ã£o encontrada.';
+      td.textContent = 'Nenhuma movimentação encontrada.';
       emptyRow.appendChild(td);
       cashierMovementsTableBody.appendChild(emptyRow);
       return;
