@@ -1124,6 +1124,15 @@ tbody tr.removing {
     gap: 20px;
 }
 
+#cashier-settings-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    justify-items: stretch;
+}
+
+.cashier-settings-card {
+    height: 100%;
+}
+
 .chart-container {
     flex: 1 1 clamp(280px, 45%, 520px);
     max-width: min(45%, 520px);
