@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierCategoryCancelBtn = document.getElementById('cashier-category-cancel-btn');
   const cashierSettingsToast = document.getElementById('cashier-settings-toast');
 
-  // Avatar do usuÃ¡rio (existem vÃ¡rias instÃ¢ncias na interface)
+  // Avatar do usuário (existem vÃ¡rias instÃ¢ncias na interface)
   const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
 
   let currentProductId = null;
@@ -2507,7 +2507,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           await renderApprovalPage({ silent: true });
         } catch (error) {
-          console.error('Erro ao atualizar usuÃ¡rios em tempo real:', error);
+          console.error('Erro ao atualizar usuários em tempo real:', error);
         }
       }
     });
@@ -2527,7 +2527,7 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             await renderApprovalPage({ silent: true });
           } catch (error) {
-            console.error('Erro ao atualizar usuÃ¡rios em tempo real:', error);
+            console.error('Erro ao atualizar usuários em tempo real:', error);
           }
         }
       }
@@ -2648,7 +2648,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = inputUsuario.value.trim();
     const password = inputClave.value.trim();
     if (!username || !password) {
-      alert('Preencha usuÃ¡rio e senha.');
+      alert('Preencha usuário e senha.');
       return;
     }
     try {
@@ -2683,7 +2683,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = document.getElementById('register-password').value.trim();
     const recoveryCode = registerRecoveryCodeInput?.value.trim() || '';
     if (!username || !password) {
-      alert('Preencha usuÃ¡rio e senha.');
+      alert('Preencha usuário e senha.');
       return;
     }
     try {
@@ -3422,7 +3422,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       pendingUsersList.innerHTML = '';
       if (!pendingData.length) {
-        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃ¡rio aguardando aprovaÃ§Ã£o.</p>';
+        pendingUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário aguardando aprovação.</p>';
       } else {
         pendingData.forEach(user => {
           const item = document.createElement('div');
@@ -3446,7 +3446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       activeUsersList.innerHTML = '';
       if (!activeData.length) {
-        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuÃ¡rio ativo.</p>';
+        activeUsersList.innerHTML = '<p class="text-subtle-light dark:text-subtle-dark text-center py-4">Nenhum usuário ativo.</p>';
       } else {
         activeData.forEach(user => {
           const item = document.createElement('div');
@@ -3478,8 +3478,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       usersDataDirty = false;
     } catch (err) {
-      console.error('Erro ao carregar usuÃ¡rios:', err);
-      alert('Erro ao carregar usuÃ¡rios: ' + err.message);
+      console.error('Erro ao carregar usuários:', err);
+      alert('Erro ao carregar usuários: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -3647,7 +3647,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // GestÃ£o de usuÃ¡rios ---------------------------------------------------------
+  // GestÃ£o de usuários ---------------------------------------------------------
   const approveUser = async userId => {
     try {
       showLoader();
@@ -3656,7 +3656,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       await renderApprovalPage();
     } catch (err) {
-      alert('Erro ao aprovar usuÃ¡rio: ' + err.message);
+      alert('Erro ao aprovar usuário: ' + err.message);
     } finally {
       hideLoader();
     }
@@ -3670,7 +3670,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       await renderApprovalPage();
     } catch (err) {
-      alert('Erro ao recusar usuÃ¡rio: ' + err.message);
+      alert('Erro ao recusar usuário: ' + err.message);
     } finally {
       hideLoader();
     }
@@ -4109,6 +4109,11 @@ document.addEventListener('DOMContentLoaded', () => {
   resetProfilePhoto();
   initializeFromStoredSession();
 });
+
+
+
+
+
 
 
 
