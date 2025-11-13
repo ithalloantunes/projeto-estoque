@@ -232,9 +232,16 @@
                     </nav>
                 </div>
                 <div id="cashier-sidebar-content" class="hidden flex-1 flex-col">
-                    <div class="px-6 py-8 flex items-center justify-between">
-                        <h1 class="text-2xl font-bold">Fluxo de Caixa</h1>
-                        <button type="button" class="mobile-menu-close sm:hidden p-2 rounded-full hover:bg-primary/80 transition" aria-label="Fechar menu">
+                    <div class="px-6 py-8 relative flex flex-col items-center">
+                        <h1 class="sr-only">Fluxo de Caixa</h1>
+                        <img
+                            src="img/acai-icon2.png"
+                            alt="Logotipo do módulo de Fluxo de Caixa"
+                            class="h-24 w-24 sm:h-32 sm:w-32 object-contain drop-shadow-lg mx-auto"
+                            loading="lazy"
+                            decoding="async"
+                        />
+                        <button type="button" class="mobile-menu-close sm:hidden p-2 rounded-full hover:bg-primary/80 transition absolute top-4 right-4" aria-label="Fechar menu">
                             <span class="material-icons">close</span>
                         </button>
                     </div>
