@@ -1517,7 +1517,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const values = Array.isArray(items) ? items : [];
     const total = values.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
     if (!values.length || total <= 0) {
-      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃ­vel.</li>';
+      cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</li>';
       return;
     }
 
@@ -1548,18 +1548,18 @@ document.addEventListener('DOMContentLoaded', () => {
     cashierSelectedAnalysis = view;
     cashierAnalysisList.innerHTML = '';
     if (!cachedCashierReportsData) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃ­vel.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
       return;
     }
     const dataset = cachedCashierReportsData.comparative?.[view] || [];
     if (!dataset.length) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃ­vel.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
       return;
     }
     const sorted = [...dataset].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
     const maxValue = Math.max(...sorted.map(item => Number(item.value) || 0), 0);
     if (maxValue <= 0) {
-      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponÃ­vel.</p>';
+      cashierAnalysisList.innerHTML = '<p class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</p>';
       return;
     }
     cashierAnalysisList.innerHTML = sorted.map(item => {
@@ -1585,7 +1585,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const chartReady = await waitForChartLibrary();
       if (!chartReady || typeof window === 'undefined' || typeof window.Chart !== 'function') {
-        console.warn('Biblioteca de grÃ¡ficos indisponÃ­vel para atualizar os relatÃ³rios do caixa.');
+        console.warn('Biblioteca de grÃ¡ficos indisponível para atualizar os relatÃ³rios do caixa.');
         return;
       }
 
@@ -3171,7 +3171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const chartReady = await waitForChartLibrary();
     if (!chartReady) {
-      console.warn('Biblioteca de grÃ¡ficos indisponÃ­vel. Os relatÃ³rios serÃ£o exibidos sem grÃ¡ficos.');
+      console.warn('Biblioteca de grÃ¡ficos indisponível. Os relatÃ³rios serÃ£o exibidos sem grÃ¡ficos.');
       return;
     }
 
@@ -4109,5 +4109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resetProfilePhoto();
   initializeFromStoredSession();
 });
+
+
 
 
