@@ -3325,19 +3325,19 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃ¡rio'
+          titlePrefix: 'Usuário'
         },
         aprovacao_usuario: {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃ¡rio'
+          titlePrefix: 'Usuário'
         },
         aprovacao: {
           icon: 'person_add',
           badgeClasses: 'bg-blue-100 dark:bg-blue-900/50',
           iconClasses: 'text-blue-600 dark:text-blue-300',
-          titlePrefix: 'UsuÃ¡rio'
+          titlePrefix: 'Usuário'
         },
         default: {
           icon: 'history',
@@ -3376,9 +3376,9 @@ document.addEventListener('DOMContentLoaded', () => {
           return '';
         })();
         const productName = move.produto || move.nomeProduto || '';
-        const userLabel = move.usuario ? `UsuÃ¡rio: ${move.usuario}` : '';
+        const userLabel = move.usuario ? `Usuário: ${move.usuario}` : 'Usuário';
         const destinationLabel = move.destino ? `Destino: ${move.destino}` : '';
-        const details = [userLabel, destinationLabel].filter(Boolean).join(' Â· ');
+        const details = [userLabel, destinationLabel].filter(Boolean).join(' • ');
 
         const timeLabel = (() => {
           if (!move.data) return 'Data nÃ£o informada';
@@ -4109,3 +4109,5 @@ document.addEventListener('DOMContentLoaded', () => {
   resetProfilePhoto();
   initializeFromStoredSession();
 });
+
+
