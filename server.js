@@ -2187,12 +2187,14 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
   let imagemAtualizada = atual.image;
   let imagemDadosAtualizados = atual.imageData ?? null;
   let imagemMimeAtualizada = atual.imageMime ?? null;
+  let imagemAlterada = false;
   if (req.body.removeImage === 'true') {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
     if (atual.image) removeStoredFile(atual.image);
     imagemAtualizada = null;
     imagemDadosAtualizados = null;
     imagemMimeAtualizada = null;
+    imagemAlterada = true;
   } else if (uploadedImagePath) {
     let novoBuffer;
     try {
@@ -2206,39 +2208,55 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
     imagemDadosAtualizados = novoBuffer;
     imagemMimeAtualizada = sanitizeMimeType(req.file.mimetype) || inferMimeFromFilename(req.file.originalname) || DEFAULT_IMAGE_MIME;
     removeStoredFile(uploadedImagePath);
+    imagemAlterada = true;
   }
 
   const produtoAtualizado = req.body.produto ? req.body.produto.trim() : atual.produto;
   const tipoAtualizado = req.body.tipo ? req.body.tipo.trim() : atual.tipo;
   const loteAtualizado = req.body.lote ? req.body.lote.trim() : atual.lote;
   const validadeAtualizada = req.body.validade !== undefined ? (req.body.validade || null) : atual.validade;
+  const tipoFinal = tipoAtualizado ? tipoAtualizado : null;
+  const loteFinal = loteAtualizado ? loteAtualizado : null;
+  const validadeFinal = validadeAtualizada;
+  const custoFinal = hasCusto ? custoAtualizado : atual.custo;
 
   await updateInventoryItem({
     id: itemId,
     produto: produtoAtualizado,
-    tipo: tipoAtualizado || null,
-    lote: loteAtualizado || null,
+    tipo: tipoFinal,
+    lote: loteFinal,
     quantidade: novaQtd,
-    validade: validadeAtualizada,
-    custo: hasCusto ? custoAtualizado : atual.custo,
+    validade: validadeFinal,
+    custo: custoFinal,
     image: imagemAtualizada,
     imageMime: imagemMimeAtualizada,
     imageData: imagemDadosAtualizados,
   });
 
+  const produtoAlterado = produtoAtualizado !== atual.produto;
+  const tipoAlterado = (tipoFinal || null) !== (atual.tipo || null);
+  const loteAlterado = (loteFinal || null) !== (atual.lote || null);
+  const validadeAlterada = (validadeFinal || null) !== (atual.validade || null);
+  const custoAlterado = Number(custoFinal ?? 0) !== Number(atual.custo ?? 0);
+  const quantidadeAlterada = novaQtd !== atual.quantidade;
+  const houveAlteracaoNaoImagem = produtoAlterado || tipoAlterado || loteAlterado || validadeAlterada || custoAlterado || quantidadeAlterada;
+  const somenteImagemAlterada = imagemAlterada && !houveAlteracaoNaoImagem;
+
   const diff = novaQtd - atual.quantidade;
-  await insertMovimentacao({
-    id: uuidv4(),
-    produtoId: itemId,
-    produto: produtoAtualizado,
-    tipo: diff === 0 ? 'edicao' : diff > 0 ? 'entrada' : 'saida',
-    quantidade: diff,
-    quantidadeAnterior: atual.quantidade,
-    quantidadeAtual: novaQtd,
-    motivo: null,
-    data: new Date(),
-    usuario: usuario || 'desconhecido'
-  });
+  if (!somenteImagemAlterada) {
+    await insertMovimentacao({
+      id: uuidv4(),
+      produtoId: itemId,
+      produto: produtoAtualizado,
+      tipo: diff === 0 ? 'edicao' : diff > 0 ? 'entrada' : 'saida',
+      quantidade: diff,
+      quantidadeAnterior: atual.quantidade,
+      quantidadeAtual: novaQtd,
+      motivo: null,
+      data: new Date(),
+      usuario: usuario || 'desconhecido'
+    });
+  }
 
   broadcastDataUpdated();
   const responseImage = buildProductImageResponse({
