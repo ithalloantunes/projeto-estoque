@@ -1088,7 +1088,33 @@ tbody tr.removing {
 
 #product-grid {
     align-content: flex-start;
-    align-items: flex-start;
+    align-items: stretch;
+    grid-auto-rows: minmax(28rem, auto);
+}
+
+#stock-page .stock-grid-card {
+    min-height: 28rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+    #product-grid {
+        grid-auto-rows: minmax(30rem, auto);
+    }
+
+    #stock-page .stock-grid-card {
+        min-height: 30rem;
+    }
+}
+
+#stock-page .stock-grid-card-title {
+    min-height: 3.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .charts-grid {

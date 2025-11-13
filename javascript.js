@@ -2904,13 +2904,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (currentView === 'grid') {
         const card = document.createElement('div');
-        card.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm overflow-hidden transition-transform duration-300 hover:-translate-y-1 flex flex-col';
+        card.className = 'group relative bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm overflow-hidden transition-transform duration-300 hover:-translate-y-1 flex flex-col stock-grid-card';
         card.innerHTML = `
           <div class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">${product.tipo || '-'}</div>
           ${expiryBadge}
           <img alt="${product.produto}" class="stock-product-image stock-product-image--grid" src="${imageSrc}" loading="lazy" decoding="async" data-fallback-src="${placeholder.fallback}" onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src=this.dataset.fallbackSrc;}" />
           <div class="p-4 flex-grow flex flex-col">
-            <h3 class="font-bold">${product.produto}</h3>
+            <h3 class="font-bold stock-grid-card-title">${product.produto}</h3>
             <div class="mt-2 flex items-center justify-between">
               <span class="text-3xl font-bold text-primary">${quantity}</span>
               <div class="flex flex-col items-end text-sm text-subtle-light dark:text-subtle-dark leading-tight">
