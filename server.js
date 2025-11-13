@@ -92,6 +92,11 @@ const REGISTER_RATE_LIMIT_MAX_ATTEMPTS = parsePositiveInt(
   5,
   { min: 1, max: 50 }
 );
+const PASSWORD_RESET_RATE_LIMIT_MAX_ATTEMPTS = parsePositiveInt(
+  process.env.PASSWORD_RESET_RATE_LIMIT_MAX_ATTEMPTS,
+  5,
+  { min: 1, max: 50 }
+);
 
 const createRateLimiter = ({ windowMs, max, message }) => rateLimit({
   windowMs,
@@ -120,6 +125,12 @@ const registerRateLimiter = createRateLimiter({
   windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
   max: REGISTER_RATE_LIMIT_MAX_ATTEMPTS,
   message: 'Muitas tentativas de cadastro. Aguarde alguns instantes.'
+});
+
+const passwordResetRateLimiter = createRateLimiter({
+  windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+  max: PASSWORD_RESET_RATE_LIMIT_MAX_ATTEMPTS,
+  message: 'Muitas tentativas de recuperação de senha. Aguarde alguns instantes.'
 });
 
 const shouldEnforceHttps = isProduction && sanitizeText(process.env.ENFORCE_HTTPS) !== 'disable';
@@ -632,6 +643,7 @@ const mapUserRow = (row, { includePhotoData = false } = {}) => {
     approved: row.approved,
     photo: row.photo,
     photoMime: row.photo_mime,
+    recoveryCodeHash: row.recovery_code_hash ?? null,
   };
   if (includePhotoData) {
     mapped.photoData = row.photo_data ?? null;
@@ -714,6 +726,7 @@ const buildUserSelectColumns = ({ includePhotoData = false } = {}) => {
     'approved',
     'photo',
     'photo_mime',
+    'recovery_code_hash',
   ];
   if (includePhotoData) {
     columns.push('photo_data');
@@ -1377,8 +1390,8 @@ const listUsers = async ({ approved, includePhotoData = false } = {}) => {
 
 const insertUser = async user => {
   await query(
-    `INSERT INTO users (id, username, username_lower, password_hash, role, approved, photo, photo_mime, photo_data)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    `INSERT INTO users (id, username, username_lower, password_hash, role, approved, photo, photo_mime, photo_data, recovery_code_hash)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [
       user.id,
       user.username,
@@ -1389,6 +1402,7 @@ const insertUser = async user => {
       user.photo ?? null,
       user.photoMime ?? null,
       user.photoData ?? null,
+      user.recoveryCodeHash ?? null,
     ]
   );
 };
@@ -1403,7 +1417,8 @@ const updateUserFromSeed = async (id, user) => {
             approved = $6,
             photo = $7,
             photo_mime = $8,
-            photo_data = $9
+            photo_data = $9,
+            recovery_code_hash = $10
       WHERE id = $1
   RETURNING ${buildUserSelectColumns({ includePhotoData: true })}`,
     [
@@ -1416,6 +1431,7 @@ const updateUserFromSeed = async (id, user) => {
       user.photo ?? null,
       user.photoMime ?? null,
       user.photoData ?? null,
+      user.recoveryCodeHash ?? null,
     ]
   );
   return rows[0] ? mapUserRow(rows[0], { includePhotoData: true }) : null;
@@ -1440,6 +1456,13 @@ const updateUserPhoto = async (id, { photoPath = null, photoMime = null, photoDa
     [id, photoPath, photoMime, photoData]
   );
   return rows[0] ? mapUserRow(rows[0], { includePhotoData: true }) : null;
+};
+
+const updateUserPassword = async (id, passwordHash) => {
+  await query(
+    'UPDATE users SET password_hash = $2 WHERE id = $1',
+    [id, passwordHash]
+  );
 };
 
 const deleteUserById = async id => {
@@ -1595,6 +1618,7 @@ const initializeDatabase = async () => {
       photo TEXT,
       photo_mime TEXT,
       photo_data BYTEA,
+      recovery_code_hash TEXT,
       CONSTRAINT users_username_unique UNIQUE (username),
       CONSTRAINT users_role_check CHECK (role IN ('admin', 'user')),
       CONSTRAINT users_username_format CHECK (char_length(username) >= 3),
@@ -1603,6 +1627,7 @@ const initializeDatabase = async () => {
   `);
   await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_mime TEXT');
   await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_data BYTEA');
+  await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS recovery_code_hash TEXT');
 
   await query(`
     CREATE TABLE IF NOT EXISTS inventory (
@@ -1821,15 +1846,19 @@ const requireAdmin = (req, res, next) => {
 app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
+  const recoveryCode = sanitizeText(req.body?.recoveryCode);
 
-  if (!username || !password) {
-    return res.status(400).json({ error: 'UsuÃ¡rio e senha sÃ£o obrigatÃ³rios' });
+  if (!username || !password || !recoveryCode) {
+    return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
   }
   if (username.length < 3) {
     return res.status(400).json({ error: 'O usuÃ¡rio deve ter pelo menos 3 caracteres.' });
   }
   if (password.length < 8) {
     return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
+  }
+  if (!recoveryCode || recoveryCode.length < 4) {
+    return res.status(400).json({ error: 'O codigo de recuperacao deve ter pelo menos 4 caracteres.' });
   }
 
   const normalized = normalizeUsername(username);
@@ -1839,6 +1868,7 @@ app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => 
   }
 
   const passwordHash = bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
+  const recoveryCodeHash = bcrypt.hashSync(recoveryCode, BCRYPT_SALT_ROUNDS);
   await insertUser({
     id: uuidv4(),
     username,
@@ -1849,10 +1879,40 @@ app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => 
     photo: null,
     photoMime: null,
     photoData: null,
+    recoveryCodeHash,
   });
 
   broadcastUsersUpdated();
   res.json({ message: 'Cadastro enviado para aprovaÃ§Ã£o' });
+
+app.post('/api/password/forgot', passwordResetRateLimiter, asyncHandler(async (req, res) => {
+  const username = sanitizeText(req.body?.username);
+  const recoveryCode = sanitizeText(req.body?.recoveryCode);
+  const newPassword = typeof req.body?.password === 'string' ? req.body.password : '';
+
+  if (!username || !recoveryCode || !newPassword) {
+    return res.status(400).json({ error: 'Usuário, código e nova senha são obrigatórios.' });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: 'A nova senha deve ter pelo menos 8 caracteres.' });
+  }
+
+  const normalized = normalizeUsername(username);
+  const user = await getUserByUsernameLower(normalized);
+  if (!user || !user.recoveryCodeHash) {
+    return res.status(400).json({ error: 'Usuário ou código inválido.' });
+  }
+
+  const codeMatches = bcrypt.compareSync(recoveryCode, user.recoveryCodeHash);
+  if (!codeMatches) {
+    return res.status(400).json({ error: 'Usuário ou código inválido.' });
+  }
+
+  const newPasswordHash = bcrypt.hashSync(newPassword, BCRYPT_SALT_ROUNDS);
+  await updateUserPassword(user.id, newPasswordHash);
+  res.json({ message: 'Senha redefinida com sucesso. Faça login com a nova senha.' });
+}));
+
 }));
 
 app.post('/api/login', loginRateLimiter, asyncHandler(async (req, res) => {

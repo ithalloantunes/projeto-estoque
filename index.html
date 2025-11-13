@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
@@ -137,7 +137,9 @@
                             <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
                             Lembrar-me
                         </label>
-                        <a href="#" class="font-medium text-primary hover:text-primary/80">Esqueceu sua senha?</a>
+                        <button type="button" id="forgot-password-link" class="font-medium text-primary hover:text-primary/80 focus:outline-none focus:underline">
+                            Esqueceu sua senha?
+                        </button>
                     </div>
                     <div class="flex flex-col space-y-4">
                         <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
@@ -175,6 +177,16 @@
                                 </button>
                             </div>
                         </div>
+                        <div>
+                            <label for="register-recovery-code" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">Código de Recuperação</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="material-icons text-gray-400">key</span>
+                                </span>
+                                <input type="text" id="register-recovery-code" placeholder="Ex.: MINHA-LOJA-1234" class="block w-full rounded-DEFAULT border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark pl-11 pr-4 py-3 text-sm text-text-light dark:text-text-dark focus:border-primary focus:ring-primary" autocomplete="one-time-code" maxlength="32">
+                            </div>
+                            <p class="mt-2 text-xs text-subtle-light dark:text-subtle-dark">Guarde esse código com segurança. Ele será solicitado para redefinir sua senha.</p>
+                        </div>
                     </div>
                     <div class="flex flex-col space-y-4">
                         <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-DEFAULT text-sm font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
@@ -193,6 +205,45 @@
         </div>
     </div>
 
+    <!-- Recuperação de Senha -->
+    <div id="forgot-password-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="forgot-password-title">
+        <div id="forgot-password-overlay" class="absolute inset-0 bg-black/60 transition-opacity"></div>
+        <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+            <div class="w-full max-w-md rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-2xl space-y-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 id="forgot-password-title" class="text-2xl font-bold text-text-light dark:text-text-dark">Redefinir senha</h2>
+                        <p class="text-sm text-subtle-light dark:text-subtle-dark mt-1">Use o código de recuperação cadastrado para criar uma nova senha.</p>
+                    </div>
+                    <button type="button" class="forgot-password-close text-gray-500 hover:text-primary" aria-label="Fechar modal">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <form id="forgot-password-form" class="space-y-4">
+                    <div>
+                        <label for="forgot-username" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Nome de usuário</label>
+                        <input type="text" id="forgot-username" class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark px-4 py-2.5 text-sm focus:border-primary focus:ring-primary" placeholder="Informe seu login" autocomplete="username">
+                    </div>
+                    <div>
+                        <label for="forgot-recovery-code" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Código de recuperação</label>
+                        <input type="text" id="forgot-recovery-code" class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark px-4 py-2.5 text-sm focus:border-primary focus:ring-primary" placeholder="Código que você cadastrou" autocomplete="one-time-code">
+                    </div>
+                    <div>
+                        <label for="forgot-new-password" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Nova senha</label>
+                        <input type="password" id="forgot-new-password" class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark px-4 py-2.5 text-sm focus:border-primary focus:ring-primary" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                    </div>
+                    <div>
+                        <label for="forgot-confirm-password" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Confirme a nova senha</label>
+                        <input type="password" id="forgot-confirm-password" class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark px-4 py-2.5 text-sm focus:border-primary focus:ring-primary" placeholder="Repita a nova senha" autocomplete="new-password">
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <button type="submit" class="w-full rounded-lg bg-primary text-white py-2.5 font-semibold hover:bg-primary/90 transition">Redefinir senha</button>
+                        <button type="button" class="forgot-password-close w-full rounded-lg border border-gray-300 dark:border-gray-700 py-2.5 font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <!-- Aplicação -->
     <div id="app-container" class="hidden">
         <div class="app-shell bg-background-light dark:bg-background-dark">

@@ -1,16 +1,18 @@
 [
- {
+  {
     "id": "admin-1",
     "username": "ithallo",
     "password": "123",
     "role": "admin",
-    "approved": true
+    "approved": true,
+    "recoveryCode": "ITHALLO-2024"
   },
   {
     "id": "admin-2",
     "username": "vini",
     "password": "123",
     "role": "admin",
-    "approved": true
+    "approved": true,
+    "recoveryCode": "VINI-2024"
   }
 ]
