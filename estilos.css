@@ -1156,6 +1156,65 @@ tbody tr.removing {
 }
 
 
+#stock-by-product-chart,
+#stock-by-type-chart,
+#cashier-payment-methods-chart,
+#cashier-cash-flow-chart {
+    width: 100%;
+    height: 100%;
+    background: var(--color-surface-light);
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    padding: 0.5rem;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.dark #stock-by-product-chart,
+.dark #stock-by-type-chart,
+.dark #cashier-payment-methods-chart,
+.dark #cashier-cash-flow-chart {
+    background: var(--color-surface-dark);
+    border-color: rgba(148, 163, 184, 0.35);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55);
+}
+
+#cashier-payment-methods-list li.flex {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#cashier-payment-methods-list li.flex:last-child {
+    border-bottom: none;
+}
+
+.dark #cashier-payment-methods-list li.flex {
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+#cashier-analysis-list > div {
+    background: var(--color-surface-light);
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.dark #cashier-analysis-list > div {
+    background: var(--color-surface-dark);
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+#cashier-analysis-list .h-3 {
+    background: rgba(109, 40, 217, 0.1);
+}
+
+.dark #cashier-analysis-list .h-3 {
+    background: rgba(109, 40, 217, 0.35);
+}
+
+
 .chart-container {
     flex: 1 1 clamp(280px, 45%, 520px);
     max-width: min(45%, 520px);
