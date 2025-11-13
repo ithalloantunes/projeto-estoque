@@ -1957,13 +1957,19 @@ app.put('/api/users/:id/photo', authMiddleware, userUpload.single('photo'), asyn
   if (!newPhotoPath) {
     return res.status(400).json({ error: 'Nenhuma imagem enviada' });
   }
+  const newPhotoBuffer = await readUploadedFileBuffer(req.file);
+  const newPhotoMime = sanitizeMimeType(req.file?.mimetype) || inferMimeFromFilename(req.file?.originalname) || DEFAULT_IMAGE_MIME;
 
   if (target.photo) removeStoredFile(target.photo);
-  await updateUserPhoto(userId, newPhotoPath);
+  const updatedUser = await updateUserPhoto(userId, {
+    photoPath: newPhotoPath,
+    photoMime: newPhotoMime,
+    photoData: newPhotoBuffer
+  });
   broadcastUsersUpdated();
-  const publicPath = toPublicPath(newPhotoPath);
-  broadcastUserPhotoUpdated({ id: userId, photo: publicPath });
-  res.json({ message: 'Foto atualizada', photo: publicPath });
+  const photoResponse = buildUserPhotoResponse(updatedUser);
+  broadcastUserPhotoUpdated({ id: userId, photo: photoResponse });
+  res.json({ message: 'Foto atualizada', photo: photoResponse });
 }));
 
 app.get('/api/users/:id/photo', authMiddleware, asyncHandler(async (req, res) => {
