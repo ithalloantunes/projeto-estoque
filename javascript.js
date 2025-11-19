@@ -499,8 +499,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return `
       <div class="space-y-5">
-        ${buildSuggestionSection('Repor com urgÃªncia', 'inventory_2', lowStock, 'Nenhum item com estoque crÃ­tico no momento.')}
-        ${buildSuggestionSection('Atentos Ã  validade', 'event_available', expiringSoon, 'Sem produtos prÃ³ximos do vencimento nos prÃ³ximos 45 dias.')}
+        ${buildSuggestionSection('Repor com Urgência', 'inventory_2', lowStock, 'Nenhum item com estoque crÃ­tico no momento.')}
+        ${buildSuggestionSection('Atentos á  validade', 'event_available', expiringSoon, 'Sem produtos prÃ³ximos do vencimento nos prÃ³ximos 45 dias.')}
         ${buildSuggestionSection('Itens mais procurados', 'trending_up', bestSellers, 'Ainda nÃ£o hÃ¡ histÃ³rico suficiente para recomendaÃ§Ãµes.')}
       </div>`;
   };
@@ -4109,6 +4109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resetProfilePhoto();
   initializeFromStoredSession();
 });
+
 
 
 
