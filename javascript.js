@@ -3289,19 +3289,19 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃ­da'
+          titlePrefix: 'Saída'
         },
         exclusao: {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃ­da'
+          titlePrefix: 'Saída'
         },
         baixa: {
           icon: 'remove',
           badgeClasses: 'bg-red-100 dark:bg-red-900/50',
           iconClasses: 'text-red-600 dark:text-red-300',
-          titlePrefix: 'SaÃ­da'
+          titlePrefix: 'saída'
         },
         ajuste: {
           icon: 'edit',
@@ -4109,6 +4109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resetProfilePhoto();
   initializeFromStoredSession();
 });
+
 
 
 
