@@ -780,7 +780,7 @@ h2 {
 }
 
 .dark .table-wrapper .modern-table tbody tr {
-    background: transparent;
+    background: var(--color-surface-dark);
 }
 
 .dark .table-wrapper .modern-table tbody tr:not(:first-child) td {
