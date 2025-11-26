@@ -500,9 +500,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return `
       <div class="space-y-5">
-        ${buildSuggestionSection('Repor com Urg?ncia', 'inventory_2', lowStock, 'Nenhum item com estoque cr?tico no momento.')}
-        ${buildSuggestionSection('Atentos ? validade', 'event_available', expiringSoon, 'Sem produtos pr?ximos do vencimento nos pr?ximos 45 dias.')}
-        ${buildSuggestionSection('Itens mais procurados', 'trending_up', bestSellers, 'Ainda n?o h? hist?rico suficiente para recomenda??es.')}
+        ${buildSuggestionSection('Repor com Urgência', 'inventory_2', lowStock, 'Nenhum item com estoque crítico no momento.')}
+        ${buildSuggestionSection('Atentos à validade', 'event_available', expiringSoon, 'Sem produtos próximos do vencimento nos próximos 45 dias.')}
+        ${buildSuggestionSection('Itens mais procurados', 'trending_up', bestSellers, 'Ainda não há histórico suficiente para recomendações.')}
       </div>`;
   };
 
