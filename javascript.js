@@ -1,6 +1,6 @@
-﻿const currentOrigin = typeof window !== 'undefined' ?window.location.origin : '';
+﻿const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 const isLocalEnvironment = /127\.0\.0\.1|localhost/.test(currentOrigin);
-const BASE_URL = isLocalEnvironment ?'' : (currentOrigin || 'https://acai-da-barra.onrender.com');
+const BASE_URL = isLocalEnvironment ? '' : (currentOrigin || 'https://acai-da-barra.onrender.com');
 
 document.addEventListener('DOMContentLoaded', () => {
   // Estado global
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeModule = 'stock';
   const bodyElement = document.body;
   const darkModeMediaQuery = typeof window !== 'undefined' && window.matchMedia
-    ?window.matchMedia('(prefers-color-scheme: dark)')
+    ? window.matchMedia('(prefers-color-scheme: dark)')
     : null;
   const THEME_STORAGE_KEY = 'projeto-estoque:theme';
   let hasExplicitThemePreference = false;
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const forgotPasswordNewPasswordInput = document.getElementById('forgot-new-password');
   const forgotPasswordConfirmInput = document.getElementById('forgot-confirm-password');
 
-  // Elementos gerais da aplicação
+  // Elementos gerais da aplicaÃ§Ã£o
   const mainMenu = document.getElementById('main-menu');
   const sidebar = document.getElementById('sidebar');
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
@@ -143,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const movementTypeSelect = document.getElementById('movement-type');
   const movementCategorySelect = document.getElementById('movement-category');
   const movementCategoryCustomInput = document.getElementById('movement-category-custom');
-  const movementEmployeeInput = document.getElementById('movement-employee');
   const movementPaymentMethodSelect = document.getElementById('movement-payment-method');
   const cashierCancelMovementBtn = document.getElementById('cancel-movement-btn');
 
@@ -177,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   };
 
-  // Referências dos KPIs
+  // ReferÃªncias dos KPIs
   const homeKpiTotalStock = document.getElementById('home-kpi-total-stock');
   const homeKpiLowStock = document.getElementById('home-kpi-low-stock');
   const homeKpiExpiring = document.getElementById('home-kpi-expiring');
@@ -213,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cashierCategoryCancelBtn = document.getElementById('cashier-category-cancel-btn');
   const cashierSettingsToast = document.getElementById('cashier-settings-toast');
 
-  // Avatar do usuário (existem várias instâncias na interface)
+  // Avatar do usuário (existem vÃ¡rias instÃ¢ncias na interface)
   const userAvatarImgs = document.querySelectorAll('.user-avatar-img');
 
   let currentProductId = null;
@@ -233,8 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.remove('sidebar-locked');
     }
     const shouldHideForAccessibility = !isOpen && !isDesktopViewport();
-    sidebar.setAttribute('aria-hidden', shouldHideForAccessibility ?'true' : 'false');
-    mobileMenuToggles.forEach(button => button.setAttribute('aria-expanded', isOpen ?'true' : 'false'));
+    sidebar.setAttribute('aria-hidden', shouldHideForAccessibility ? 'true' : 'false');
+    mobileMenuToggles.forEach(button => button.setAttribute('aria-expanded', isOpen ? 'true' : 'false'));
     isMobileSidebarOpen = isOpen;
   };
 
@@ -340,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const openCashierSettingsPage = () => {
     switchToCashierModule();
     loadCashierSettings({ silent: true }).catch(error => {
-      console.error('Erro ao atualizar configurações do caixa:', error);
+      console.error('Erro ao atualizar configuraÃ§Ãµes do caixa:', error);
     });
     const settingsMenuLink = cashierMenu?.querySelector('a[data-page="cashier-settings-page"]');
     if (settingsMenuLink) {
@@ -395,7 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   closeMobileSidebar(true);
 
-  // Utilitários -----------------------------------------------------------------
+  // UtilitÃ¡rios -----------------------------------------------------------------
   const showLoader = () => loader?.classList.remove('hidden');
   const hideLoader = () => loader?.classList.add('hidden');
 
@@ -440,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const listItems = items
       .map(item => {
         const quantity = Number(item.quantidade) || 0;
-        const validade = item.validade ?formatDate(item.validade) : 'Sem validade';
+        const validade = item.validade ? formatDate(item.validade) : 'Sem validade';
         const subtitleParts = [];
         if (item.lote) subtitleParts.push(`Lote ${item.lote}`);
         subtitleParts.push(`${quantity} un.`);
@@ -449,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <li class="flex items-start justify-between gap-4 py-2">
             <div>
               <p class="font-medium">${item.produto || 'Produto'}</p>
-              <p class="text-xs text-subtle-light dark:text-subtle-dark">${subtitleParts.join(' â¬¢ ')}</p>
+              <p class="text-xs text-subtle-light dark:text-subtle-dark">${subtitleParts.join(' • ')}</p>
             </div>
             <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
               ${item.tipo || 'Categoria'}
@@ -510,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!value) return null;
     if (value.startsWith('data:')) return value;
     if (/^https?:\/\//i.test(value)) return value;
-    const normalized = value.startsWith('/') ?value : `/${value}`;
+    const normalized = value.startsWith('/') ? value : `/${value}`;
     if (!BASE_URL) return normalized;
     return `${BASE_URL}${normalized}`;
   };
@@ -542,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerImageFallbacks = root => {
     if (!root) return;
     const candidates = root.tagName === 'IMG'
-      ?[root]
+      ? [root]
       : Array.from(root.querySelectorAll('img[data-fallback-src]'));
     candidates.forEach(img => {
       if (!img || !img.dataset?.fallbackSrc || img.dataset.fallbackHandlerApplied === 'true') return;
@@ -558,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const formatCurrencyBRL = value => {
-    const numericValue = Number.isFinite(Number(value)) ?Number(value) : 0;
+    const numericValue = Number.isFinite(Number(value)) ? Number(value) : 0;
     return numericValue.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -588,13 +587,13 @@ document.addEventListener('DOMContentLoaded', () => {
         valueEl.textContent = formatCurrencyBRL(metric?.value ?? 0);
       }
       if (!changeWrapper || !changeTextEl || !iconEl) return;
-      const changeValue = Number.isFinite(Number(metric?.change)) ?Number(metric.change) : 0;
-      const trend = metric?.trend === 'down' ?'down' : changeValue < 0 ?'down' : 'up';
-      iconEl.textContent = trend === 'down' ?'arrow_downward' : 'arrow_upward';
-      const sign = changeValue > 0 ?'+' : '';
+      const changeValue = Number.isFinite(Number(metric?.change)) ? Number(metric.change) : 0;
+      const trend = metric?.trend === 'down' ? 'down' : changeValue < 0 ? 'down' : 'up';
+      iconEl.textContent = trend === 'down' ? 'arrow_downward' : 'arrow_upward';
+      const sign = changeValue > 0 ? '+' : '';
       changeTextEl.textContent = `${sign}${changeValue}% vs o mês passado`;
       changeWrapper.classList.remove('text-success', 'text-danger');
-      changeWrapper.classList.add(trend === 'down' ?'text-danger' : 'text-success');
+      changeWrapper.classList.add(trend === 'down' ? 'text-danger' : 'text-success');
     });
   };
 
@@ -610,7 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       nextMetrics[key] = {
         ...nextMetrics[key],
-        ...(typeof data === 'object' ?data : {}),
+        ...(typeof data === 'object' ? data : {}),
       };
     });
     cashierDashboardMetrics = nextMetrics;
@@ -800,7 +799,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const parseLocaleNumber = rawValue => {
     if (typeof rawValue === 'number') {
-      return Number.isFinite(rawValue) ?rawValue : Number.NaN;
+      return Number.isFinite(rawValue) ? rawValue : Number.NaN;
     }
     if (typeof rawValue !== 'string') return Number.NaN;
     const trimmed = rawValue.trim();
@@ -810,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!sanitized) return Number.NaN;
 
     let hasLeadingMinus = sanitized.startsWith('-');
-    let unsigned = hasLeadingMinus ?sanitized.slice(1) : sanitized;
+    let unsigned = hasLeadingMinus ? sanitized.slice(1) : sanitized;
     if (!hasLeadingMinus && sanitized.endsWith('-')) {
       hasLeadingMinus = true;
       unsigned = sanitized.slice(0, -1);
@@ -835,7 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const numeric = Number.parseFloat(normalized);
     if (!Number.isFinite(numeric)) return Number.NaN;
-    return hasLeadingMinus ?-numeric : numeric;
+    return hasLeadingMinus ? -numeric : numeric;
   };
 
   const parseMovementAmount = movement => {
@@ -861,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const parseMovementDate = movement => {
     if (!movement?.data) return null;
     const parsed = new Date(movement.data);
-    return Number.isNaN(parsed.getTime()) ?null : parsed;
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   };
 
   const getWeekInfo = date => {
@@ -902,7 +901,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const entries = Object.entries(collection)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([, data]) => ({ ...data }));
-    const trimmed = typeof limit === 'number' ?entries.slice(-limit) : entries;
+    const trimmed = typeof limit === 'number' ? entries.slice(-limit) : entries;
     return {
       labels: trimmed.map(item => item.label),
       values: trimmed.map(item => Number((item.entries - item.expenses).toFixed(2))),
@@ -912,26 +911,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const mergeDatasetWithDefault = (computed, defaults) => {
     const base = defaults || DEFAULT_CASHIER_REPORTS_DATA;
     const cloneArray = value => (Array.isArray(value)
-      ?value.map(item => (typeof item === 'object' && item !== null ?{ ...item } : item))
+      ? value.map(item => (typeof item === 'object' && item !== null ? { ...item } : item))
       : []);
     const cloneSegment = segment => ({
-      labels: Array.isArray(segment?.labels) ?[...segment.labels] : [],
-      values: Array.isArray(segment?.values) ?[...segment.values] : [],
+      labels: Array.isArray(segment?.labels) ? [...segment.labels] : [],
+      values: Array.isArray(segment?.values) ? [...segment.values] : [],
     });
 
     const source = computed && typeof computed === 'object' ? computed : {};
 
     return {
-      paymentMethods: cloneArray(source.paymentMethods ? source.paymentMethods : base.paymentMethods),
+      paymentMethods: cloneArray(source.paymentMethods ?? base.paymentMethods),
       cashFlow: {
-        daily: cloneSegment(source.cashFlow?.daily ? source.cashFlow.daily : base.cashFlow.daily),
-        weekly: cloneSegment(source.cashFlow?.weekly ? source.cashFlow.weekly : base.cashFlow.weekly),
-        monthly: cloneSegment(source.cashFlow?.monthly ? source.cashFlow.monthly : base.cashFlow.monthly),
+        daily: cloneSegment(source.cashFlow?.daily ?? base.cashFlow?.daily),
+        weekly: cloneSegment(source.cashFlow?.weekly ?? base.cashFlow?.weekly),
+        monthly: cloneSegment(source.cashFlow?.monthly ?? base.cashFlow?.monthly),
       },
       comparative: {
-        expenses: cloneArray(source.comparative?.expenses ? source.comparative.expenses : base.comparative.expenses),
-        reinforcements: cloneArray(source.comparative?.reinforcements ? source.comparative.reinforcements : base.comparative.reinforcements),
-        categories: cloneArray(source.comparative?.categories ? source.comparative.categories : base.comparative.categories),
+        expenses: cloneArray(source.comparative?.expenses ?? base.comparative?.expenses),
+        reinforcements: cloneArray(source.comparative?.reinforcements ?? base.comparative?.reinforcements),
+        categories: cloneArray(source.comparative?.categories ?? base.comparative?.categories),
       },
     };
   };
@@ -940,23 +939,23 @@ document.addEventListener('DOMContentLoaded', () => {
     return [...movements]
       .filter(item => item)
       .sort((a, b) => {
-        const dateA = a?.data ?new Date(a.data) : null;
-        const dateB = b?.data ?new Date(b.data) : null;
-        const timeA = dateA && !Number.isNaN(dateA.getTime()) ?dateA.getTime() : 0;
-        const timeB = dateB && !Number.isNaN(dateB.getTime()) ?dateB.getTime() : 0;
+        const dateA = a?.data ? new Date(a.data) : null;
+        const dateB = b?.data ? new Date(b.data) : null;
+        const timeA = dateA && !Number.isNaN(dateA.getTime()) ? dateA.getTime() : 0;
+        const timeB = dateB && !Number.isNaN(dateB.getTime()) ? dateB.getTime() : 0;
         return timeB - timeA;
       });
   };
 
   const normalizeCashierMovement = movement => {
     if (!movement || typeof movement !== 'object') return null;
-    const toTrimmedString = value => (typeof value === 'string' ?value.trim() : '');
+    const toTrimmedString = value => (typeof value === 'string' ? value.trim() : '');
     const generateId = () => `cashier-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 
     const id = toTrimmedString(movement.id) || generateId();
     const rawDate = movement.data || movement.date || movement.createdAt || movement.timestamp;
-    const parsedDate = rawDate ?new Date(rawDate) : null;
-    const isoDate = parsedDate && !Number.isNaN(parsedDate.getTime()) ?parsedDate.toISOString() : new Date().toISOString();
+    const parsedDate = rawDate ? new Date(rawDate) : null;
+    const isoDate = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : new Date().toISOString();
 
     const type = toTrimmedString(movement.tipo) || toTrimmedString(movement.type) || 'Entrada';
     const category = toTrimmedString(movement.categoria) || toTrimmedString(movement.category) || 'Outros';
@@ -987,14 +986,14 @@ document.addEventListener('DOMContentLoaded', () => {
       || toTrimmedString(movement.metodoPagamento)
       || toTrimmedString(movement.metodo)
       || toTrimmedString(movement.paymentMethod)
-      || (normalizedType === 'saida' ?'Despesas' : 'Dinheiro');
+      || (normalizedType === 'saida' ? 'Despesas' : 'Dinheiro');
 
     return {
       id,
       data: isoDate,
       tipo: type || 'Entrada',
       categoria: category || 'Outros',
-      valor: Number.isFinite(sanitizedValue) ?sanitizedValue : 0,
+      valor: Number.isFinite(sanitizedValue) ? sanitizedValue : 0,
       funcionario: employee || 'Equipe',
       observacoes: observations,
       formaPagamento: paymentMethod,
@@ -1019,8 +1018,8 @@ document.addEventListener('DOMContentLoaded', () => {
       recalculateCashierDashboardFromMovements();
       renderCashierReports(cashierMovementsData);
     } catch (error) {
-      console.error('Erro ao carregar movimentações do caixa:', error);
-      if (!silent) alert('Erro ao carregar movimentações do caixa: ' + error.message);
+      console.error('Erro ao carregar movimentaÃ§Ãµes do caixa:', error);
+      if (!silent) alert('Erro ao carregar movimentaÃ§Ãµes do caixa: ' + error.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -1091,8 +1090,8 @@ document.addEventListener('DOMContentLoaded', () => {
       })();
 
       const normalizedType = normalizeText(movement?.tipo);
-      const typeClass = normalizedType === 'saida' ?'bg-danger/10 text-danger' : 'bg-success/10 text-success';
-      const valueClass = normalizedType === 'saida' ?'text-danger' : 'text-success';
+      const typeClass = normalizedType === 'saida' ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success';
+      const valueClass = normalizedType === 'saida' ? 'text-danger' : 'text-success';
 
       const dateCell = document.createElement('td');
       dateCell.className = 'px-6 py-4 text-sm font-medium text-text-light dark:text-white whitespace-nowrap';
@@ -1107,7 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const categoryCell = document.createElement('td');
       categoryCell.className = 'px-6 py-4 text-sm';
-      categoryCell.textContent = movement?.categoria || '-';
+      categoryCell.textContent = movement?.categoria || 'â€”';
 
       const valueCell = document.createElement('td');
       valueCell.className = `px-6 py-4 text-right text-sm font-semibold ${valueClass}`;
@@ -1115,11 +1114,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const employeeCell = document.createElement('td');
       employeeCell.className = 'px-6 py-4 text-sm';
-      employeeCell.textContent = movement?.funcionario || '-';
+      employeeCell.textContent = movement?.funcionario || 'â€”';
 
       const observationsCell = document.createElement('td');
       observationsCell.className = 'px-6 py-4 text-sm max-w-xs';
-      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : '-';
+      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : 'â€”';
 
       tr.appendChild(dateCell);
       tr.appendChild(typeCell);
@@ -1150,10 +1149,10 @@ document.addEventListener('DOMContentLoaded', () => {
     cashierMovementsData.forEach(movement => {
       const amount = parseMovementAmount(movement);
       if (!(amount > 0)) return;
-      const parsedDate = parseMovementDate(movement) || (movement?.data ?new Date(movement.data) : null);
+      const parsedDate = parseMovementDate(movement) || (movement?.data ? new Date(movement.data) : null);
       if (!parsedDate || Number.isNaN(parsedDate.getTime())) return;
       const key = `${parsedDate.getFullYear()}-${parsedDate.getMonth()}`;
-      const bucket = key === currentKey ?totals.current : key === previousKey ?totals.previous : null;
+      const bucket = key === currentKey ? totals.current : key === previousKey ? totals.previous : null;
       if (!bucket) return;
       const type = normalizeText(movement?.tipo);
       if (CASHIER_ENTRY_TYPES.has(type) || type.includes('entrada')) {
@@ -1176,8 +1175,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const rounded = Math.round(change);
       const isPositive = rounded >= 0;
       const trend = invertTrend
-        ?(isPositive ?'down' : 'up')
-        : (isPositive ?'up' : 'down');
+        ? (isPositive ? 'down' : 'up')
+        : (isPositive ? 'up' : 'down');
       return { change: rounded, trend };
     };
 
@@ -1199,12 +1198,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openCashierMovementModal = () => {
     populateCashierMovementFormOptions();
-    if (movementEmployeeInput) {
-      movementEmployeeInput.value = currentUser || '';
-      movementEmployeeInput.readOnly = true;
-      movementEmployeeInput.classList.add('cursor-not-allowed', 'bg-gray-100', 'dark:bg-gray-800');
-      movementEmployeeInput.title = 'Responsável preenchido automaticamente';
-    }
     openModal('cashier-movement-modal');
   };
   const closeCashierMovementModal = () => closeModal('cashier-movement-modal');
@@ -1215,8 +1208,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formData = new FormData(cashierMovementForm);
     const type = (formData.get('type') || 'Entrada').toString();
-    const employee = (currentUser || '').trim() || 'Equipe';
-    if (movementEmployeeInput) movementEmployeeInput.value = employee;
+    const employee = (formData.get('employee') || '').toString().trim() || 'Equipe';
     const observations = (formData.get('observations') || '').toString().trim();
     const selectedCategory = (formData.get('category') || '').toString();
     const customCategory = (formData.get('category-custom') || '').toString().trim();
@@ -1226,14 +1218,14 @@ document.addEventListener('DOMContentLoaded', () => {
       category = customCategory;
     }
     if (!category) {
-      alert('Informe uma categoria para a movimentação.');
+      alert('Informe uma categoria para a movimentaÃ§Ã£o.');
       return;
     }
 
     const rawValue = formData.get('value');
     const numericValue = parseLocaleNumber(rawValue);
     if (!Number.isFinite(numericValue) || numericValue <= 0) {
-      alert('Informe um valor válido para a movimentação.');
+      alert('Informe um valor vÃ¡lido para a movimentaÃ§Ã£o.');
       return;
     }
     const sanitizedValue = Math.round(Math.abs(numericValue) * 100) / 100;
@@ -1241,7 +1233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalizedType = normalizeText(type);
     const paymentMethodRaw = (formData.get('payment-method') || '').toString().trim()
       || movementPaymentMethodSelect?.value
-      || (normalizedType === 'saida' ?'Cartão' : 'Dinheiro');
+      || (normalizedType === 'saida' ? 'CartÃ£o' : 'Dinheiro');
     const paymentMethod = paymentMethodRaw || 'Dinheiro';
     const normalizedPaymentMethod = normalizeText(paymentMethod);
 
@@ -1256,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const projectedCash = currentCashOnHand + sanitizedValue;
         if (projectedCash > cashLimit) {
           const formattedLimit = formatCurrencyBRL(cashLimit);
-          alert(`Esta operação ultrapassa o limite de caixa configurado (${formattedLimit}). Ajuste o valor ou selecione outra forma de pagamento.`);
+          alert(`Esta operaÃ§Ã£o ultrapassa o limite de caixa configurado (${formattedLimit}). Ajuste o valor ou selecione outra forma de pagamento.`);
           return;
         }
       }
@@ -1289,8 +1281,8 @@ document.addEventListener('DOMContentLoaded', () => {
       cashierMovementForm.reset();
       closeCashierMovementModal();
     } catch (error) {
-      console.error('Erro ao registrar movimentação do caixa:', error);
-      alert('Erro ao registrar movimentação: ' + error.message);
+      console.error('Erro ao registrar movimentaÃ§Ã£o do caixa:', error);
+      alert('Erro ao registrar movimentaÃ§Ã£o: ' + error.message);
     } finally {
       hideLoader();
     }
@@ -1373,11 +1365,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const amount = parseMovementAmount(movement);
       if (!(amount > 0)) return;
 
-    const rawType = normalizeText(
-      movement?.tipoOperacao
-        || movement?.tipoMovimentacao
-        || movement?.tipo
-    );
+      const rawType = normalizeText(movement?.tipoOperacao ?? movement?.tipoMovimentacao ?? movement?.tipo);
       let isEntry = CASHIER_ENTRY_TYPES.has(rawType);
       let isExpense = CASHIER_EXPENSE_TYPES.has(rawType);
       let isReinforcement = CASHIER_REINFORCEMENT_TYPES.has(rawType);
@@ -1403,7 +1391,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const text = found.toString().trim();
           return text.charAt(0).toUpperCase() + text.slice(1);
         }
-        return isExpense ?'Despesas' : 'Dinheiro';
+        return isExpense ? 'Despesas' : 'Dinheiro';
       })();
 
       const category = (() => {
@@ -1526,7 +1514,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderCashierPaymentMethodsList = items => {
     if (!cashierPaymentMethodsList) return;
     cashierPaymentMethodsList.innerHTML = '';
-    const values = Array.isArray(items) ?items : [];
+    const values = Array.isArray(items) ? items : [];
     const total = values.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
     if (!values.length || total <= 0) {
       cashierPaymentMethodsList.innerHTML = '<li class="text-sm text-subtle-light dark:text-subtle-dark">Nenhum dado disponível.</li>';
@@ -1538,7 +1526,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const percentage = Math.round((amount / total) * 100);
       const lighten = Math.max(25, 80 - index * 15);
       const indicator = index === 0
-        ?'<span class="size-2.5 rounded-full bg-primary"></span>'
+        ? '<span class="size-2.5 rounded-full bg-primary"></span>'
         : `<span class="size-2.5 rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) ${lighten}%, white)"></span>`;
       cashierPaymentMethodsList.insertAdjacentHTML('beforeend', `
         <li class="flex items-center justify-between gap-4">
@@ -1597,7 +1585,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const chartReady = await waitForChartLibrary();
       if (!chartReady || typeof window === 'undefined' || typeof window.Chart !== 'function') {
-        console.warn('Biblioteca de gráficos indisponível para atualizar os relatórios do caixa.');
+        console.warn('Biblioteca de grÃ¡ficos indisponível para atualizar os relatÃ³rios do caixa.');
         return;
       }
 
@@ -1605,13 +1593,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const resolvedPeriod = period || 'monthly';
       const rootStyles = getComputedStyle(document.documentElement);
       const primaryColor = rootStyles.getPropertyValue('--color-primary')?.trim() || FALLBACK_PRIMARY_COLOR;
-      const textColor = document.documentElement.classList.contains('dark') ?'#ffffff' : '#111821';
-      const subtleColor = document.documentElement.classList.contains('dark') ?'rgba(255, 255, 255, 0.6)' : 'rgba(17, 24, 33, 0.6)';
-      const gridColor = document.documentElement.classList.contains('dark') ?'rgba(255, 255, 255, 0.1)' : 'rgba(17, 24, 33, 0.08)';
-      const borderColor = document.documentElement.classList.contains('dark') ?'rgba(255, 255, 255, 0.15)' : 'rgba(17, 24, 33, 0.12)';
+      const textColor = document.documentElement.classList.contains('dark') ? '#ffffff' : '#111821';
+      const subtleColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.6)' : 'rgba(17, 24, 33, 0.6)';
+      const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(17, 24, 33, 0.08)';
+      const borderColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.15)' : 'rgba(17, 24, 33, 0.12)';
       const primaryRgb = parseColorToRgb(primaryColor);
 
-      const paymentData = Array.isArray(dataset?.paymentMethods) ?dataset.paymentMethods : [];
+      const paymentData = Array.isArray(dataset?.paymentMethods) ? dataset.paymentMethods : [];
       const paymentLabels = paymentData.map(item => item.label);
       const paymentValues = paymentData.map(item => Number(item.value) || 0);
       const paymentColors = getAccessibleChartPalette(Math.max(paymentLabels.length, 1));
@@ -1649,13 +1637,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const cashFlowData = dataset?.cashFlow?.[resolvedPeriod] || dataset?.cashFlow?.monthly || { labels: [], values: [] };
-      const flowLabels = Array.isArray(cashFlowData.labels) ?cashFlowData.labels : [];
+      const flowLabels = Array.isArray(cashFlowData.labels) ? cashFlowData.labels : [];
       const flowValues = Array.isArray(cashFlowData.values)
-        ?cashFlowData.values.map(value => Number(value) || 0)
+        ? cashFlowData.values.map(value => Number(value) || 0)
         : [];
       const context = cashierCashFlowCanvas.getContext('2d');
       if (!context) {
-        console.warn('Não foi possível obter o contexto 2D para renderizar o gráfico de fluxo de caixa.');
+        console.warn('NÃ£o foi possÃ­vel obter o contexto 2D para renderizar o grÃ¡fico de fluxo de caixa.');
         return;
       }
       const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
@@ -1664,13 +1652,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const hasSinglePoint = flowValues.length === 1;
       const hasMultiplePoints = flowValues.length > 1;
-      const datasetBackground = hasMultiplePoints ?gradient : rgbaFromRgb(primaryRgb, 0.35);
-      const datasetBorderWidth = hasMultiplePoints ?3 : 0;
+      const datasetBackground = hasMultiplePoints ? gradient : rgbaFromRgb(primaryRgb, 0.35);
+      const datasetBorderWidth = hasMultiplePoints ? 3 : 0;
       const datasetFill = hasMultiplePoints;
-      const pointRadius = hasSinglePoint ?6 : 0;
-      const pointHoverRadius = hasSinglePoint ?8 : 4;
-      const pointBorderWidth = hasSinglePoint ?2 : 0;
-      const pointBorderColor = hasSinglePoint ?'#ffffff' : 'transparent';
+      const pointRadius = hasSinglePoint ? 6 : 0;
+      const pointHoverRadius = hasSinglePoint ? 8 : 4;
+      const pointBorderWidth = hasSinglePoint ? 2 : 0;
+      const pointBorderColor = hasSinglePoint ? '#ffffff' : 'transparent';
 
       if (cashierCashFlowChart) {
         cashierCashFlowChart.destroy();
@@ -1726,7 +1714,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
       });
     } catch (error) {
-      console.error('Não foi possível atualizar os gráficos do caixa:', error);
+      console.error('NÃ£o foi possÃ­vel atualizar os grÃ¡ficos do caixa:', error);
     }
   };
 
@@ -1777,19 +1765,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Configurações do Caixa ------------------------------------------------------
+  // ConfiguraÃ§Ãµes do Caixa ------------------------------------------------------
   const DEFAULT_CASHIER_SETTINGS = Object.freeze({
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTFeOaW0WW5vagcJW_zcy81BcChyOYwE3Twq5ThnJNoIqH82WF0bMzrvEhi0V9dWdG16xG9Fi9ns1lm3KVqONo-f98aG3k8IyZMKHVEZSMBif3fJDbvDAjhWhCCi9jo74-0mopopZTFqwdyiLKyogWYUevuHfIQT5y43nKqM4g5sLL-UE-bmgk6yVxEmLAhAHqT7yf_uCn7OJt7HNqfIG-Wzyx1ug39W0rU8R6Z9j8z6Lh9lsnOPiMEX_XIYLvzBXW7hauQ0Gn8lw',
     cashLimit: '',
     categories: [
       { id: 'category-1', name: 'Vendas', type: 'Receita', status: 'Ativo' },
       { id: 'category-2', name: 'Despesas Operacionais', type: 'Despesa', status: 'Ativo' },
-      { id: 'category-3', name: 'Reforços', type: 'Receita', status: 'Ativo' },
+      { id: 'category-3', name: 'ReforÃ§os', type: 'Receita', status: 'Ativo' },
     ],
     paymentMethods: [
       { id: 'payment-1', name: 'Dinheiro', status: 'Ativo' },
-      { id: 'payment-2', name: 'Cartão de Crédito', status: 'Ativo' },
-      { id: 'payment-3', name: 'Pagamento Móvel', status: 'Inativo' },
+      { id: 'payment-2', name: 'CartÃ£o de CrÃ©dito', status: 'Ativo' },
+      { id: 'payment-3', name: 'Pagamento MÃ³vel', status: 'Inativo' },
     ],
   });
 
@@ -1802,14 +1790,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const resolveCashierCategoryTypeFromMovement = movementTypeValue => {
     const normalized = normalizeText(movementTypeValue);
-    return normalized === 'saida' ?'Despesa' : 'Receita';
+    return normalized === 'saida' ? 'Despesa' : 'Receita';
   };
 
   const getActiveCashierCategories = movementTypeValue => {
     const state = ensureCashierSettingsState();
     const expectedType = resolveCashierCategoryTypeFromMovement(movementTypeValue);
     return Array.isArray(state?.categories)
-      ?state.categories.filter(category => (
+      ? state.categories.filter(category => (
         category
         && category.status !== 'Inativo'
         && category.type === expectedType
@@ -1821,7 +1809,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const getActiveCashierPaymentMethods = () => {
     const state = ensureCashierSettingsState();
     return Array.isArray(state?.paymentMethods)
-      ?state.paymentMethods.filter(method => (
+      ? state.paymentMethods.filter(method => (
         method
         && method.status !== 'Inativo'
         && typeof method.name === 'string'
@@ -1832,7 +1820,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const isCashPaymentMethodName = methodName => {
     const normalized = normalizeText(methodName);
     if (!normalized) return false;
-    return normalized.includes('dinheir') || normalized.includes('cash') || normalized.includes('espécie') || normalized.includes('especie');
+    return normalized.includes('dinheir') || normalized.includes('cash') || normalized.includes('espÃ©cie') || normalized.includes('especie');
   };
 
   const getCashPaymentMethodNames = () => {
@@ -1848,7 +1836,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = ensureCashierSettingsState();
     const raw = state?.cashLimit;
     const numeric = parseLocaleNumber(raw);
-    return Number.isFinite(numeric) && numeric > 0 ?numeric : Number.NaN;
+    return Number.isFinite(numeric) && numeric > 0 ? numeric : Number.NaN;
   };
 
   const toggleCustomCategoryInputVisibility = shouldShow => {
@@ -1939,30 +1927,30 @@ document.addEventListener('DOMContentLoaded', () => {
       const amount = parseMovementAmount(movement);
       if (!(amount > 0)) return total;
       const type = normalizeText(movement?.tipo);
-      const sign = type === 'saida' ?-1 : 1;
+      const sign = type === 'saida' ? -1 : 1;
       return total + amount * sign;
     }, 0);
   };
 
   const normalizeCashierCategory = category => {
     if (!category || typeof category !== 'object') return null;
-    const name = typeof category.name === 'string' ?category.name.trim() : '';
+    const name = typeof category.name === 'string' ? category.name.trim() : '';
     if (!name) return null;
-    const type = category.type === 'Despesa' ?'Despesa' : 'Receita';
-    const status = category.status === 'Inativo' ?'Inativo' : 'Ativo';
+    const type = category.type === 'Despesa' ? 'Despesa' : 'Receita';
+    const status = category.status === 'Inativo' ? 'Inativo' : 'Ativo';
     const id = typeof category.id === 'string' && category.id.trim()
-      ?category.id
+      ? category.id
       : `category-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
     return { id, name, type, status };
   };
 
   const normalizeCashierPaymentMethod = method => {
     if (!method || typeof method !== 'object') return null;
-    const name = typeof method.name === 'string' ?method.name.trim() : '';
+    const name = typeof method.name === 'string' ? method.name.trim() : '';
     if (!name) return null;
-    const status = method.status === 'Inativo' ?'Inativo' : 'Ativo';
+    const status = method.status === 'Inativo' ? 'Inativo' : 'Ativo';
     const id = typeof method.id === 'string' && method.id.trim()
-      ?method.id
+      ? method.id
       : `payment-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
     return { id, name, status };
   };
@@ -2027,8 +2015,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setCashierSettingsState(data);
       updateCashierSettingsUI();
     } catch (error) {
-      console.error('Erro ao carregar configurações do caixa:', error);
-      if (!silent) alert('Erro ao carregar configurações do caixa: ' + error.message);
+      console.error('Erro ao carregar configuraÃ§Ãµes do caixa:', error);
+      if (!silent) alert('Erro ao carregar configuraÃ§Ãµes do caixa: ' + error.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -2062,7 +2050,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderCashierSettingsCategories = () => {
     if (!cashierSettingsCategoriesBody) return;
     cashierSettingsCategoriesBody.innerHTML = '';
-    const categories = Array.isArray(cashierSettingsState?.categories) ?cashierSettingsState.categories : [];
+    const categories = Array.isArray(cashierSettingsState?.categories) ? cashierSettingsState.categories : [];
     if (!categories.length) {
       const emptyRow = document.createElement('tr');
       const emptyCell = document.createElement('td');
@@ -2085,7 +2073,7 @@ document.addEventListener('DOMContentLoaded', () => {
       statusCell.className = 'whitespace-nowrap';
       const statusBadge = document.createElement('span');
       statusBadge.className = `status-pill ${category.status === 'Ativo'
-        ?'status-pill--active'
+        ? 'status-pill--active'
         : 'status-pill--inactive'}`;
       statusBadge.textContent = category.status;
       statusCell.appendChild(statusBadge);
@@ -2107,13 +2095,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderCashierSettingsPaymentMethods = () => {
     if (!cashierSettingsPaymentMethodsBody) return;
     cashierSettingsPaymentMethodsBody.innerHTML = '';
-    const methods = Array.isArray(cashierSettingsState?.paymentMethods) ?cashierSettingsState.paymentMethods : [];
+    const methods = Array.isArray(cashierSettingsState?.paymentMethods) ? cashierSettingsState.paymentMethods : [];
     if (!methods.length) {
       const emptyRow = document.createElement('tr');
       const emptyCell = document.createElement('td');
       emptyCell.colSpan = 3;
       emptyCell.className = 'text-sm text-subtle-light dark:text-subtle-dark text-center';
-      emptyCell.textContent = 'Nenhum método de pagamento cadastrado.';
+      emptyCell.textContent = 'Nenhum mÃ©todo de pagamento cadastrado.';
       emptyRow.appendChild(emptyCell);
       cashierSettingsPaymentMethodsBody.appendChild(emptyRow);
       return;
@@ -2127,7 +2115,7 @@ document.addEventListener('DOMContentLoaded', () => {
       statusCell.className = 'whitespace-nowrap';
       const badge = document.createElement('span');
       badge.className = `status-pill ${method.status === 'Ativo'
-        ?'status-pill--active'
+        ? 'status-pill--active'
         : 'status-pill--inactive'}`;
       badge.textContent = method.status;
       statusCell.appendChild(badge);
@@ -2136,23 +2124,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const toggleButton = document.createElement('button');
       toggleButton.type = 'button';
       const isActive = method.status === 'Ativo';
-      toggleButton.className = isActive ?'text-danger hover:text-danger/80' : 'text-success hover:text-success/80';
-      toggleButton.textContent = isActive ?'Desativar' : 'Ativar';
+      toggleButton.className = isActive ? 'text-danger hover:text-danger/80' : 'text-success hover:text-success/80';
+      toggleButton.textContent = isActive ? 'Desativar' : 'Ativar';
       toggleButton.addEventListener('click', async () => {
         const state = ensureCashierSettingsState();
         const nextMethods = state.paymentMethods.map(item => (
           item.id === method.id
-            ?{ ...item, status: item.status === 'Ativo' ?'Inativo' : 'Ativo' }
+            ? { ...item, status: item.status === 'Ativo' ? 'Inativo' : 'Ativo' }
             : item
         ));
         cashierSettingsState = { ...state, paymentMethods: nextMethods };
         try {
           cashierSettingsState = await saveCashierSettingsToServer(cashierSettingsState);
           updateCashierSettingsUI();
-          showCashierSettingsToast('Status do método atualizado.');
+          showCashierSettingsToast('Status do mÃ©todo atualizado.');
         } catch (error) {
-          console.error('Erro ao atualizar método de pagamento:', error);
-          showCashierSettingsToast('Não foi possível atualizar o método agora.');
+          console.error('Erro ao atualizar mÃ©todo de pagamento:', error);
+          showCashierSettingsToast('NÃ£o foi possÃ­vel atualizar o mÃ©todo agora.');
         }
       });
       actionsCell.appendChild(toggleButton);
@@ -2184,7 +2172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cashierCategoryNameInput) cashierCategoryNameInput.value = category?.name || '';
     if (cashierCategoryTypeInput) cashierCategoryTypeInput.value = category?.type || 'Receita';
     if (cashierCategoryTitle) {
-      cashierCategoryTitle.textContent = category ?'Editar Categoria' : 'Adicionar Categoria';
+      cashierCategoryTitle.textContent = category ? 'Editar Categoria' : 'Adicionar Categoria';
     }
     openModal('cashier-category-modal');
   };
@@ -2197,14 +2185,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData(cashierCategoryForm);
     const id = (formData.get('id') || '').toString().trim();
     const name = (formData.get('name') || '').toString().trim();
-    const type = formData.get('type') === 'Despesa' ?'Despesa' : 'Receita';
+    const type = formData.get('type') === 'Despesa' ? 'Despesa' : 'Receita';
     if (!name) {
-      showCashierSettingsToast('Informe um nome válido para a categoria.');
+      showCashierSettingsToast('Informe um nome vÃ¡lido para a categoria.');
       return;
     }
     const state = ensureCashierSettingsState();
     const categories = Array.isArray(state.categories)
-      ?[...state.categories]
+      ? [...state.categories]
       : [];
     if (id) {
       const index = categories.findIndex(category => category.id === id);
@@ -2226,10 +2214,10 @@ document.addEventListener('DOMContentLoaded', () => {
       cashierSettingsState = await saveCashierSettingsToServer(cashierSettingsState);
       updateCashierSettingsUI();
       closeCashierCategoryModal();
-      showCashierSettingsToast(id ?'Categoria atualizada com sucesso!' : 'Categoria adicionada com sucesso!');
+      showCashierSettingsToast(id ? 'Categoria atualizada com sucesso!' : 'Categoria adicionada com sucesso!');
     } catch (error) {
       console.error('Erro ao salvar categoria:', error);
-      showCashierSettingsToast('Não foi possível salvar a categoria.');
+      showCashierSettingsToast('NÃ£o foi possÃ­vel salvar a categoria.');
     }
   };
 
@@ -2246,7 +2234,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showCashierSettingsToast('Limite de caixa salvo com sucesso!');
     } catch (error) {
       console.error('Erro ao salvar limite de caixa:', error);
-      showCashierSettingsToast('Não foi possível salvar o limite agora.');
+      showCashierSettingsToast('NÃ£o foi possÃ­vel salvar o limite agora.');
     }
   };
 
@@ -2265,8 +2253,8 @@ document.addEventListener('DOMContentLoaded', () => {
       URL.revokeObjectURL(url);
       showCashierSettingsToast('Backup dos dados iniciado.');
     } catch (error) {
-      console.warn('Não foi possível gerar o backup das configurações:', error);
-      showCashierSettingsToast('Não foi possível gerar o backup agora.');
+      console.warn('NÃ£o foi possÃ­vel gerar o backup das configuraÃ§Ãµes:', error);
+      showCashierSettingsToast('NÃ£o foi possÃ­vel gerar o backup agora.');
     }
   };
 
@@ -2274,13 +2262,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = event.target?.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      showCashierSettingsToast('Selecione um arquivo de imagem válido.');
+      showCashierSettingsToast('Selecione um arquivo de imagem vÃ¡lido.');
       event.target.value = '';
       return;
     }
     const reader = new FileReader();
     reader.onload = async e => {
-      const result = typeof e.target?.result === 'string' ?e.target.result : null;
+      const result = typeof e.target?.result === 'string' ? e.target.result : null;
       if (!result) return;
       const state = ensureCashierSettingsState();
       cashierSettingsState = { ...state, logo: result };
@@ -2291,7 +2279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showCashierSettingsToast('Logotipo alterado com sucesso!');
       } catch (error) {
         console.error('Erro ao salvar logotipo do caixa:', error);
-        showCashierSettingsToast('Não foi possível atualizar o logotipo.');
+        showCashierSettingsToast('NÃ£o foi possÃ­vel atualizar o logotipo.');
       }
     };
     reader.readAsDataURL(file);
@@ -2341,9 +2329,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const updateDarkModeToggleState = isDark => {
     darkModeToggles.forEach(button => {
-      button.setAttribute('aria-pressed', isDark ?'true' : 'false');
+      button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
       const icon = button.querySelector('.material-symbols-outlined');
-      if (icon) icon.textContent = isDark ?'light_mode' : 'dark_mode';
+      if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
     });
   };
 
@@ -2352,7 +2340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       return window.localStorage.getItem(THEME_STORAGE_KEY);
     } catch (error) {
-      console.warn('Não foi possível ler a preferência de tema:', error);
+      console.warn('NÃ£o foi possÃ­vel ler a preferÃªncia de tema:', error);
       return null;
     }
   };
@@ -2362,7 +2350,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, theme);
     } catch (error) {
-      console.warn('Não foi possível salvar a preferência de tema:', error);
+      console.warn('NÃ£o foi possÃ­vel salvar a preferÃªncia de tema:', error);
     }
   };
 
@@ -2377,7 +2365,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const storedTheme = getStoredThemePreference();
     hasExplicitThemePreference = storedTheme !== null;
     const prefersDark = darkModeMediaQuery?.matches ?? false;
-    const initialTheme = storedTheme ? storedTheme : (prefersDark ? 'dark' : 'light');
+    const initialTheme = storedTheme ?? (prefersDark ? 'dark' : 'light');
     applyDarkModePreference(initialTheme);
     refreshCashierReportsCharts();
 
@@ -2385,7 +2373,7 @@ document.addEventListener('DOMContentLoaded', () => {
       darkModeToggles.forEach(button => {
         button.addEventListener('click', () => {
           const isDark = document.documentElement.classList.contains('dark');
-          const nextTheme = isDark ?'light' : 'dark';
+          const nextTheme = isDark ? 'light' : 'dark';
           hasExplicitThemePreference = true;
           setStoredThemePreference(nextTheme);
           applyDarkModePreference(nextTheme);
@@ -2397,7 +2385,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (darkModeMediaQuery) {
       darkModeMediaQuery.addEventListener('change', event => {
         if (!hasExplicitThemePreference) {
-          applyDarkModePreference(event.matches ?'dark' : 'light');
+          applyDarkModePreference(event.matches ? 'dark' : 'light');
           refreshCashierReportsCharts();
         }
       });
@@ -2528,7 +2516,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { id, photo } = payload;
       if (id && String(id) === String(currentUserId)) {
         try {
-          await initProfilePhoto(photo || null);
+          await initProfilePhoto(photo ?? null);
         } catch (error) {
           console.error('Erro ao sincronizar foto de perfil:', error);
         }
@@ -2558,7 +2546,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginContainer.style.display = 'none';
     appContainer.classList.remove('hidden');
     const restoredModule = restoreStoredModule();
-    await initProfilePhoto(photo || null);
+    await initProfilePhoto(photo ?? null);
     toggleAdminFeatures(userRole === 'admin');
     if (restoredModule === 'stock') {
       restoreStoredPage();
@@ -2627,7 +2615,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (newPassword !== confirmPassword) {
-      alert('As senhas digitadas não conferem.');
+      alert('As senhas digitadas nÃ£o conferem.');
       return;
     }
 
@@ -2641,7 +2629,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Não foi possível redefinir a senha.');
+        alert(data.error || 'NÃ£o foi possÃ­vel redefinir a senha.');
         return;
       }
       alert(data.message || 'Senha redefinida com sucesso!');
@@ -2680,7 +2668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         username: data.username || username,
         userId: data.userId,
         role: data.role,
-        photo: data.photo || null
+        photo: data.photo ?? null
       });
     } catch (err) {
       alert('Erro no servidor: ' + err.message);
@@ -2731,7 +2719,7 @@ document.addEventListener('DOMContentLoaded', () => {
             credentials: 'include'
           });
         } catch (error) {
-          console.error('Não foi possível encerrar a sessão no servidor:', error);
+          console.error('NÃ£o foi possÃ­vel encerrar a sessÃ£o no servidor:', error);
         }
       }
     } finally {
@@ -2775,7 +2763,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const handleSessionExpiry = async () => {
     if (isSessionExpiryHandled) return;
     isSessionExpiryHandled = true;
-    alert('Sua sessão expirou. Faça login novamente.');
+    alert('Sua sessÃ£o expirou. FaÃ§a login novamente.');
     await logout({ skipRequest: true });
   };
 
@@ -2787,7 +2775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await fetch(input, options);
     if (response.status === 401) {
       await handleSessionExpiry();
-      throw new Error('Sessão expirada. Faça login novamente.');
+      throw new Error('SessÃ£o expirada. FaÃ§a login novamente.');
     }
     return response;
   };
@@ -2796,7 +2784,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await authenticatedFetch(input, init);
     const data = await response.json();
     if (!response.ok) {
-      const message = (data && data.error) || 'Erro na requisição.';
+      const message = (data && data.error) || 'Erro na requisiÃ§Ã£o.';
       throw new Error(message);
     }
     return data;
@@ -2841,7 +2829,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!silent) showLoader();
       const data = await authenticatedJsonFetch(`${BASE_URL}/api/estoque`);
       const raw = Array.isArray(data)
-        ?data
+        ? data
         : Object.entries(data || {}).map(([id, item]) => ({ id, ...item }));
       estoqueData = raw.filter(item => item);
       filteredProducts = [...estoqueData];
@@ -2866,13 +2854,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (end) params.append('end', end);
       if (!silent) showLoader();
       const data = await authenticatedJsonFetch(`${BASE_URL}/api/movimentacoes?${params.toString()}`);
-      movementsData = Array.isArray(data) ?data : [];
+      movementsData = Array.isArray(data) ? data : [];
       renderMovimentacoes();
       renderCashierReports(cashierMovementsData);
       recalculateCashierDashboardFromMovements();
     } catch (err) {
-      console.error('Erro ao carregar movimentações:', err);
-      alert('Erro ao carregar movimentações: ' + err.message);
+      console.error('Erro ao carregar movimentaÃ§Ãµes:', err);
+      alert('Erro ao carregar movimentaÃ§Ãµes: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
@@ -2891,14 +2879,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
       await renderReports(summaryData, stockData);
     } catch (err) {
-      console.error('Erro ao carregar relatórios:', err);
-      alert('Erro ao carregar relatórios: ' + err.message);
+      console.error('Erro ao carregar relatÃ³rios:', err);
+      alert('Erro ao carregar relatÃ³rios: ' + err.message);
     } finally {
       if (!silent) hideLoader();
     }
   };
 
-  // Renderizações ---------------------------------------------------------------
+  // RenderizaÃ§Ãµes ---------------------------------------------------------------
   const applyFilters = () => {
     const searchTerm = (searchInput?.value || '').trim().toLowerCase();
     const today = new Date();
@@ -2911,14 +2899,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activeFilter === 'low_stock') {
         return Number(product.quantidade) < 25;
       }
-      if (activeFilter === 'expiring_soon' || activeFilter === 'expired') {
+      if (activeFilter === 'expiring_soon') {
         if (!product.validade) return false;
         const expiry = new Date(product.validade);
         if (Number.isNaN(expiry.getTime())) return false;
         expiry.setHours(0, 0, 0, 0);
         const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-        if (activeFilter === 'expiring_soon') return diff <= 30 && diff >= 0;
-        return diff < 0;
+        return diff <= 30 && diff >= 0;
       }
       return true;
     });
@@ -2942,12 +2929,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (gridViewBtn) {
       gridViewBtn.classList.toggle('bg-primary', isGridView);
       gridViewBtn.classList.toggle('text-white', isGridView);
-      gridViewBtn.setAttribute('aria-pressed', isGridView ?'true' : 'false');
+      gridViewBtn.setAttribute('aria-pressed', isGridView ? 'true' : 'false');
     }
     if (listViewBtn) {
       listViewBtn.classList.toggle('bg-primary', !isGridView);
       listViewBtn.classList.toggle('text-white', !isGridView);
-      listViewBtn.setAttribute('aria-pressed', !isGridView ?'true' : 'false');
+      listViewBtn.setAttribute('aria-pressed', !isGridView ? 'true' : 'false');
     }
   };
 
@@ -2965,7 +2952,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (pageItems.length === 0) {
       const emptyStateClasses = currentView === 'grid'
-        ?'col-span-full text-center text-subtle-light dark:text-subtle-dark'
+        ? 'col-span-full text-center text-subtle-light dark:text-subtle-dark'
         : 'w-full text-center text-subtle-light dark:text-subtle-dark';
       productGrid.innerHTML = `<p class="${emptyStateClasses}">Nenhum produto encontrado.</p>`;
       renderPaginationControls(totalPages);
@@ -2982,15 +2969,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const expiry = new Date(product.validade);
         expiry.setHours(0, 0, 0, 0);
         const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-        if (!Number.isNaN(diff)) {
-          if (diff < 0) {
-            expiryBadge = `<div class="absolute top-2 right-2 bg-black text-white rounded-full p-1.5 z-10" title="Produto vencido"><span class="material-icons">warning</span></div>`;
-          } else if (diff <= 30 && diff >= 0) {
-            expiryBadge = `<div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 z-10" title="Vencendo em breve"><span class="material-icons">warning</span></div>`;
-          }
+        if (!Number.isNaN(diff) && diff <= 30 && diff >= 0) {
+          expiryBadge = `<div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 z-10" title="Vencendo em breve"><span class="material-icons">warning</span></div>`;
         }
       }
-      const validityText = product.validade ?formatDate(product.validade) : 'Sem validade';
+      const validityText = product.validade ? formatDate(product.validade) : 'Sem validade';
       const stockPercentage = Math.min(Math.round((quantity / 150) * 100), 100);
       let stockColor = 'bg-green-500';
       if (stockPercentage < 50) stockColor = 'bg-yellow-500';
@@ -3089,7 +3072,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let page = 1; page <= totalPages; page++) {
       const button = document.createElement('button');
       button.textContent = page;
-      button.className = `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${page === currentPage ?'bg-primary text-white' : 'bg-surface-light dark:bg-surface-dark hover:bg-gray-200 dark:hover:bg-gray-700'}`;
+      button.className = `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${page === currentPage ? 'bg-primary text-white' : 'bg-surface-light dark:bg-surface-dark hover:bg-gray-200 dark:hover:bg-gray-700'}`;
       if (page === currentPage) {
         button.disabled = true;
       }
@@ -3136,7 +3119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     movementsData.forEach(move => {
       const tr = document.createElement('tr');
       const cells = [
-        move.data ?new Date(move.data).toLocaleString('pt-BR') : '-',
+        move.data ? new Date(move.data).toLocaleString('pt-BR') : '-',
         move.usuario || '-',
         move.produto || '-',
         move.tipo || '-',
@@ -3181,14 +3164,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const rootStyles = getComputedStyle(document.documentElement);
     const isDarkTheme = document.documentElement.classList.contains('dark');
     const axisColor = (isDarkTheme
-      ?rootStyles.getPropertyValue('--color-subtle-dark')
-      : rootStyles.getPropertyValue('--color-subtle-light'))?.trim() || (isDarkTheme ?'#CBD5E1' : '#475569');
-    const gridColor = isDarkTheme ?'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.2)';
-    const doughnutBorderColor = isDarkTheme ?'rgba(15, 23, 42, 0.65)' : '#FFFFFF';
+      ? rootStyles.getPropertyValue('--color-subtle-dark')
+      : rootStyles.getPropertyValue('--color-subtle-light'))?.trim() || (isDarkTheme ? '#CBD5E1' : '#475569');
+    const gridColor = isDarkTheme ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.2)';
+    const doughnutBorderColor = isDarkTheme ? 'rgba(15, 23, 42, 0.65)' : '#FFFFFF';
 
     const chartReady = await waitForChartLibrary();
     if (!chartReady) {
-      console.warn('Biblioteca de gráficos indisponível. Os relatórios serão exibidos sem gráficos.');
+      console.warn('Biblioteca de grÃ¡ficos indisponível. Os relatÃ³rios serÃ£o exibidos sem grÃ¡ficos.');
       return;
     }
 
@@ -3277,7 +3260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     homeKpiLowStock.textContent = lowStockCount.toString();
     homeKpiExpiring.textContent = expiringSoon.toString();
     homeKpiStockValue.textContent = stockValue > 0
-      ?`R$ ${stockValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      ? `R$ ${stockValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : 'R$ 0,00';
 
     if (recentActivityList) {
@@ -3360,7 +3343,7 @@ document.addEventListener('DOMContentLoaded', () => {
           icon: 'history',
           badgeClasses: 'bg-slate-100 dark:bg-slate-800/60',
           iconClasses: 'text-slate-600 dark:text-slate-300',
-          titlePrefix: 'Movimentação'
+          titlePrefix: 'MovimentaÃ§Ã£o'
         }
       };
 
@@ -3394,13 +3377,13 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
         const productName = move.produto || move.nomeProduto || '';
         const userLabel = move.usuario ? `Usuário: ${move.usuario}` : 'Usuário';
-        const destinationLabel = move.destino ?`Destino: ${move.destino}` : '';
-        const details = [userLabel, destinationLabel].filter(Boolean).join(' " ');
+        const destinationLabel = move.destino ? `Destino: ${move.destino}` : '';
+        const details = [userLabel, destinationLabel].filter(Boolean).join(' • ');
 
         const timeLabel = (() => {
-          if (!move.data) return 'Data não informada';
+          if (!move.data) return 'Data nÃ£o informada';
           const parsedDate = new Date(move.data);
-          if (Number.isNaN(parsedDate.getTime())) return 'Data não informada';
+          if (Number.isNaN(parsedDate.getTime())) return 'Data nÃ£o informada';
           return parsedDate.toLocaleString('pt-BR', {
             dateStyle: 'short',
             timeStyle: 'short'
@@ -3415,8 +3398,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="material-icons ${activityStyle.iconClasses}">${activityStyle.icon}</span>
             </div>
             <div>
-              <p class="font-medium text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantitySymbol ?quantitySymbol + ' ' : ''}${quantity.toLocaleString('pt-BR')}x ${productName}</p>
-              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'Movimentação registrada no sistema.'}</p>
+              <p class="font-medium text-text-light dark:text-text-dark">${activityStyle.titlePrefix}: ${quantitySymbol ? quantitySymbol + ' ' : ''}${quantity.toLocaleString('pt-BR')}x ${productName}</p>
+              <p class="text-sm text-subtle-light dark:text-subtle-dark">${details || 'MovimentaÃ§Ã£o registrada no sistema.'}</p>
             </div>
           </div>
           <p class="text-sm text-subtle-light dark:text-subtle-dark whitespace-nowrap text-right">${timeLabel}</p>`;
@@ -3511,18 +3494,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const quantidade = Number(document.getElementById('add-quantity').value) || 0;
     const validade = document.getElementById('add-expiryDate').value || null;
     const custoInput = document.getElementById('add-cost').value;
-    const custo = custoInput === '' ?null : Number.parseFloat(custoInput);
+    const custo = custoInput === '' ? null : Number.parseFloat(custoInput);
     if (!produto) {
       alert('Informe o nome do produto.');
       return;
     }
     if (custo === null || Number.isNaN(custo) || custo < 0) {
-      alert('Informe um custo válido.');
+      alert('Informe um custo vÃ¡lido.');
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
     const addImageInput = document.getElementById('add-image');
-    const imageFile = addImageInput?.files?.[0] || null;
+    const imageFile = addImageInput?.files?.[0] ?? null;
     try {
       showLoader();
       const formData = new FormData();
@@ -3557,17 +3540,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!product) return;
     currentProductId = product.id;
     editForm.elements.id.value = product.id;
-    editForm.elements.type.value = product.tipo || 'Açaí';
+    editForm.elements.type.value = product.tipo || 'AÃ§aÃ­';
     editForm.elements.name.value = product.produto || '';
     editForm.elements.lot.value = product.lote || '';
     editForm.elements.quantity.value = product.quantidade || 0;
-    editForm.elements.expiryDate.value = product.validade ?product.validade.substring(0, 10) : '';
+    editForm.elements.expiryDate.value = product.validade ? product.validade.substring(0, 10) : '';
     if (editForm.elements.cost) {
       const custoValor = product.custo !== undefined && product.custo !== null
-        ?Number(product.custo)
+        ? Number(product.custo)
         : '';
       editForm.elements.cost.value = custoValor === '' || Number.isNaN(custoValor)
-        ?''
+        ? ''
         : (Math.round(custoValor * 100) / 100).toFixed(2);
     }
     const preview = document.getElementById('edit-image-preview');
@@ -3589,9 +3572,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const quantidade = Number(editForm.elements.quantity.value) || 0;
     const validade = editForm.elements.expiryDate.value || null;
     const custoInput = editForm.elements.cost?.value ?? '';
-    const custo = custoInput === '' ?null : Number.parseFloat(custoInput);
+    const custo = custoInput === '' ? null : Number.parseFloat(custoInput);
     if (custo === null || Number.isNaN(custo) || custo < 0) {
-      alert('Informe um custo válido.');
+      alert('Informe um custo vÃ¡lido.');
       return;
     }
     const custoFormatado = Math.round(custo * 100) / 100;
@@ -3600,7 +3583,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const editImageInput = document.getElementById('edit-image');
-    const newImageFile = editImageInput?.files?.[0] || null;
+    const newImageFile = editImageInput?.files?.[0] ?? null;
     try {
       showLoader();
       const formData = new FormData();
@@ -3642,7 +3625,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentProductId) return;
     const motivo = deleteReasonInput.value.trim();
     if (!motivo) {
-      alert('Informe o motivo da exclusão.');
+      alert('Informe o motivo da exclusÃ£o.');
       return;
     }
     try {
@@ -3656,7 +3639,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadStock();
       await loadMovimentacoes();
       updateHomePage();
-      alert('Produto excluído com sucesso!');
+      alert('Produto excluÃ­do com sucesso!');
     } catch (err) {
       alert('Erro ao remover produto: ' + err.message);
     } finally {
@@ -3664,7 +3647,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Gestão de usuários ---------------------------------------------------------
+  // GestÃ£o de usuários ---------------------------------------------------------
   const approveUser = async userId => {
     try {
       showLoader();
@@ -3697,7 +3680,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await declineUser(userId);
   };
 
-  // Navegação ------------------------------------------------------------------
+  // NavegaÃ§Ã£o ------------------------------------------------------------------
   const storeActivePage = pageId => {
     activePageId = pageId;
   };
@@ -3858,7 +3841,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const resolved = getFullImageUrl(uploadedPath) || getFullImageUrl(FALLBACK_AVATAR_IMAGE);
         updateAllAvatars(resolved);
         profileModalImage.src = resolved;
-        await initProfilePhoto(uploadedPath || null);
+        await initProfilePhoto(uploadedPath ?? null);
         registerImageFallbacks(profileModalImage);
       } catch (err) {
         alert('Erro ao salvar foto: ' + err.message);
@@ -3902,14 +3885,14 @@ document.addEventListener('DOMContentLoaded', () => {
       showLoader();
       const res = await fetch(`${BASE_URL}/api/session`, { credentials: 'include' });
       if (!res.ok) {
-        throw new Error('Sessão não encontrada');
+        throw new Error('SessÃ£o nÃ£o encontrada');
       }
       const data = await res.json();
       await enterApplication({
         username: data.username,
         userId: data.userId,
         role: data.role,
-        photo: data.photo || null
+        photo: data.photo ?? null
       });
     } catch (error) {
       showLoginScreen();
@@ -4031,7 +4014,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert('Imagem deve ter no máximo 5MB.');
+        alert('Imagem deve ter no mÃ¡ximo 5MB.');
         profileImageFile = null;
         profileImageUpload.value = '';
         return;
@@ -4106,7 +4089,7 @@ document.addEventListener('DOMContentLoaded', () => {
         seguirPunteroMouse = true;
       }
       if (togglePasswordLoginIcon) {
-        togglePasswordLoginIcon.textContent = shouldReveal ?'visibility' : 'visibility_off';
+        togglePasswordLoginIcon.textContent = shouldReveal ? 'visibility' : 'visibility_off';
       }
     });
   }
@@ -4116,9 +4099,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const registerPassword = document.getElementById('register-password');
       if (!registerPassword) return;
       const shouldReveal = registerPassword.type === 'password';
-      registerPassword.type = shouldReveal ?'text' : 'password';
+      registerPassword.type = shouldReveal ? 'text' : 'password';
       if (togglePasswordRegisterIcon) {
-        togglePasswordRegisterIcon.textContent = shouldReveal ?'visibility' : 'visibility_off';
+        togglePasswordRegisterIcon.textContent = shouldReveal ? 'visibility' : 'visibility_off';
       }
     });
   }
@@ -4126,6 +4109,9 @@ document.addEventListener('DOMContentLoaded', () => {
   resetProfilePhoto();
   initializeFromStoredSession();
 });
+
+
+
 
 
 
