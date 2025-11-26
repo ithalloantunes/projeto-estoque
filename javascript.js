@@ -2907,6 +2907,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
         return diff <= 30 && diff >= 0;
       }
+      if (activeFilter === 'expired') {
+        if (!product.validade) return false;
+        const expiry = new Date(product.validade);
+        if (Number.isNaN(expiry.getTime())) return false;
+        expiry.setHours(0, 0, 0, 0);
+        return expiry < today;
+      }
       return true;
     });
     currentPage = 1;
