@@ -2976,8 +2976,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const expiry = new Date(product.validade);
         expiry.setHours(0, 0, 0, 0);
         const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-        if (!Number.isNaN(diff) && diff <= 30 && diff >= 0) {
-          expiryBadge = `<div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 z-10" title="Vencendo em breve"><span class="material-icons">warning</span></div>`;
+        if (!Number.isNaN(diff)) {
+          if (diff < 0) {
+            expiryBadge = `<div class="absolute top-2 right-2 bg-black text-white rounded-full p-1.5 z-10" title="Produto vencido"><span class="material-icons">warning</span></div>`;
+          } else if (diff <= 30) {
+            expiryBadge = `<div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 z-10" title="Vencendo em breve"><span class="material-icons">warning</span></div>`;
+          }
         }
       }
       const validityText = product.validade ? formatDate(product.validade) : 'Sem validade';
