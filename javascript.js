@@ -1106,7 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const categoryCell = document.createElement('td');
       categoryCell.className = 'px-6 py-4 text-sm';
-      categoryCell.textContent = movement?.categoria || 'â€”';
+      categoryCell.textContent = movement?.categoria || '—';
 
       const valueCell = document.createElement('td');
       valueCell.className = `px-6 py-4 text-right text-sm font-semibold ${valueClass}`;
@@ -1114,11 +1114,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const employeeCell = document.createElement('td');
       employeeCell.className = 'px-6 py-4 text-sm';
-      employeeCell.textContent = movement?.funcionario || 'â€”';
+      employeeCell.textContent = movement?.funcionario || '—';
 
       const observationsCell = document.createElement('td');
       observationsCell.className = 'px-6 py-4 text-sm max-w-xs';
-      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : 'â€”';
+      observationsCell.textContent = movement?.observacoes?.trim() ? movement.observacoes : '—';
 
       tr.appendChild(dateCell);
       tr.appendChild(typeCell);
