@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import fs from 'fs';
@@ -112,13 +112,13 @@ const createRateLimiter = ({ windowMs, max, message }) => rateLimit({
 const apiRateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
   max: RATE_LIMIT_MAX_REQUESTS,
-  message: 'Muitas solicitaÃ§Ãµes. Tente novamente mais tarde.'
+  message: 'Muitas solicitações. Tente novamente mais tarde.'
 });
 
 const loginRateLimiter = createRateLimiter({
   windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
   max: LOGIN_RATE_LIMIT_MAX_ATTEMPTS,
-  message: 'Muitas tentativas de login. Aguarde alguns instantes.'
+  message: 'Dados inválidos'
 });
 
 const registerRateLimiter = createRateLimiter({
@@ -202,7 +202,7 @@ let pool = null;
 
 const getSslConfigForCandidate = candidate => {
   const sslPreferenceRaw = sanitizeText(process.env.DATABASE_SSL);
-  const sslPreference = sslPreferenceRaw ? sslPreferenceRaw.toLowerCase() : '';
+  const sslPreference = sslPreferenceRaw ?sslPreferenceRaw.toLowerCase() : '';
   const host = tryParseHost(candidate.value);
   const isRenderHost = host?.endsWith('.render.com');
   const label = formatConnectionLabel(candidate);
@@ -211,7 +211,7 @@ const getSslConfigForCandidate = candidate => {
     if (isRenderHost) {
       console.warn(
         `DATABASE_SSL=disable foi definido enquanto ${label} aponta para um host do Render (${host}). ` +
-        'Essa configuraÃ§Ã£o costuma falhar, pois o Render exige TLS.'
+        'Essa configuração costuma falhar, pois o Render exige TLS.'
       );
     }
     return false;
@@ -230,7 +230,7 @@ const getSslConfigForCandidate = candidate => {
     return { rejectUnauthorized: false };
   }
 
-  return isProduction ? { rejectUnauthorized: false } : false;
+  return isProduction ?{ rejectUnauthorized: false } : false;
 };
 
 const createPoolInstance = (connectionString, sslConfig) => {
@@ -240,7 +240,7 @@ const createPoolInstance = (connectionString, sslConfig) => {
     ssl: sslConfig,
   });
   instance.on('error', error => {
-    console.error('Erro inesperado na conexÃ£o com o banco de dados:', error);
+    console.error('Erro inesperado na conexão com o banco de dados:', error);
   });
   return instance;
 };
@@ -252,13 +252,13 @@ const closePool = async () => {
   try {
     await current.end();
   } catch (error) {
-    console.error('Erro ao encerrar o pool de conexÃµes:', error);
+    console.error('Erro ao encerrar o pool de conexões:', error);
   }
 };
 
 const getPool = () => {
   if (!pool) {
-    throw new Error('Pool de conexÃµes nÃ£o inicializado.');
+    throw new Error('Pool de conexões não inicializado.');
   }
   return pool;
 };
@@ -312,7 +312,7 @@ const ensureDatabaseConnection = async () => {
   ];
 
   if (!connectionCandidates.length) {
-    console.error('A variÃ¡vel de ambiente DATABASE_URL Ã© obrigatÃ³ria para iniciar o servidor.');
+    console.error('A variável de ambiente DATABASE_URL é obrigatória para iniciar o servidor.');
     process.exit(1);
   }
 
@@ -323,7 +323,7 @@ const ensureDatabaseConnection = async () => {
     const host = tryParseHost(candidate.value);
 
     if (candidate.type === 'fallback') {
-      console.warn(`Tentando conexÃ£o alternativa definida em ${formatConnectionLabel(candidate)}...`);
+      console.warn(`Tentando conexão alternativa definida em ${formatConnectionLabel(candidate)}...`);
     }
 
     try {
@@ -333,13 +333,13 @@ const ensureDatabaseConnection = async () => {
 
       if (!isProduction && host && isPrivateHost(host)) {
         console.warn(
-          `Aviso: a URL de conexÃ£o (${activeConnectionLabel}) usa o host privado "${host}". ` +
-          'Se estiver executando fora do Render, utilize uma URL externa (`DATABASE_URL_EXTERNAL` ou `RENDER_EXTERNAL_DATABASE_URL`) ou um banco acessÃ­vel localmente.'
+          `Aviso: a URL de conexão (${activeConnectionLabel}) usa o host privado "${host}". ` +
+          'Se estiver executando fora do Render, utilize uma URL externa (`DATABASE_URL_EXTERNAL` ou `RENDER_EXTERNAL_DATABASE_URL`) ou um banco acessível localmente.'
         );
       }
 
       if (candidate.type === 'fallback') {
-        console.warn(`ConexÃ£o principal indisponÃ­vel. Utilizando ${activeConnectionLabel}.`);
+        console.warn(`Conexão principal indisponível. Utilizando ${activeConnectionLabel}.`);
       }
 
       return pool;
@@ -350,7 +350,7 @@ const ensureDatabaseConnection = async () => {
         if (host && isPrivateHost(host)) {
           console.warn(
             `Falha ao conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}. ` +
-            'Tentando utilizar as variÃ¡veis de fallback...'
+            'Tentando utilizar as variáveis de fallback...'
           );
         } else {
           console.warn(`Falha ao conectar usando ${formatConnectionLabel(candidate)}: ${error.message}`);
@@ -370,18 +370,18 @@ const ensureDatabaseConnection = async () => {
     if (isPrimaryPrivateHost && (error?.code === 'ECONNREFUSED' || error?.code === 'ENOTFOUND')) {
       const baseMessage =
         error?.code === 'ENOTFOUND'
-          ? `NÃ£o foi possÃ­vel resolver o host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`
-          : `NÃ£o foi possÃ­vel conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`;
+          ?`Não foi possível resolver o host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`
+          : `Não foi possível conectar ao host interno "${host}" definido em ${formatConnectionLabel(candidate)}.`;
       const message =
-        `${baseMessage} Esse endereÃ§o costuma estar disponÃ­vel apenas dentro da infraestrutura do Render. ` +
-        'Defina `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa do banco ou utilize uma instÃ¢ncia local do PostgreSQL.';
+        `${baseMessage} Esse endereço costuma estar disponível apenas dentro da infraestrutura do Render. ` +
+        'Defina `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa do banco ou utilize uma instância local do PostgreSQL.';
       throw new Error(message, { cause: error });
     }
 
     throw error;
   }
 
-  throw new Error('NÃ£o foi possÃ­vel estabelecer conexÃ£o com o banco de dados.');
+  throw new Error('Não foi possível estabelecer conexão com o banco de dados.');
 };
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
@@ -427,7 +427,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: 'same-site' },
   referrerPolicy: { policy: 'no-referrer' },
-  hsts: isProduction ? undefined : false,
+  hsts: isProduction ?undefined : false,
 }));
 
 if (shouldEnforceHttps) {
@@ -439,7 +439,7 @@ if (shouldEnforceHttps) {
     }
     const sanitizedHost = sanitizeHostHeader(req.headers.host);
     if (!sanitizedHost) {
-      return res.status(400).json({ error: 'Host invÃ¡lido' });
+      return res.status(400).json({ error: 'Host inválido' });
     }
     return res.redirect(301, `https://${sanitizedHost}${req.originalUrl}`);
   });
@@ -451,7 +451,7 @@ app.use(express.json({ limit: '1mb' }));
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/data')) {
-    return res.status(404).json({ error: 'Recurso nÃ£o encontrado' });
+    return res.status(404).json({ error: 'Recurso não encontrado' });
   }
   return next();
 });
@@ -567,7 +567,7 @@ const MAX_UPLOAD_SIZE_MB = bytesToMegabytes(MAX_UPLOAD_SIZE);
 
 const formatMegabytesLabel = value => {
   if (!Number.isFinite(value)) return '0';
-  const decimals = value >= 1 ? 2 : 1;
+  const decimals = value >= 1 ?2 : 1;
   const normalized = Number.parseFloat(value.toFixed(decimals));
   return normalized.toString().replace('.', ',');
 };
@@ -576,7 +576,7 @@ const MAX_UPLOAD_SIZE_MB_LABEL = formatMegabytesLabel(MAX_UPLOAD_SIZE_MB);
 
 const imageFileFilter = (req, file, cb) => {
   if (!file.mimetype || !file.mimetype.startsWith('image/')) {
-    cb(new Error('Arquivo de imagem invÃ¡lido.'));
+    cb(new Error('Arquivo de imagem inválido.'));
   } else {
     cb(null, true);
   }
@@ -604,7 +604,7 @@ const userUpload = createUpload(createStorage(userImagesDir));
 const toPublicPath = relativePath => {
   if (!relativePath) return null;
   const normalized = relativePath.replace(/\\/g, '/');
-  return normalized.startsWith('/') ? normalized : `/${normalized}`;
+  return normalized.startsWith('/') ?normalized : `/${normalized}`;
 };
 
 const getStoredFilePath = file => {
@@ -621,7 +621,7 @@ const removeStoredFile = relativePath => {
     try {
       fs.unlinkSync(absolutePath);
     } catch (error) {
-      console.warn(`NÃ£o foi possÃ­vel remover o arquivo ${absolutePath}:`, error.message);
+      console.warn(`Não foi possível remover o arquivo ${absolutePath}:`, error.message);
     }
   }
 };
@@ -646,10 +646,10 @@ const mapUserRow = (row, { includePhotoData = false } = {}) => {
     approved: row.approved,
     photo: row.photo,
     photoMime: row.photo_mime,
-    recoveryCodeHash: row.recovery_code_hash ?? null,
+    recoveryCodeHash: row.recovery_code_hash ?null,
   };
   if (includePhotoData) {
-    mapped.photoData = row.photo_data ?? null;
+    mapped.photoData = row.photo_data ?null;
   }
   return mapped;
 };
@@ -692,7 +692,7 @@ const inferMimeFromFilename = filename => {
 
 const encodeImageBufferToDataUrl = (buffer, mimeType) => {
   if (!buffer) return null;
-  const source = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+  const source = Buffer.isBuffer(buffer) ?buffer : Buffer.from(buffer);
   const normalizedMime = sanitizeMimeType(mimeType) || DEFAULT_IMAGE_MIME;
   return `data:${normalizedMime};base64,${source.toString('base64')}`;
 };
@@ -755,13 +755,13 @@ const mapInventoryRow = (row, { includeImageData = false } = {}) => {
     tipo: row.tipo,
     lote: row.lote,
     quantidade: Number(row.quantidade) || 0,
-    validade: row.validade ? (row.validade instanceof Date ? row.validade.toISOString().slice(0, 10) : row.validade) : null,
-    custo: row.custo === null || row.custo === undefined ? null : Number(row.custo),
+    validade: row.validade ?(row.validade instanceof Date ?row.validade.toISOString().slice(0, 10) : row.validade) : null,
+    custo: row.custo === null || row.custo === undefined ?null : Number(row.custo),
     image: row.image,
     imageMime: row.image_mime,
   };
   if (includeImageData) {
-    mapped.imageData = row.image_data ?? null;
+    mapped.imageData = row.image_data ?null;
   }
   return mapped;
 };
@@ -772,10 +772,10 @@ const mapMovimentacaoRow = row => ({
   produto: row.produto,
   tipo: row.tipo,
   quantidade: Number(row.quantidade) || 0,
-  quantidadeAnterior: row.quantidade_anterior === null || row.quantidade_anterior === undefined ? null : Number(row.quantidade_anterior),
-  quantidadeAtual: row.quantidade_atual === null || row.quantidade_atual === undefined ? null : Number(row.quantidade_atual),
+  quantidadeAnterior: row.quantidade_anterior === null || row.quantidade_anterior === undefined ?null : Number(row.quantidade_anterior),
+  quantidadeAtual: row.quantidade_atual === null || row.quantidade_atual === undefined ?null : Number(row.quantidade_atual),
   motivo: row.motivo,
-  data: row.data instanceof Date ? row.data.toISOString() : row.data,
+  data: row.data instanceof Date ?row.data.toISOString() : row.data,
   usuario: row.usuario,
 });
 
@@ -787,12 +787,12 @@ const DEFAULT_CASHIER_SETTINGS = Object.freeze({
   categories: [
     { id: 'category-1', name: 'Vendas', type: 'Receita', status: 'Ativo' },
     { id: 'category-2', name: 'Despesas Operacionais', type: 'Despesa', status: 'Ativo' },
-    { id: 'category-3', name: 'ReforÃ§os', type: 'Receita', status: 'Ativo' },
+    { id: 'category-3', name: 'Reforços', type: 'Receita', status: 'Ativo' },
   ],
   paymentMethods: [
     { id: 'payment-1', name: 'Dinheiro', status: 'Ativo' },
-    { id: 'payment-2', name: 'CartÃ£o de CrÃ©dito', status: 'Ativo' },
-    { id: 'payment-3', name: 'Pagamento MÃ³vel', status: 'Inativo' },
+    { id: 'payment-2', name: 'Cartão de Crédito', status: 'Ativo' },
+    { id: 'payment-3', name: 'Pagamento Móvel', status: 'Inativo' },
   ],
 });
 
@@ -808,8 +808,8 @@ const normalizeCashierCategory = category => {
   const name = sanitizeText(category.name);
   if (!name) return null;
   const id = sanitizeText(category.id) || `category-${uuidv4()}`;
-  const type = sanitizeText(category.type) === 'Despesa' ? 'Despesa' : 'Receita';
-  const status = sanitizeText(category.status) === 'Inativo' ? 'Inativo' : 'Ativo';
+  const type = sanitizeText(category.type) === 'Despesa' ?'Despesa' : 'Receita';
+  const status = sanitizeText(category.status) === 'Inativo' ?'Inativo' : 'Ativo';
   return { id, name, type, status };
 };
 
@@ -818,7 +818,7 @@ const normalizeCashierPaymentMethod = method => {
   const name = sanitizeText(method.name);
   if (!name) return null;
   const id = sanitizeText(method.id) || `payment-${uuidv4()}`;
-  const status = sanitizeText(method.status) === 'Inativo' ? 'Inativo' : 'Ativo';
+  const status = sanitizeText(method.status) === 'Inativo' ?'Inativo' : 'Ativo';
   return { id, name, status };
 };
 
@@ -859,14 +859,14 @@ const mapCashierSettingsRow = row => mergeCashierSettings({
 const mapCashierMovementRow = row => ({
   id: row.id,
   userId: row.user_id,
-  data: row.data instanceof Date ? row.data.toISOString() : row.data,
+  data: row.data instanceof Date ?row.data.toISOString() : row.data,
   tipo: row.tipo,
   categoria: row.categoria,
-  valor: row.valor === null || row.valor === undefined ? 0 : Number(row.valor),
+  valor: row.valor === null || row.valor === undefined ?0 : Number(row.valor),
   funcionario: row.funcionario,
   observacoes: row.observacoes,
   formaPagamento: row.forma_pagamento,
-  criadoEm: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  criadoEm: row.created_at instanceof Date ?row.created_at.toISOString() : row.created_at,
 });
 
 const formatDateOnly = input => {
@@ -964,31 +964,31 @@ const mapCashierClosureRow = row => {
     funcionarioId: row.funcionario_id,
     criadoPor: row.criado_por,
     atualizadoPor: row.atualizado_por,
-    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
-    updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+    createdAt: row.created_at instanceof Date ?row.created_at.toISOString() : row.created_at,
+    updatedAt: row.updated_at instanceof Date ?row.updated_at.toISOString() : row.updated_at,
   };
 };
 
 const serializeClosureForLog = (closure, dataOperacao) => ({
-  dataOperacao: dataOperacao ?? formatDateOnly(closure?.dataOperacao),
-  funcionarioNome: closure?.funcionarioNome ?? null,
-  dinheiroSistema: closure?.dinheiroSistema ?? 0,
-  creditoSistema: closure?.creditoSistema ?? 0,
-  debitoSistema: closure?.debitoSistema ?? 0,
-  creditoMaquina: closure?.creditoMaquina ?? 0,
-  debitoMaquina: closure?.debitoMaquina ?? 0,
-  pagOnline: closure?.pagOnline ?? 0,
-  pix: closure?.pix ?? 0,
-  totalSistema: closure?.totalSistema ?? 0,
-  totalCaixaDinheiro: closure?.totalCaixaDinheiro ?? 0,
-  abertura: closure?.abertura ?? 0,
-  reforco: closure?.reforco ?? 0,
-  gastos: closure?.gastos ?? 0,
-  valorParaDeposito: closure?.valorParaDeposito ?? 0,
-  variavelCaixa: closure?.variavelCaixa ?? 0,
-  entregaCartao: closure?.entregaCartao ?? 0,
-  picolesSist: closure?.picolesSist ?? 0,
-  informacoes: closure?.informacoes ?? null,
+  dataOperacao: dataOperacao ?formatDateOnly(closure?.dataOperacao),
+  funcionarioNome: closure?.funcionarioNome ?null,
+  dinheiroSistema: closure?.dinheiroSistema ?0,
+  creditoSistema: closure?.creditoSistema ?0,
+  debitoSistema: closure?.debitoSistema ?0,
+  creditoMaquina: closure?.creditoMaquina ?0,
+  debitoMaquina: closure?.debitoMaquina ?0,
+  pagOnline: closure?.pagOnline ?0,
+  pix: closure?.pix ?0,
+  totalSistema: closure?.totalSistema ?0,
+  totalCaixaDinheiro: closure?.totalCaixaDinheiro ?0,
+  abertura: closure?.abertura ?0,
+  reforco: closure?.reforco ?0,
+  gastos: closure?.gastos ?0,
+  valorParaDeposito: closure?.valorParaDeposito ?0,
+  variavelCaixa: closure?.variavelCaixa ?0,
+  entregaCartao: closure?.entregaCartao ?0,
+  picolesSist: closure?.picolesSist ?0,
+  informacoes: closure?.informacoes ?null,
 });
 
 const getCashierClosureRowById = async id => {
@@ -1030,7 +1030,7 @@ const listCashierClosures = async ({ start, end } = {}) => {
       params.push(formatted);
     }
   }
-  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const where = clauses.length ?`WHERE ${clauses.join(' AND ')}` : '';
   const { rows } = await query(
     `SELECT ${CASHIER_CLOSURE_COLUMNS}
        FROM cashier_closures
@@ -1045,7 +1045,7 @@ const insertCashierClosureLog = async ({ closureId, userId, acao, detalhes }) =>
   await query(
     `INSERT INTO cashier_closure_logs (id, closure_id, user_id, acao, detalhes, created_at)
      VALUES ($1, $2, $3, $4, $5::jsonb, NOW())`,
-    [uuidv4(), closureId, userId ?? null, acao, JSON.stringify(detalhes ?? {})]
+    [uuidv4(), closureId, userId ?null, acao, JSON.stringify(detalhes ?{})]
   );
 };
 
@@ -1063,7 +1063,7 @@ const listCashierClosureLogs = async closureId => {
     userId: row.user_id,
     acao: row.acao,
     detalhes: row.detalhes,
-    criadoEm: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+    criadoEm: row.created_at instanceof Date ?row.created_at.toISOString() : row.created_at,
   }));
 };
 
@@ -1071,18 +1071,18 @@ const createCashierClosure = async (payload, user) => {
   const sanitized = sanitizeClosurePayload(payload, { defaultFuncionarioNome: sanitizeText(user?.username) });
   const dataOperacao = formatDateOnly(sanitized.dataOperacao);
   if (!dataOperacao) {
-    const error = new Error('Data da operaÃ§Ã£o invÃ¡lida.');
+    const error = new Error('Data da operação inválida.');
     error.statusCode = 400;
     throw error;
   }
   const existing = await getCashierClosureRowByDate(dataOperacao);
   if (existing) {
-    const error = new Error('JÃ¡ existe um fechamento registrado para esta data.');
+    const error = new Error('Já existe um fechamento registrado para esta data.');
     error.statusCode = 409;
     throw error;
   }
   const id = uuidv4();
-  const userId = user?.id ?? null;
+  const userId = user?.id ?null;
   const params = [
     id,
     dataOperacao,
@@ -1161,7 +1161,7 @@ const updateCashierClosureRecord = async (id, payload, user) => {
   });
   const dataOperacao = formatDateOnly(sanitized.dataOperacao);
   if (!dataOperacao) {
-    const error = new Error('Data da operaÃ§Ã£o invÃ¡lida.');
+    const error = new Error('Data da operação inválida.');
     error.statusCode = 400;
     throw error;
   }
@@ -1169,12 +1169,12 @@ const updateCashierClosureRecord = async (id, payload, user) => {
   if (dataOperacao !== currentDate) {
     const existing = await getCashierClosureRowByDate(dataOperacao);
     if (existing && existing.id !== id) {
-      const error = new Error('JÃ¡ existe um fechamento registrado para esta data.');
+      const error = new Error('Já existe um fechamento registrado para esta data.');
       error.statusCode = 409;
       throw error;
     }
   }
-  const userId = user?.id ?? null;
+  const userId = user?.id ?null;
   const params = [
     id,
     dataOperacao,
@@ -1299,13 +1299,13 @@ const listCashierMovements = async () => {
 
 const insertCashierMovement = async movement => {
   const id = uuidv4();
-  const timestamp = movement.data ? new Date(movement.data) : new Date();
+  const timestamp = movement.data ?new Date(movement.data) : new Date();
   await query(
     `INSERT INTO cashier_movements (id, user_id, data, tipo, categoria, valor, funcionario, observacoes, forma_pagamento, created_at)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())`,
     [
       id,
-      movement.userId ?? null,
+      movement.userId ?null,
       timestamp,
       movement.tipo,
       movement.categoria,
@@ -1321,32 +1321,32 @@ const insertCashierMovement = async movement => {
       WHERE id = $1 LIMIT 1`,
     [id]
   );
-  return rows[0] ? mapCashierMovementRow(rows[0]) : null;
+  return rows[0] ?mapCashierMovementRow(rows[0]) : null;
 };
 
 const sanitizeCashierMovementPayload = (payload, user) => {
   const tipo = sanitizeText(payload?.tipo) || 'Entrada';
   const categoria = sanitizeText(payload?.categoria);
   if (!categoria) {
-    const error = new Error('Categoria invÃ¡lida');
+    const error = new Error('Categoria inválida');
     error.statusCode = 400;
     throw error;
   }
   const rawValue = Number.parseFloat(payload?.valor);
   if (!Number.isFinite(rawValue) || rawValue <= 0) {
-    const error = new Error('Valor invÃ¡lido');
+    const error = new Error('Valor inválido');
     error.statusCode = 400;
     throw error;
   }
   const valor = Math.round(Math.abs(rawValue) * 100) / 100;
-  const funcionario = sanitizeText(payload?.funcionario) || sanitizeText(user?.username) || 'Equipe';
+  const funcionario = sanitizeText(user?.username) || 'Equipe';
   const observacoes = sanitizeText(payload?.observacoes);
   const formaPagamento = sanitizeText(payload?.formaPagamento) || 'Dinheiro';
   const dataRaw = sanitizeText(payload?.data);
-  const parsedDate = dataRaw ? new Date(dataRaw) : new Date();
-  const data = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+  const parsedDate = dataRaw ?new Date(dataRaw) : new Date();
+  const data = Number.isNaN(parsedDate.getTime()) ?new Date() : parsedDate;
   return {
-    userId: user?.id ?? null,
+    userId: user?.id || null,
     tipo,
     categoria,
     valor,
@@ -1363,7 +1363,7 @@ const getUserById = async (id, { includePhotoData = false } = {}) => {
     `SELECT ${columns} FROM users WHERE id = $1 LIMIT 1`,
     [id]
   );
-  return rows[0] ? mapUserRow(rows[0], { includePhotoData }) : null;
+  return rows[0] ?mapUserRow(rows[0], { includePhotoData }) : null;
 };
 
 const getUserByUsernameLower = async (usernameLower, { includePhotoData = false } = {}) => {
@@ -1372,7 +1372,7 @@ const getUserByUsernameLower = async (usernameLower, { includePhotoData = false 
     `SELECT ${columns} FROM users WHERE username_lower = $1 LIMIT 1`,
     [usernameLower]
   );
-  return rows[0] ? mapUserRow(rows[0], { includePhotoData }) : null;
+  return rows[0] ?mapUserRow(rows[0], { includePhotoData }) : null;
 };
 
 const listUsers = async ({ approved, includePhotoData = false } = {}) => {
@@ -1382,7 +1382,7 @@ const listUsers = async ({ approved, includePhotoData = false } = {}) => {
     clauses.push(`approved = $${params.length + 1}`);
     params.push(approved);
   }
-  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const where = clauses.length ?`WHERE ${clauses.join(' AND ')}` : '';
   const columns = buildUserSelectColumns({ includePhotoData });
   const { rows } = await query(
     `SELECT ${columns} FROM users ${where} ORDER BY username_lower`,
@@ -1402,10 +1402,10 @@ const insertUser = async user => {
       user.passwordHash,
       user.role,
       user.approved,
-      user.photo ?? null,
-      user.photoMime ?? null,
-      user.photoData ?? null,
-      user.recoveryCodeHash ?? null,
+      user.photo ?null,
+      user.photoMime ?null,
+      user.photoData ?null,
+      user.recoveryCodeHash ?null,
     ]
   );
 };
@@ -1428,10 +1428,10 @@ const updateUserFromSeed = async (id, user) => {
       user.passwordHash,
       user.role,
       user.approved,
-      user.recoveryCodeHash ?? null,
+      user.recoveryCodeHash ?null,
     ]
   );
-  return rows[0] ? mapUserRow(rows[0], { includePhotoData: true }) : null;
+  return rows[0] ?mapUserRow(rows[0], { includePhotoData: true }) : null;
 };
 
 const updateUserApproval = async (id, approved) => {
@@ -1439,7 +1439,7 @@ const updateUserApproval = async (id, approved) => {
     `UPDATE users SET approved = $2 WHERE id = $1 RETURNING ${buildUserSelectColumns({ includePhotoData: true })}`,
     [id, approved]
   );
-  return rows[0] ? mapUserRow(rows[0], { includePhotoData: true }) : null;
+  return rows[0] ?mapUserRow(rows[0], { includePhotoData: true }) : null;
 };
 
 const updateUserPhoto = async (id, { photoPath = null, photoMime = null, photoData = null } = {}) => {
@@ -1452,7 +1452,7 @@ const updateUserPhoto = async (id, { photoPath = null, photoMime = null, photoDa
   RETURNING ${buildUserSelectColumns({ includePhotoData: true })}`,
     [id, photoPath, photoMime, photoData]
   );
-  return rows[0] ? mapUserRow(rows[0], { includePhotoData: true }) : null;
+  return rows[0] ?mapUserRow(rows[0], { includePhotoData: true }) : null;
 };
 
 const updateUserPassword = async (id, passwordHash) => {
@@ -1467,7 +1467,7 @@ const deleteUserById = async id => {
     'DELETE FROM users WHERE id = $1 RETURNING photo',
     [id]
   );
-  return rows[0] ?? null;
+  return rows[0] ?null;
 };
 
 const listInventory = async ({ includeImageData = false } = {}) => {
@@ -1496,7 +1496,7 @@ const getInventoryItemById = async id => {
     'SELECT id, produto, tipo, lote, quantidade, validade, custo, image, image_mime, image_data FROM inventory WHERE id = $1 LIMIT 1',
     [id]
   );
-  return rows[0] ? mapInventoryRow(rows[0], { includeImageData: true }) : null;
+  return rows[0] ?mapInventoryRow(rows[0], { includeImageData: true }) : null;
 };
 
 const insertInventoryItem = async item => {
@@ -1512,8 +1512,8 @@ const insertInventoryItem = async item => {
       item.validade,
       item.custo,
       item.image,
-      item.imageMime ?? null,
-      item.imageData ?? null,
+      item.imageMime ?null,
+      item.imageData ?null,
       new Date(),
     ]
   );
@@ -1542,8 +1542,8 @@ const updateInventoryItem = async item => {
       item.validade,
       item.custo,
       item.image,
-      item.imageMime ?? null,
-      item.imageData ?? null,
+      item.imageMime ?null,
+      item.imageData ?null,
     ]
   );
 };
@@ -1553,7 +1553,7 @@ const deleteInventoryItemById = async id => {
     'DELETE FROM inventory WHERE id = $1 RETURNING id, produto, tipo, lote, quantidade, validade, custo, image',
     [id]
   );
-  return rows[0] ? mapInventoryRow(rows[0]) : null;
+  return rows[0] ?mapInventoryRow(rows[0]) : null;
 };
 
 const insertMovimentacao = async mov => {
@@ -1592,7 +1592,7 @@ const listMovimentacoes = async ({ start, end } = {}) => {
       params.push(endDate);
     }
   }
-  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const where = clauses.length ?`WHERE ${clauses.join(' AND ')}` : '';
   const { rows } = await query(
     `SELECT id, produto_id, produto, tipo, quantidade, quantidade_anterior, quantidade_atual, motivo, data, usuario
        FROM movimentacoes
@@ -1758,14 +1758,14 @@ const seedUsersFromFile = async () => {
       logger: console,
     });
   } catch (error) {
-    console.error('Falha ao importar usuÃ¡rios iniciais:', error);
+    console.error('Falha ao importar usuários iniciais:', error);
   }
 };
 
 const seedInventoryFromFile = async () => {
   if (!fs.existsSync(estoqueFile)) return;
   const { rows } = await query('SELECT COUNT(*)::INT AS count FROM inventory');
-  const currentCount = Number.parseInt(rows[0]?.count ?? '0', 10) || 0;
+  const currentCount = Number.parseInt(rows[0]?.count ?'0', 10) || 0;
   if (currentCount > 0) return;
   try {
     const raw = JSON.parse(fs.readFileSync(estoqueFile, 'utf8'));
@@ -1779,9 +1779,9 @@ const seedInventoryFromFile = async () => {
         tipo: sanitizeText(entry.tipo) || null,
         lote: sanitizeText(entry.lote) || null,
         quantidade,
-        validade: entry.validade ? entry.validade : null,
+        validade: entry.validade ?entry.validade : null,
         custo,
-        image: entry.image ? sanitizeText(entry.image) : null,
+        image: entry.image ?sanitizeText(entry.image) : null,
         imageMime: null,
         imageData: null,
       });
@@ -1812,14 +1812,14 @@ const createSessionToken = user => jwt.sign({
 const authMiddleware = asyncHandler(async (req, res, next) => {
   const token = req.cookies?.[SESSION_COOKIE_NAME];
   if (!token) {
-    return res.status(401).json({ error: 'NÃ£o autenticado' });
+    return res.status(401).json({ error: 'Não autenticado' });
   }
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     const user = await getUserById(payload.userId, { includePhotoData: false });
     if (!user || !user.approved) {
       clearSessionCookie(res);
-      return res.status(401).json({ error: 'SessÃ£o invÃ¡lida. FaÃ§a login novamente.' });
+      return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.' });
     }
     req.user = {
       id: user.id,
@@ -1829,7 +1829,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
     return next();
   } catch (error) {
     clearSessionCookie(res);
-    return res.status(401).json({ error: 'SessÃ£o expirada. FaÃ§a login novamente.' });
+    return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
   }
 });
 
@@ -1842,14 +1842,14 @@ const requireAdmin = (req, res, next) => {
 
 app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
-  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+  const password = typeof req.body?.password === 'string' ?req.body.password : '';
   const recoveryCode = sanitizeText(req.body?.recoveryCode);
 
   if (!username || !password || !recoveryCode) {
     return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
   }
   if (username.length < 3) {
-    return res.status(400).json({ error: 'O usuÃ¡rio deve ter pelo menos 3 caracteres.' });
+    return res.status(400).json({ error: 'O usuário deve ter pelo menos 3 caracteres.' });
   }
   if (password.length < 8) {
     return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
@@ -1861,7 +1861,7 @@ app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => 
   const normalized = normalizeUsername(username);
   const existing = await getUserByUsernameLower(normalized);
   if (existing) {
-    return res.status(400).json({ error: 'UsuÃ¡rio jÃ¡ existe' });
+    return res.status(400).json({ error: 'Usuário já existe' });
   }
 
   const passwordHash = bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
@@ -1880,12 +1880,12 @@ app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => 
   });
 
   broadcastUsersUpdated();
-  res.json({ message: 'Cadastro enviado para aprovaÃ§Ã£o' });
+  res.json({ message: 'Cadastro enviado para aprovação' });
 
 app.post('/api/password/forgot', passwordResetRateLimiter, asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
   const recoveryCode = sanitizeText(req.body?.recoveryCode);
-  const newPassword = typeof req.body?.password === 'string' ? req.body.password : '';
+  const newPassword = typeof req.body?.password === 'string' ?req.body.password : '';
 
   if (!username || !recoveryCode || !newPassword) {
     return res.status(400).json({ error: 'Usuário, código e nova senha são obrigatórios.' });
@@ -1914,27 +1914,27 @@ app.post('/api/password/forgot', passwordResetRateLimiter, asyncHandler(async (r
 
 app.post('/api/login', loginRateLimiter, asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
-  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+  const password = typeof req.body?.password === 'string' ?req.body.password : '';
 
   if (!username || !password) {
-    return res.status(400).json({ error: 'UsuÃ¡rio e senha sÃ£o obrigatÃ³rios' });
+    return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
   }
 
   const normalized = normalizeUsername(username);
   const user = await getUserByUsernameLower(normalized, { includePhotoData: true });
   if (!user) {
-    return res.status(401).json({ error: 'Credenciais invÃ¡lidas' });
+    return res.status(401).json({ error: 'Dados inválidos' });
   }
 
   const passwordMatches = user.passwordHash
-    ? bcrypt.compareSync(password, user.passwordHash)
+    ?bcrypt.compareSync(password, user.passwordHash)
     : false;
 
   if (!passwordMatches) {
-    return res.status(401).json({ error: 'Credenciais invÃ¡lidas' });
+    return res.status(401).json({ error: 'Dados inválidos' });
   }
   if (!user.approved) {
-    return res.status(403).json({ error: 'UsuÃ¡rio pendente de aprovaÃ§Ã£o' });
+    return res.status(403).json({ error: 'Usuário pendente de aprovação' });
   }
 
   const token = createSessionToken(user);
@@ -1953,7 +1953,7 @@ app.get('/api/session', authMiddleware, asyncHandler(async (req, res) => {
   const user = await getUserById(req.user.id, { includePhotoData: true });
   if (!user || !user.approved) {
     clearSessionCookie(res);
-    return res.status(401).json({ error: 'SessÃ£o invÃ¡lida. FaÃ§a login novamente.' });
+    return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.' });
   }
   res.json({
     userId: user.id,
@@ -1980,24 +1980,24 @@ app.get('/api/users', authMiddleware, requireAdmin, asyncHandler(async (req, res
 
 app.post('/api/users/:id/approve', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
   const updated = await updateUserApproval(req.params.id, true);
-  if (!updated) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
+  if (!updated) return res.status(404).json({ error: 'Usuário não encontrado' });
   broadcastUsersUpdated();
-  res.json({ message: 'UsuÃ¡rio aprovado' });
+  res.json({ message: 'Usuário aprovado' });
 }));
 
 app.delete('/api/users/:id', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
   const deleted = await deleteUserById(req.params.id);
-  if (!deleted) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
+  if (!deleted) return res.status(404).json({ error: 'Usuário não encontrado' });
   if (deleted.photo) removeStoredFile(deleted.photo);
   broadcastUsersUpdated();
-  res.json({ message: 'UsuÃ¡rio excluÃ­do' });
+  res.json({ message: 'Usuário excluído' });
 }));
 
 app.put('/api/users/:id/photo', authMiddleware, userUpload.single('photo'), asyncHandler(async (req, res) => {
   const { remove } = req.body;
   const userId = req.params.id;
   const target = await getUserById(userId, { includePhotoData: false });
-  if (!target) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
+  if (!target) return res.status(404).json({ error: 'Usuário não encontrado' });
   if (req.user.id !== userId && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Acesso restrito' });
   }
@@ -2034,7 +2034,7 @@ app.get('/api/users/:id/photo', authMiddleware, asyncHandler(async (req, res) =>
     return res.status(403).json({ error: 'Acesso restrito' });
   }
   const user = await getUserById(req.params.id, { includePhotoData: true });
-  if (!user) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
+  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
   res.json({ photo: buildUserPhotoResponse(user) });
 }));
 
@@ -2056,15 +2056,15 @@ app.get('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res) 
 
 app.post('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res) => {
   try {
-    const sanitized = sanitizeCashierMovementPayload(req.body ?? {}, req.user);
+    const sanitized = sanitizeCashierMovementPayload(req.body ?{}, req.user);
     const inserted = await insertCashierMovement(sanitized);
     if (!inserted) {
-      return res.status(500).json({ error: 'NÃ£o foi possÃ­vel registrar a movimentaÃ§Ã£o.' });
+      return res.status(500).json({ error: 'Não foi possível registrar a movimentação.' });
     }
     res.status(201).json(inserted);
   } catch (error) {
-    const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
-    res.status(statusCode).json({ error: error.message || 'Dados invÃ¡lidos' });
+    const statusCode = error.statusCode && Number.isInteger(error.statusCode) ?error.statusCode : 400;
+    res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
   }
 }));
 
@@ -2077,7 +2077,7 @@ const registerCashierClosureRoutes = basePath => {
   app.get(`${basePath}/:id`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
     const row = await getCashierClosureRowById(req.params.id);
     if (!row) {
-      return res.status(404).json({ error: 'Fechamento nÃ£o encontrado' });
+      return res.status(404).json({ error: 'Fechamento não encontrado' });
     }
     res.json(mapCashierClosureRow(row));
   }));
@@ -2085,7 +2085,7 @@ const registerCashierClosureRoutes = basePath => {
   app.get(`${basePath}/:id/logs`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
     const row = await getCashierClosureRowById(req.params.id);
     if (!row) {
-      return res.status(404).json({ error: 'Fechamento nÃ£o encontrado' });
+      return res.status(404).json({ error: 'Fechamento não encontrado' });
     }
     const logs = await listCashierClosureLogs(req.params.id);
     res.json(logs);
@@ -2093,24 +2093,24 @@ const registerCashierClosureRoutes = basePath => {
 
   app.post(basePath, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
     try {
-      const closure = await createCashierClosure(req.body ?? {}, req.user);
+      const closure = await createCashierClosure(req.body ?{}, req.user);
       res.status(201).json(closure);
     } catch (error) {
-      const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
-      res.status(statusCode).json({ error: error.message || 'Dados invÃ¡lidos' });
+      const statusCode = error.statusCode && Number.isInteger(error.statusCode) ?error.statusCode : 400;
+      res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
     }
   }));
 
   app.put(`${basePath}/:id`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
     try {
-      const updated = await updateCashierClosureRecord(req.params.id, req.body ?? {}, req.user);
+      const updated = await updateCashierClosureRecord(req.params.id, req.body ?{}, req.user);
       if (!updated) {
-        return res.status(404).json({ error: 'Fechamento nÃ£o encontrado' });
+        return res.status(404).json({ error: 'Fechamento não encontrado' });
       }
       res.json(updated);
     } catch (error) {
-      const statusCode = error.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 400;
-      res.status(statusCode).json({ error: error.message || 'Dados invÃ¡lidos' });
+      const statusCode = error.statusCode && Number.isInteger(error.statusCode) ?error.statusCode : 400;
+      res.status(statusCode).json({ error: error.message || 'Dados inválidos' });
     }
   }));
 };
@@ -2124,7 +2124,7 @@ app.get('/api/cashier/settings', authMiddleware, asyncHandler(async (req, res) =
 }));
 
 app.put('/api/cashier/settings', authMiddleware, asyncHandler(async (req, res) => {
-  const updated = await updateCashierSettings(req.body ?? {});
+  const updated = await updateCashierSettings(req.body ?{});
   res.json(updated);
 }));
 
@@ -2140,21 +2140,21 @@ app.post('/api/estoque', authMiddleware, productUpload.single('image'), asyncHan
 
   if (!produto || quantidadeBruta === undefined) {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-    return res.status(400).json({ error: 'Produto e quantidade sÃ£o obrigatÃ³rios' });
+    return res.status(400).json({ error: 'Produto e quantidade são obrigatórios' });
   }
   if (custoBruto === undefined || custoBruto === null || custoBruto === '') {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-    return res.status(400).json({ error: 'Custo Ã© obrigatÃ³rio' });
+    return res.status(400).json({ error: 'Custo é obrigatório' });
   }
 
   const custoSanitizado = sanitizeCost(custoBruto);
   if (custoSanitizado === null) {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-    return res.status(400).json({ error: 'Custo invÃ¡lido' });
+    return res.status(400).json({ error: 'Custo inválido' });
   }
 
   const quantidadeNumerica = Number.parseInt(quantidadeBruta, 10);
-  const quantidadeFinal = Number.isNaN(quantidadeNumerica) ? 0 : quantidadeNumerica;
+  const quantidadeFinal = Number.isNaN(quantidadeNumerica) ?0 : quantidadeNumerica;
   const id = uuidv4();
   let imagePath = null;
   let imageBuffer = null;
@@ -2219,7 +2219,7 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
   const atual = await getInventoryItemById(itemId);
   if (!atual) {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-    return res.status(404).json({ error: 'Produto nÃ£o encontrado' });
+    return res.status(404).json({ error: 'Produto não encontrado' });
   }
 
   const quantidadeBruta = req.body.quantidade;
@@ -2236,14 +2236,14 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
     const custoSanitizado = sanitizeCost(req.body.custo);
     if (custoSanitizado === null) {
       if (uploadedImagePath) removeStoredFile(uploadedImagePath);
-      return res.status(400).json({ error: 'Custo invÃ¡lido' });
+      return res.status(400).json({ error: 'Custo inválido' });
     }
     custoAtualizado = custoSanitizado;
   }
 
   let imagemAtualizada = atual.image;
-  let imagemDadosAtualizados = atual.imageData ?? null;
-  let imagemMimeAtualizada = atual.imageMime ?? null;
+  let imagemDadosAtualizados = atual.imageData ?null;
+  let imagemMimeAtualizada = atual.imageMime ?null;
   let imagemAlterada = false;
   if (req.body.removeImage === 'true') {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
@@ -2268,14 +2268,14 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
     imagemAlterada = true;
   }
 
-  const produtoAtualizado = req.body.produto ? req.body.produto.trim() : atual.produto;
-  const tipoAtualizado = req.body.tipo ? req.body.tipo.trim() : atual.tipo;
-  const loteAtualizado = req.body.lote ? req.body.lote.trim() : atual.lote;
-  const validadeAtualizada = req.body.validade !== undefined ? (req.body.validade || null) : atual.validade;
-  const tipoFinal = tipoAtualizado ? tipoAtualizado : null;
-  const loteFinal = loteAtualizado ? loteAtualizado : null;
+  const produtoAtualizado = req.body.produto ?req.body.produto.trim() : atual.produto;
+  const tipoAtualizado = req.body.tipo ?req.body.tipo.trim() : atual.tipo;
+  const loteAtualizado = req.body.lote ?req.body.lote.trim() : atual.lote;
+  const validadeAtualizada = req.body.validade !== undefined ?(req.body.validade || null) : atual.validade;
+  const tipoFinal = tipoAtualizado ?tipoAtualizado : null;
+  const loteFinal = loteAtualizado ?loteAtualizado : null;
   const validadeFinal = validadeAtualizada;
-  const custoFinal = hasCusto ? custoAtualizado : atual.custo;
+  const custoFinal = hasCusto ?custoAtualizado : atual.custo;
 
   await updateInventoryItem({
     id: itemId,
@@ -2294,7 +2294,7 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
   const tipoAlterado = (tipoFinal || null) !== (atual.tipo || null);
   const loteAlterado = (loteFinal || null) !== (atual.lote || null);
   const validadeAlterada = (validadeFinal || null) !== (atual.validade || null);
-  const custoAlterado = Number(custoFinal ?? 0) !== Number(atual.custo ?? 0);
+  const custoAlterado = Number(custoFinal ?0) !== Number(atual.custo ?0);
   const quantidadeAlterada = novaQtd !== atual.quantidade;
   const houveAlteracaoNaoImagem = produtoAlterado || tipoAlterado || loteAlterado || validadeAlterada || custoAlterado || quantidadeAlterada;
   const somenteImagemAlterada = imagemAlterada && !houveAlteracaoNaoImagem;
@@ -2305,7 +2305,7 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
       id: uuidv4(),
       produtoId: itemId,
       produto: produtoAtualizado,
-      tipo: diff === 0 ? 'edicao' : diff > 0 ? 'entrada' : 'saida',
+      tipo: diff === 0 ?'edicao' : diff > 0 ?'entrada' : 'saida',
       quantidade: diff,
       quantidadeAnterior: atual.quantidade,
       quantidadeAtual: novaQtd,
@@ -2331,12 +2331,12 @@ app.delete('/api/estoque/:id', authMiddleware, asyncHandler(async (req, res) => 
   const itemId = req.params.id;
   const { motivo } = req.body;
   if (!motivo) {
-    return res.status(400).json({ error: 'Motivo Ã© obrigatÃ³rio' });
+    return res.status(400).json({ error: 'Motivo é obrigatório' });
   }
 
   const removed = await deleteInventoryItemById(itemId);
   if (!removed) {
-    return res.status(404).json({ error: 'Produto nÃ£o encontrado' });
+    return res.status(404).json({ error: 'Produto não encontrado' });
   }
 
   if (removed?.image) {
@@ -2357,7 +2357,7 @@ app.delete('/api/estoque/:id', authMiddleware, asyncHandler(async (req, res) => 
   });
 
   broadcastDataUpdated();
-  res.json({ message: 'Produto excluÃ­do com sucesso!' });
+  res.json({ message: 'Produto excluído com sucesso!' });
 }));
 
 app.get('/api/report/summary', authMiddleware, asyncHandler(async (req, res) => {
@@ -2412,10 +2412,10 @@ app.get('/api/movimentacoes/csv', authMiddleware, asyncHandler(async (req, res) 
     row.produto,
     row.tipo,
     row.quantidade,
-    row.quantidade_anterior ?? '',
-    row.quantidade_atual ?? '',
-    row.motivo ?? '',
-    (row.data instanceof Date ? row.data.toISOString() : row.data),
+    row.quantidade_anterior ?'',
+    row.quantidade_atual ?'',
+    row.motivo ?'',
+    (row.data instanceof Date ?row.data.toISOString() : row.data),
     row.usuario
   ].join(','));
   const csv = `${header.join(',')}` + '\n' + rowsCsv.join('\n');
@@ -2435,7 +2435,7 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ error: `Arquivo de imagem excede o limite de ${MAX_UPLOAD_SIZE_MB_LABEL} MB.` });
   }
   if (err?.statusCode) {
-    return res.status(err.statusCode).json({ error: err.message || 'OperaÃ§Ã£o nÃ£o permitida.' });
+    return res.status(err.statusCode).json({ error: err.message || 'Operação não permitida.' });
   }
   if (typeof err.message === 'string' && err.message.toLowerCase().includes('imagem')) {
     return res.status(400).json({ error: err.message });
@@ -2446,7 +2446,7 @@ app.use((err, req, res, next) => {
 
 app.get('*', (req, res, next) => {
   if (req.path === '/api' || req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'Recurso nÃ£o encontrado' });
+    return res.status(404).json({ error: 'Recurso não encontrado' });
   }
   return sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL);
 });
@@ -2473,7 +2473,7 @@ const shutdown = async signal => {
   shuttingDown = true;
   console.info(`Sinal ${signal} recebido. Iniciando desligamento gracioso...`);
   const timeout = setTimeout(() => {
-    console.warn('Tempo limite ao encerrar. ForÃ§ando finalizaÃ§Ã£o.');
+    console.warn('Tempo limite ao encerrar. Forçando finalização.');
     process.exit(1);
   }, 10000);
   timeout.unref();
@@ -2492,7 +2492,7 @@ const shutdown = async signal => {
 for (const signal of ['SIGTERM', 'SIGINT']) {
   process.on(signal, () => {
     shutdown(signal).catch(error => {
-      console.error('Falha ao encerrar aplicaÃ§Ã£o:', error);
+      console.error('Falha ao encerrar aplicação:', error);
       process.exit(1);
     });
   });
@@ -2507,7 +2507,7 @@ const startServer = async () => {
 };
 
 startServer().catch(error => {
-  console.error('NÃ£o foi possÃ­vel iniciar o servidor:', error);
+  console.error('Não foi possível iniciar o servidor:', error);
   process.exit(1);
 });
 
