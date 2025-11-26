@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const movementCategorySelect = document.getElementById('movement-category');
   const movementCategoryCustomInput = document.getElementById('movement-category-custom');
   const movementPaymentMethodSelect = document.getElementById('movement-payment-method');
+  const movementEmployeeInput = document.getElementById('movement-employee');
   const cashierCancelMovementBtn = document.getElementById('cancel-movement-btn');
 
   const pendingUsersList = document.getElementById('pending-users-list');
@@ -1198,6 +1199,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openCashierMovementModal = () => {
     populateCashierMovementFormOptions();
+    if (movementEmployeeInput) {
+      movementEmployeeInput.value = currentUser || '';
+      movementEmployeeInput.readOnly = true;
+    }
     openModal('cashier-movement-modal');
   };
   const closeCashierMovementModal = () => closeModal('cashier-movement-modal');
@@ -1208,7 +1213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formData = new FormData(cashierMovementForm);
     const type = (formData.get('type') || 'Entrada').toString();
-    const employee = (formData.get('employee') || '').toString().trim() || 'Equipe';
+    const employee = (currentUser || '').toString().trim() || (formData.get('employee') || '').toString().trim() || 'Equipe';
     const observations = (formData.get('observations') || '').toString().trim();
     const selectedCategory = (formData.get('category') || '').toString();
     const customCategory = (formData.get('category-custom') || '').toString().trim();
@@ -1637,28 +1642,27 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const cashFlowData = dataset?.cashFlow?.[resolvedPeriod] || dataset?.cashFlow?.monthly || { labels: [], values: [] };
-      const flowLabels = Array.isArray(cashFlowData.labels) ? cashFlowData.labels : [];
-      const flowValues = Array.isArray(cashFlowData.values)
+      let flowLabels = Array.isArray(cashFlowData.labels) ? cashFlowData.labels.slice() : [];
+      let flowValues = Array.isArray(cashFlowData.values)
         ? cashFlowData.values.map(value => Number(value) || 0)
         : [];
+      if (flowValues.length === 1) {
+        flowLabels = [flowLabels[0] ?? '', ''];
+        flowValues = [flowValues[0], flowValues[0]];
+      }
       const context = cashierCashFlowCanvas.getContext('2d');
       if (!context) {
-        console.warn('NÃ£o foi possÃ­vel obter o contexto 2D para renderizar o grÃ¡fico de fluxo de caixa.');
+        console.warn('Não foi possível obter o contexto 2D para renderizar o gráfico de fluxo de caixa.');
         return;
       }
-      const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.height || 300);
+      const gradient = context.createLinearGradient(0, 0, 0, cashierCashFlowCanvas.clientHeight || cashierCashFlowCanvas.height || 300);
       gradient.addColorStop(0, rgbaFromRgb(primaryRgb, 0.55));
       gradient.addColorStop(1, rgbaFromRgb(primaryRgb, 0));
 
-      const hasSinglePoint = flowValues.length === 1;
-      const hasMultiplePoints = flowValues.length > 1;
-      const datasetBackground = hasMultiplePoints ? gradient : rgbaFromRgb(primaryRgb, 0.35);
-      const datasetBorderWidth = hasMultiplePoints ? 3 : 0;
-      const datasetFill = hasMultiplePoints;
-      const pointRadius = hasSinglePoint ? 6 : 0;
-      const pointHoverRadius = hasSinglePoint ? 8 : 4;
-      const pointBorderWidth = hasSinglePoint ? 2 : 0;
-      const pointBorderColor = hasSinglePoint ? '#ffffff' : 'transparent';
+      const pointRadius = flowValues.length <= 2 ? 6 : 4;
+      const pointHoverRadius = flowValues.length <= 2 ? 8 : 6;
+      const pointBorderWidth = flowValues.length <= 2 ? 2 : 0;
+      const pointBorderColor = flowValues.length <= 2 ? '#ffffff' : 'transparent';
 
       if (cashierCashFlowChart) {
         cashierCashFlowChart.destroy();
@@ -1672,11 +1676,11 @@ document.addEventListener('DOMContentLoaded', () => {
             label: 'Fluxo de Caixa',
             data: flowValues,
             borderColor: mixColorWithWhite(primaryRgb, 1),
-            backgroundColor: datasetBackground,
-            borderWidth: datasetBorderWidth,
-            fill: datasetFill,
-            showLine: hasMultiplePoints,
-            tension: 0.4,
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            showLine: true,
+            tension: 0.55,
             pointRadius,
             pointHoverRadius,
             pointBackgroundColor: mixColorWithWhite(primaryRgb, 1),
