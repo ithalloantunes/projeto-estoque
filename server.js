@@ -646,10 +646,10 @@ const mapUserRow = (row, { includePhotoData = false } = {}) => {
     approved: row.approved,
     photo: row.photo,
     photoMime: row.photo_mime,
-    recoveryCodeHash: row.recovery_code_hash ?null,
+    recoveryCodeHash: row.recovery_code_hash || null,
   };
   if (includePhotoData) {
-    mapped.photoData = row.photo_data ?null;
+    mapped.photoData = row.photo_data || null;
   }
   return mapped;
 };
@@ -761,7 +761,7 @@ const mapInventoryRow = (row, { includeImageData = false } = {}) => {
     imageMime: row.image_mime,
   };
   if (includeImageData) {
-    mapped.imageData = row.image_data ?null;
+    mapped.imageData = row.image_data || null;
   }
   return mapped;
 };
@@ -970,25 +970,25 @@ const mapCashierClosureRow = row => {
 };
 
 const serializeClosureForLog = (closure, dataOperacao) => ({
-  dataOperacao: dataOperacao ?formatDateOnly(closure?.dataOperacao),
-  funcionarioNome: closure?.funcionarioNome ?null,
-  dinheiroSistema: closure?.dinheiroSistema ?0,
-  creditoSistema: closure?.creditoSistema ?0,
-  debitoSistema: closure?.debitoSistema ?0,
-  creditoMaquina: closure?.creditoMaquina ?0,
-  debitoMaquina: closure?.debitoMaquina ?0,
-  pagOnline: closure?.pagOnline ?0,
-  pix: closure?.pix ?0,
-  totalSistema: closure?.totalSistema ?0,
-  totalCaixaDinheiro: closure?.totalCaixaDinheiro ?0,
-  abertura: closure?.abertura ?0,
-  reforco: closure?.reforco ?0,
-  gastos: closure?.gastos ?0,
-  valorParaDeposito: closure?.valorParaDeposito ?0,
-  variavelCaixa: closure?.variavelCaixa ?0,
-  entregaCartao: closure?.entregaCartao ?0,
-  picolesSist: closure?.picolesSist ?0,
-  informacoes: closure?.informacoes ?null,
+  dataOperacao: formatDateOnly(dataOperacao || closure?.dataOperacao || new Date()),
+  funcionarioNome: closure?.funcionarioNome || null,
+  dinheiroSistema: Number(closure?.dinheiroSistema) || 0,
+  creditoSistema: Number(closure?.creditoSistema) || 0,
+  debitoSistema: Number(closure?.debitoSistema) || 0,
+  creditoMaquina: Number(closure?.creditoMaquina) || 0,
+  debitoMaquina: Number(closure?.debitoMaquina) || 0,
+  pagOnline: Number(closure?.pagOnline) || 0,
+  pix: Number(closure?.pix) || 0,
+  totalSistema: Number(closure?.totalSistema) || 0,
+  totalCaixaDinheiro: Number(closure?.totalCaixaDinheiro) || 0,
+  abertura: Number(closure?.abertura) || 0,
+  reforco: Number(closure?.reforco) || 0,
+  gastos: Number(closure?.gastos) || 0,
+  valorParaDeposito: Number(closure?.valorParaDeposito) || 0,
+  variavelCaixa: Number(closure?.variavelCaixa) || 0,
+  entregaCartao: Number(closure?.entregaCartao) || 0,
+  picolesSist: Number(closure?.picolesSist) || 0,
+  informacoes: closure?.informacoes || '',
 });
 
 const getCashierClosureRowById = async id => {
@@ -1045,7 +1045,7 @@ const insertCashierClosureLog = async ({ closureId, userId, acao, detalhes }) =>
   await query(
     `INSERT INTO cashier_closure_logs (id, closure_id, user_id, acao, detalhes, created_at)
      VALUES ($1, $2, $3, $4, $5::jsonb, NOW())`,
-    [uuidv4(), closureId, userId ?null, acao, JSON.stringify(detalhes ?{})]
+    [uuidv4(), closureId, userId || null, acao, JSON.stringify(detalhes || {})]
   );
 };
 
@@ -1082,7 +1082,7 @@ const createCashierClosure = async (payload, user) => {
     throw error;
   }
   const id = uuidv4();
-  const userId = user?.id ?null;
+  const userId = user?.id || null;
   const params = [
     id,
     dataOperacao,
@@ -1174,7 +1174,7 @@ const updateCashierClosureRecord = async (id, payload, user) => {
       throw error;
     }
   }
-  const userId = user?.id ?null;
+  const userId = user?.id || null;
   const params = [
     id,
     dataOperacao,
@@ -1305,7 +1305,7 @@ const insertCashierMovement = async movement => {
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())`,
     [
       id,
-      movement.userId ?null,
+      movement.userId || null,
       timestamp,
       movement.tipo,
       movement.categoria,
@@ -1402,10 +1402,10 @@ const insertUser = async user => {
       user.passwordHash,
       user.role,
       user.approved,
-      user.photo ?null,
-      user.photoMime ?null,
-      user.photoData ?null,
-      user.recoveryCodeHash ?null,
+      user.photo || null,
+      user.photoMime || null,
+      user.photoData || null,
+      user.recoveryCodeHash || null,
     ]
   );
 };
@@ -1428,7 +1428,7 @@ const updateUserFromSeed = async (id, user) => {
       user.passwordHash,
       user.role,
       user.approved,
-      user.recoveryCodeHash ?null,
+      user.recoveryCodeHash || null,
     ]
   );
   return rows[0] ?mapUserRow(rows[0], { includePhotoData: true }) : null;
@@ -1467,7 +1467,7 @@ const deleteUserById = async id => {
     'DELETE FROM users WHERE id = $1 RETURNING photo',
     [id]
   );
-  return rows[0] ?null;
+  return rows[0] || null;
 };
 
 const listInventory = async ({ includeImageData = false } = {}) => {
@@ -1512,8 +1512,8 @@ const insertInventoryItem = async item => {
       item.validade,
       item.custo,
       item.image,
-      item.imageMime ?null,
-      item.imageData ?null,
+      item.imageMime || null,
+      item.imageData || null,
       new Date(),
     ]
   );
@@ -1542,8 +1542,8 @@ const updateInventoryItem = async item => {
       item.validade,
       item.custo,
       item.image,
-      item.imageMime ?null,
-      item.imageData ?null,
+      item.imageMime || null,
+      item.imageData || null,
     ]
   );
 };
@@ -1765,7 +1765,7 @@ const seedUsersFromFile = async () => {
 const seedInventoryFromFile = async () => {
   if (!fs.existsSync(estoqueFile)) return;
   const { rows } = await query('SELECT COUNT(*)::INT AS count FROM inventory');
-  const currentCount = Number.parseInt(rows[0]?.count ?'0', 10) || 0;
+  const currentCount = Number.parseInt(rows[0]?.count || '0', 10) || 0;
   if (currentCount > 0) return;
   try {
     const raw = JSON.parse(fs.readFileSync(estoqueFile, 'utf8'));
@@ -2056,7 +2056,7 @@ app.get('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res) 
 
 app.post('/api/cashier/movements', authMiddleware, asyncHandler(async (req, res) => {
   try {
-    const sanitized = sanitizeCashierMovementPayload(req.body ?{}, req.user);
+    const sanitized = sanitizeCashierMovementPayload(req.body || {}, req.user);
     const inserted = await insertCashierMovement(sanitized);
     if (!inserted) {
       return res.status(500).json({ error: 'Não foi possível registrar a movimentação.' });
@@ -2093,7 +2093,7 @@ const registerCashierClosureRoutes = basePath => {
 
   app.post(basePath, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
     try {
-      const closure = await createCashierClosure(req.body ?{}, req.user);
+      const closure = await createCashierClosure(req.body || {}, req.user);
       res.status(201).json(closure);
     } catch (error) {
       const statusCode = error.statusCode && Number.isInteger(error.statusCode) ?error.statusCode : 400;
@@ -2103,7 +2103,7 @@ const registerCashierClosureRoutes = basePath => {
 
   app.put(`${basePath}/:id`, authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
     try {
-      const updated = await updateCashierClosureRecord(req.params.id, req.body ?{}, req.user);
+      const updated = await updateCashierClosureRecord(req.params.id, req.body || {}, req.user);
       if (!updated) {
         return res.status(404).json({ error: 'Fechamento não encontrado' });
       }
@@ -2124,7 +2124,7 @@ app.get('/api/cashier/settings', authMiddleware, asyncHandler(async (req, res) =
 }));
 
 app.put('/api/cashier/settings', authMiddleware, asyncHandler(async (req, res) => {
-  const updated = await updateCashierSettings(req.body ?{});
+  const updated = await updateCashierSettings(req.body || {});
   res.json(updated);
 }));
 
@@ -2242,8 +2242,8 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
   }
 
   let imagemAtualizada = atual.image;
-  let imagemDadosAtualizados = atual.imageData ?null;
-  let imagemMimeAtualizada = atual.imageMime ?null;
+  let imagemDadosAtualizados = atual.imageData || null;
+  let imagemMimeAtualizada = atual.imageMime || null;
   let imagemAlterada = false;
   if (req.body.removeImage === 'true') {
     if (uploadedImagePath) removeStoredFile(uploadedImagePath);
@@ -2294,7 +2294,7 @@ app.put('/api/estoque/:id', authMiddleware, productUpload.single('image'), async
   const tipoAlterado = (tipoFinal || null) !== (atual.tipo || null);
   const loteAlterado = (loteFinal || null) !== (atual.lote || null);
   const validadeAlterada = (validadeFinal || null) !== (atual.validade || null);
-  const custoAlterado = Number(custoFinal ?0) !== Number(atual.custo ?0);
+  const custoAlterado = Number(custoFinal || 0) !== Number(atual.custo || 0);
   const quantidadeAlterada = novaQtd !== atual.quantidade;
   const houveAlteracaoNaoImagem = produtoAlterado || tipoAlterado || loteAlterado || validadeAlterada || custoAlterado || quantidadeAlterada;
   const somenteImagemAlterada = imagemAlterada && !houveAlteracaoNaoImagem;
@@ -2412,9 +2412,9 @@ app.get('/api/movimentacoes/csv', authMiddleware, asyncHandler(async (req, res) 
     row.produto,
     row.tipo,
     row.quantidade,
-    row.quantidade_anterior ?'',
-    row.quantidade_atual ?'',
-    row.motivo ?'',
+    row.quantidade_anterior || '',
+    row.quantidade_atual || '',
+    row.motivo || '',
     (row.data instanceof Date ?row.data.toISOString() : row.data),
     row.usuario
   ].join(','));
