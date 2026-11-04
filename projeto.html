@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c59f59",
+                        "background-light": "#f8f7f6",
+                        "background-dark": "#1a1814",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.75rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>BarberSaaS - Experiência Premium</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex min-h-screen flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 w-full border-b border-primary/20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">content_cut</span>
+<h2 class="text-xl font-bold tracking-tight">BarberSaaS</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#servicos">Serviços</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#barbeiros">Barbeiros</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#depoimentos">Depoimentos</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#localizacao">Localização</a>
+</nav>
+<button class="bg-primary text-background-dark px-5 py-2 rounded-lg text-sm font-bold hover:brightness-110 transition-all">
+                    Agendar Agora
+                </button>
+</div>
+</header>
+<main class="flex-grow">
+<section class="relative px-6 py-16 md:py-24">
+<div class="mx-auto max-w-7xl">
+<div class="relative overflow-hidden rounded-xl bg-slate-900 aspect-[16/9] md:aspect-[21/9] flex flex-col items-center justify-center text-center p-8 border border-primary/10" data-alt="Interior luxuoso de uma barbearia moderna com cadeiras de couro" style="background-image: linear-gradient(rgba(26, 24, 20, 0.8), rgba(26, 24, 20, 0.8)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuAQr7Tor0pG4DNvsuHBVuXQLVj6s_seqvQHE7PcvLq5s6s24sScAbVsUqggro2l5TzYlBcXN_Q1D8NlyU4pnnOpkFGmDVeBBZCH-OqVgoB_OVHIlXNZfKg-nmiTlKJ6CqOPG0UEWr51S_LUehuiYQUH97Al5Ur5_GapXhC5c0ResW9wXqK1JDFJo8BGT3WQ1MLLUcaddqW7Lf86wnaloh6Da-uXSVzuqPGJFfUUn7V0FhPxzkUOsfsQh5lZcPBc0e8c1IXM7_tjApHH'); background-size: cover; background-position: center;">
+<div class="max-w-3xl space-y-6">
+<h1 class="text-4xl md:text-6xl font-black text-white leading-tight">
+                                Elevando sua imagem com <span class="text-primary">precisão</span>
+</h1>
+<p class="text-lg text-slate-300 max-w-xl mx-auto">
+                                Onde a tradição encontra o estilo moderno. Reserve seu horário na barbearia mais premium da cidade e transforme seu visual.
+                            </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="bg-primary text-background-dark px-8 py-4 rounded-lg text-lg font-bold hover:scale-105 transition-transform">
+                                    Agendar Agora
+                                </button>
+<button class="border border-primary text-primary px-8 py-4 rounded-lg text-lg font-bold hover:bg-primary/10 transition-colors">
+                                    Ver Portfólio
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-6 py-20 bg-primary/5" id="servicos">
+<div class="mx-auto max-w-7xl">
+<div class="mb-12">
+<h2 class="text-3xl font-bold tracking-tight">Nossos Serviços</h2>
+<div class="h-1 w-20 bg-primary mt-2"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-background-light dark:bg-[#25221b] border border-primary/20 p-8 rounded-xl hover:border-primary transition-colors group">
+<span class="material-symbols-outlined text-4xl text-primary mb-4 block group-hover:scale-110 transition-transform">content_cut</span>
+<h3 class="text-xl font-bold mb-2">Cabelo</h3>
+<p class="text-slate-500 dark:text-slate-400 mb-6 text-sm">Corte moderno, clássico ou degradê com acabamento impecável.</p>
+<div class="flex justify-between items-center pt-4 border-t border-primary/10">
+<span class="text-primary font-bold">R$ 60</span>
+<span class="text-xs opacity-60">45 min</span>
+</div>
+</div>
+<div class="bg-background-light dark:bg-[#25221b] border border-primary/20 p-8 rounded-xl hover:border-primary transition-colors group">
+<span class="material-symbols-outlined text-4xl text-primary mb-4 block group-hover:scale-110 transition-transform">face</span>
+<h3 class="text-xl font-bold mb-2">Barba</h3>
+<p class="text-slate-500 dark:text-slate-400 mb-6 text-sm">Modelagem completa com toalha quente e produtos premium.</p>
+<div class="flex justify-between items-center pt-4 border-t border-primary/10">
+<span class="text-primary font-bold">R$ 45</span>
+<span class="text-xs opacity-60">30 min</span>
+</div>
+</div>
+<div class="bg-background-light dark:bg-[#25221b] border border-primary/20 p-8 rounded-xl hover:border-primary transition-colors group">
+<span class="material-symbols-outlined text-4xl text-primary mb-4 block group-hover:scale-110 transition-transform">architecture</span>
+<h3 class="text-xl font-bold mb-2">Sobrancelha</h3>
+<p class="text-slate-500 dark:text-slate-400 mb-6 text-sm">Limpeza e alinhamento para valorizar seu olhar.</p>
+<div class="flex justify-between items-center pt-4 border-t border-primary/10">
+<span class="text-primary font-bold">R$ 25</span>
+<span class="text-xs opacity-60">15 min</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-6 py-20" id="barbeiros">
+<div class="mx-auto max-w-7xl">
+<div class="mb-12 text-center">
+<h2 class="text-3xl font-bold tracking-tight">Nossos Barbeiros</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-2">Mestres na arte da tesoura e navalha</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+<div class="space-y-4 text-center group">
+<div class="aspect-square rounded-xl overflow-hidden grayscale group-hover:grayscale-0 transition-all border-2 border-transparent group-hover:border-primary">
+<img class="w-full h-full object-cover" data-alt="Retrato de um barbeiro profissional sorridente" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAREegdVaXsBUUQmoQDvTxd9KXaJAT07fJYl8i19O2v1RZ0jUtYcO_6DlxvwjuTNfgCnol7KdBOESlHBmqIHafNGg1mzbXkC5bNMRAD_sFhLk07jae67AuxGUBbjy18a8eiPA_Y3vuOA_QaQLDhFE8ZBDMV1GxlIpU-_KZbv32-jNmLQyl-jPwvXS0pDpQa8X4V2cValWyYzPUXCsh9mdfed1NnBb8WFBhgMnwflJDv1w-3tElW8ZTqfrwe6s61j0-UvlRR_5DJgIE6"/>
+</div>
+<div>
+<h4 class="font-bold text-lg">Ricardo Silva</h4>
+<p class="text-sm text-primary">Master Barber</p>
+</div>
+</div>
+<div class="space-y-4 text-center group">
+<div class="aspect-square rounded-xl overflow-hidden grayscale group-hover:grayscale-0 transition-all border-2 border-transparent group-hover:border-primary">
+<img class="w-full h-full object-cover" data-alt="Barbeiro especialista em barbas com visual moderno" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2TRsZAJVBGwwgMH7l7GNYm5V2pm_x-INuF0K-MUFwJGPKl23yU3igonxYr--OWRTydh35btSzXmumKltqKpOeH8nlQWmFc4-WyabY9IkjKj76N5JMpYMMJvgh1MKKVItbO0xL2zmL_d34Ro6zQRNicphJXYhjhFVPp88SnOTY53rav5L92XqdFy6werwTup8RBCQnIyg8Zy-5GUd8BvM1J9yuxDx_mDH44xKhWir33s19G1Km7xQXIjZe4o13711kUnjzzG6yLNP8"/>
+</div>
+<div>
+<h4 class="font-bold text-lg">Bruno Santos</h4>
+<p class="text-sm text-primary">Especialista em Barba</p>
+</div>
+</div>
+<div class="space-y-4 text-center group">
+<div class="aspect-square rounded-xl overflow-hidden grayscale group-hover:grayscale-0 transition-all border-2 border-transparent group-hover:border-primary">
+<img class="w-full h-full object-cover" data-alt="Barbeiro jovem especialista em cortes degradê" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDorueTl6dH1IvBf0PRyesRFr-4mMUt_xLYBBYk3T8O9BowxOJvtrAszXEF-HftOXVZ7qLhcMFMxrOklw0Y_xxUUYGTSH4YcVTy-OWt8904gR6X6JvnUTsKUnF_bHLZ5mypBQaljX3oLg0T7T1txFdASA4dwQCLvD2PvFm-aCV1nSWTudkWGpF3p4QZs-4vasExAfU_-5k7x3FKQumojMt3XiUVVi5xH9gHyLH07YxZZ85OAnph35LW_skbjbsZrAU_xuTDL_u_Rgpb"/>
+</div>
+<div>
+<h4 class="font-bold text-lg">Lucas Mendes</h4>
+<p class="text-sm text-primary">Cortes Modernos</p>
+</div>
+</div>
+<div class="space-y-4 text-center group">
+<div class="aspect-square rounded-xl overflow-hidden grayscale group-hover:grayscale-0 transition-all border-2 border-transparent group-hover:border-primary">
+<img class="w-full h-full object-cover" data-alt="Barbeiro veterano com experiência em cortes clássicos" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsAIU_owK3kSBOfz7pT83bmvhuU4JS0xmtaO8iPlT2Icesvf343yAOHKOHfb8PVuAy6BEtwrDmZsm7oQh_AuZxT3u7gnb0-RY_1P1FjNxJOJgwd8m-dJ2L3JkmPVJC3vV2-NqenbiynTOrW2RpWCXNhzrqnJdLzmbUVt1_LEakgoHLzMeNkXAW1CLtsOEh61Ex-r6eOj4djVWa4Cj92vCNku9hmTV1hQRmmezjNJIg7twfdoO3_XZ1hWKdkretvQgKvAPPEh7kRv6F"/>
+</div>
+<div>
+<h4 class="font-bold text-lg">André Costa</h4>
+<p class="text-sm text-primary">Clássicos &amp; Visagismo</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-6 py-20 bg-primary/5" id="depoimentos">
+<div class="mx-auto max-w-7xl">
+<div class="mb-12">
+<h2 class="text-3xl font-bold tracking-tight">O que dizem nossos clientes</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-background-light dark:bg-[#25221b] p-8 rounded-xl border border-primary/10 italic relative">
+<span class="material-symbols-outlined text-primary/20 text-6xl absolute top-4 right-4">format_quote</span>
+<p class="text-lg relative z-10">"Melhor experiência de barbearia que já tive. O atendimento é impecável e o ambiente é muito sofisticado. O Ricardo realmente entende de visagismo."</p>
+<div class="mt-6 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">person</span>
+</div>
+<div>
+<p class="font-bold">Marcos Oliveira</p>
+<p class="text-xs opacity-60 text-primary">Cliente há 2 anos</p>
+</div>
+</div>
+</div>
+<div class="bg-background-light dark:bg-[#25221b] p-8 rounded-xl border border-primary/10 italic relative">
+<span class="material-symbols-outlined text-primary/20 text-6xl absolute top-4 right-4">format_quote</span>
+<p class="text-lg relative z-10">"Agendar pelo site é extremamente fácil. O serviço de toalha quente na barba é relaxante demais. Recomendo para quem busca qualidade de verdade."</p>
+<div class="mt-6 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">person</span>
+</div>
+<div>
+<p class="font-bold">Felipe Souza</p>
+<p class="text-xs opacity-60 text-primary">Cliente Mensal</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-6 py-20" id="localizacao">
+<div class="mx-auto max-w-7xl">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="space-y-8">
+<div>
+<h2 class="text-3xl font-bold tracking-tight">Onde estamos</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-4 leading-relaxed">
+                                    Localizados no coração do bairro Jardins, oferecemos um ambiente exclusivo com estacionamento privativo e lounge de espera com bar completo.
+                                </p>
+</div>
+<div class="space-y-4">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<div>
+<p class="font-bold">Endereço</p>
+<p class="text-sm opacity-70">Av. Paulista, 1000 - Bela Vista, São Paulo - SP</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary">schedule</span>
+<div>
+<p class="font-bold">Horário de Funcionamento</p>
+<p class="text-sm opacity-70">Segunda a Sábado: 09h às 21h</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary">call</span>
+<div>
+<p class="font-bold">Contato</p>
+<p class="text-sm opacity-70">(11) 99999-9999 / contato@barbersaas.com</p>
+</div>
+</div>
+</div>
+<button class="w-full sm:w-auto bg-primary text-background-dark px-8 py-3 rounded-lg font-bold hover:brightness-110">
+                                Como Chegar
+                            </button>
+</div>
+<div class="rounded-2xl overflow-hidden h-96 border border-primary/20">
+<div class="w-full h-full bg-slate-800 flex items-center justify-center relative" data-location="São Paulo" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBvAMpECEJvM0X14IeC0GUcH89ru-dPN5Pt5iI-Z9Fg0vIwCvthL_XbTTn4VQlXCQP33hPMx_KWvkUbqotAPNe3lQwEBOOZnXfAiQYzbGH16x66Jsrx5Yi2PSv4oK5wRqX1vV2-cQlSOkXhv-dLFQlbeGxIE_3qfW1L9GEspsc4sLOgi4Pr6o7D4Xwg87eZ5Gy0sg_yZxKu9dhlw9sK-6iKhUcHaISjfJwr-HVRmIAf_QYHjTNUDtTLTQsUkha6AjvjMcc1Mu3LRpat'); background-size: cover; background-position: center;">
+<div class="absolute inset-0 bg-primary/10"></div>
+<span class="material-symbols-outlined text-primary text-5xl">location_on</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-[#11100d] text-slate-400 py-12 px-6 border-t border-primary/10">
+<div class="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-2 text-white">
+<span class="material-symbols-outlined text-primary">content_cut</span>
+<span class="text-xl font-bold">BarberSaaS</span>
+</div>
+<div class="flex gap-6 text-sm">
+<a class="hover:text-primary" href="#">Privacidade</a>
+<a class="hover:text-primary" href="#">Termos</a>
+<a class="hover:text-primary" href="#">FAQ</a>
+</div>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full border border-slate-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined text-lg">public</span>
+</a>
+<a class="w-10 h-10 rounded-full border border-slate-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined text-lg">camera</span>
+</a>
+</div>
+</div>
+<div class="mx-auto max-w-7xl mt-8 pt-8 border-t border-slate-800 text-center text-xs opacity-50">
+<p>© 2024 BarberSaaS. Todos os direitos reservados. Design para profissionais exigentes.</p>
+</div>
+</footer>
+</div>
+</body></html>
+
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c59f59",
+                        "background-light": "#f8f7f6",
+                        "background-dark": "#1a1814",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.75rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<title>Barbearia Premium - Agendamento</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Header / Nav -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-primary/10 px-4 md:px-10 py-4 sticky top-0 bg-background-light dark:bg-background-dark z-50">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">Barbearia Premium</h2>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-primary transition-colors hover:bg-primary/20">
+<span class="material-symbols-outlined">calendar_month</span>
+</button>
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-primary transition-colors hover:bg-primary/20">
+<span class="material-symbols-outlined">person</span>
+</button>
+</div>
+</header>
+<main class="flex flex-1 justify-center py-6 md:py-10 px-4">
+<div class="max-w-[800px] flex-1 flex flex-col gap-8">
+<!-- Stepper Progress -->
+<div class="flex flex-col gap-4 bg-slate-100 dark:bg-white/5 p-6 rounded-xl border border-slate-200 dark:border-primary/10">
+<div class="flex justify-between items-center">
+<div>
+<p class="text-primary text-xs font-bold uppercase tracking-[0.2em]">Passo 1 de 4</p>
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-semibold">Seleção de Serviço</h3>
+</div>
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">25% Completo</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full transition-all duration-700" style="width: 25%;"></div>
+</div>
+</div>
+<!-- Section: Services -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-slate-900 dark:text-slate-100 text-2xl font-bold tracking-tight">Escolha os serviços</h2>
+<span class="text-primary text-sm font-medium flex items-center gap-1 cursor-pointer hover:underline">
+                            Ver detalhes <span class="material-symbols-outlined text-sm">info</span>
+</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Service Card Active -->
+<div class="group relative flex flex-col gap-4 p-4 rounded-xl border-2 border-primary bg-primary/5 cursor-pointer shadow-lg shadow-primary/5">
+<div class="w-full h-40 bg-center bg-no-repeat bg-cover rounded-lg" data-alt="Modern barbershop interior with vintage chairs" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCMQXoMJpEXYe-09-PViitmOc4UC0tIF920NNirOrT8fC2rOHsxAKU34Qm5U9REuWVqDTuTlEy6z6t01j4loZjshdCO34DRo8USrCz7jX0kYHGa6ACwP3Aw9GGgU96lHlxT4ZM2bOHcIPb8BlRVEiWFRWXdKhIl6N-y1utedqPZo4-UCqbPmUQm_MNsJFkB3o1fkNKsvTN9iiI6W8Folo7Mi5p-bSvxw_WxYisbEP05pvzQQ0TIGbPnfAGoUk1I8y8FmVyJFGX-gd7D");'></div>
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Corte de Cabelo</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Corte degradê, tesoura ou máquina</p>
+</div>
+<div class="bg-primary text-background-dark px-2 py-1 rounded-md text-xs font-bold">R$ 65,00</div>
+</div>
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium">
+<span class="material-symbols-outlined text-sm">schedule</span> 45 min
+                            </div>
+<div class="absolute top-2 right-2 bg-primary text-background-dark rounded-full p-1 shadow-md">
+<span class="material-symbols-outlined text-sm leading-none font-bold">check</span>
+</div>
+</div>
+<!-- Service Card -->
+<div class="group relative flex flex-col gap-4 p-4 rounded-xl border border-slate-200 dark:border-primary/10 bg-white dark:bg-white/[0.03] hover:border-primary/40 hover:bg-white/[0.05] transition-all cursor-pointer">
+<div class="w-full h-40 bg-center bg-no-repeat bg-cover rounded-lg opacity-60 group-hover:opacity-100 transition-all" data-alt="Barber grooming a beard with precision tools" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCbtsyLhkpOZjbGyzKKXOHzdvUi3AQ5QNYo2pDyIGiDGgR8OUUlifbD4Gn8ysfXpbV5OONrXA1AodDsVF4rTXIRjjxkGculKez4Qvlid9wYj1JBz1LWeW03vw0px7KHOjHFAx_3YruYsQq-jBjHHlrcysPM5mdlD32UHl1eZGjdSuGigCrbCKQtWPtsZQRDid0eOa-WU1T44w6GVlX6_GuAuIOvXjxPOTpfPdULmOdb7oRcmN5OqO2AT-W59gsLyT4M3P-4ps7vrBrK");'></div>
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Barba Terapia</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Toalha quente e massagem facial</p>
+</div>
+<div class="bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md text-xs font-bold">R$ 45,00</div>
+</div>
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium">
+<span class="material-symbols-outlined text-sm">schedule</span> 30 min
+                            </div>
+</div>
+<!-- Service Card -->
+<div class="group relative flex flex-col gap-4 p-4 rounded-xl border border-slate-200 dark:border-primary/10 bg-white dark:bg-white/[0.03] hover:border-primary/40 hover:bg-white/[0.05] transition-all cursor-pointer">
+<div class="w-full h-40 bg-center bg-no-repeat bg-cover rounded-lg opacity-60 group-hover:opacity-100 transition-all" data-alt="Full grooming service combo display" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC8Va2is8ISU4XngYiHm9QWAYeRFRjQZaHLIE-zdP-b8G0fYkgl-aYb81kCzViwQwnPYK-MmeKGmtz-bYhWQvLPeivJjPx-Dn-mDM80Z0UBWX-68os3woyt2fWGI6Mnx2EWyR4rWZnQ_LJBZ4xa_HiYBwDVnhMCkyf0K5BTP6ihtRKdm8ou2DueaYzanh803Cwn6sxSltLJW1BjTzXZaT98rp7LIHWJH7xF32H6pfsYcxstbjCCma1gaNbMrun49k3cY7ntKKc_QLlc");'></div>
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Combo Premium</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Cabelo + Barba + Sobrancelha</p>
+</div>
+<div class="bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md text-xs font-bold">R$ 100,00</div>
+</div>
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium">
+<span class="material-symbols-outlined text-sm">schedule</span> 90 min
+                            </div>
+</div>
+<!-- Service Card -->
+<div class="group relative flex flex-col gap-4 p-4 rounded-xl border border-slate-200 dark:border-primary/10 bg-white dark:bg-white/[0.03] hover:border-primary/40 hover:bg-white/[0.05] transition-all cursor-pointer">
+<div class="w-full h-40 bg-center bg-no-repeat bg-cover rounded-lg opacity-60 group-hover:opacity-100 transition-all" data-alt="Men eyebrow shaping and grooming" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAu4ahIxJtSP4KaVvRRKZGWlD3STO5_NpA8uYaO-cS0LaC16D1982jqcM04xnyfrOg5KablgB8g7UXELJ5zeM4Ezb9rthtJ3eo3uPLDimtLYbDN8Xn67380J0btv_9SIiDLU7iVliuZiHd_dg40Mew2AwM4KKItxCfK4F_qnCQode7Llww9aqySqoBvOn8owbvGnsQGOyN3hOzNPE7oPoYNWa_6gjpLBMcuoXKqOA6K7CMiZdDPxyi9PzxX4EamstnCH_eRh0gUfDOt");'></div>
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Sobrancelha</h4>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Design com navalha ou pinça</p>
+</div>
+<div class="bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md text-xs font-bold">R$ 20,00</div>
+</div>
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium">
+<span class="material-symbols-outlined text-sm">schedule</span> 15 min
+                            </div>
+</div>
+</div>
+</section>
+<!-- Section: Professionals -->
+<section>
+<h2 class="text-slate-900 dark:text-slate-100 text-2xl font-bold tracking-tight mb-6">Escolha o Profissional</h2>
+<div class="flex gap-4 overflow-x-auto pb-4 snap-x no-scrollbar">
+<!-- Pro Card Selected -->
+<div class="flex flex-col items-center gap-3 min-w-[140px] snap-center p-4 rounded-xl bg-primary/5 border-2 border-primary shadow-lg shadow-primary/5">
+<div class="size-20 rounded-full border-2 border-primary p-1">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Portrait of professional barber Marcus" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCLd_-qroSiPmiRvaCn8b-_VG_Lem3c_FlTYa2nqB1o6kkCAK_UU70OXYX3x5CffnpN-_lve8dQzR_yl43uZy1q_7GmpPLxUzjM_jA1t2ome6RFaeaDIjxect9GZsN-RD0liBp2nnlrkwVILIcgsy9JDtTzLWOBbNDZYmUG_5xf2nqcO7cAt1BRrGHNzNbVJ09g2I5PAsfgZ3NJYag8lb0brZU7bFh1wGbVgJPO0ccE2ZOwXVwf7UsexdOyAwYydjcVh--E5QQGT_uj')"></div>
+</div>
+<div class="text-center">
+<p class="text-slate-900 dark:text-slate-100 font-bold">Marcus</p>
+<p class="text-primary text-xs font-bold uppercase tracking-wider">Senior</p>
+</div>
+</div>
+<!-- Pro Card -->
+<div class="flex flex-col items-center gap-3 min-w-[140px] snap-center p-4 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-primary/10 hover:border-primary/40 transition-all cursor-pointer">
+<div class="size-20 rounded-full p-1 opacity-80">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Portrait of professional barber Andre" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBY2etbIODG_ASNjhf5N_ZuBhRHGPdafuDGuhf7wWrV6nDG5eHSMiTVyk1fxgSTtmWjG4dp-AGPbfdqpsfX2JGqITXqCv4vCVDHDFt5Vbj19TkHqrzvY0AD5DQ4-AEygoEzPWAkJgJ0eXKRxPkWcSQy7ruXAkzIa-Rfg57ETO7PFyDz-JV2J_KVlLVGorDuROdhzNU2apSO1-DePHyDxYnV4m0wnlX8jcpspnRniw2n3qR530TyzUye0zrNo197lCtSMx9FsUA-POpn')"></div>
+</div>
+<div class="text-center">
+<p class="text-slate-900 dark:text-slate-100 font-bold">André</p>
+<p class="text-slate-500 text-xs font-medium uppercase">Master</p>
+</div>
+</div>
+<!-- Pro Card -->
+<div class="flex flex-col items-center gap-3 min-w-[140px] snap-center p-4 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-primary/10 hover:border-primary/40 transition-all cursor-pointer">
+<div class="size-20 rounded-full p-1 opacity-80">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Portrait of professional barber Ricardo" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBkRjP6uSMoGUaFF1FFcw8I1uGfkMKX-RRMXqVY1tmGHHCGJpQ8Q1JyBXA4YQhheBXji2sCVkPOmguCy8QC5gdga5wivycE8UgB4HhzCYfG1VfEGjPThDctYystYTFzm0-abn1Pie-q03sprUVp-FXQqJ8IO3OYWtRCLEHEFWtIl0MR19Opl65uUZWKPAl7Zhe9fqs6RL17hmFYruhsz_68yEQriRx9nTb_WyjPR37JBnWdOQIsmU1nNfgtXIVHO-wgC9tv4IDkLG4u')"></div>
+</div>
+<div class="text-center">
+<p class="text-slate-900 dark:text-slate-100 font-bold">Ricardo</p>
+<p class="text-slate-500 text-xs font-medium uppercase">Junior</p>
+</div>
+</div>
+<!-- Pro Card - Any -->
+<div class="flex flex-col items-center gap-3 min-w-[140px] snap-center p-4 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-primary/10 hover:border-primary/40 transition-all cursor-pointer">
+<div class="size-20 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-slate-500">group</span>
+</div>
+<div class="text-center">
+<p class="text-slate-900 dark:text-slate-100 font-bold">Qualquer um</p>
+<p class="text-slate-500 text-xs font-medium uppercase">Disponível</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Calendar -->
+<section>
+<h2 class="text-slate-900 dark:text-slate-100 text-2xl font-bold tracking-tight mb-6">Data e Horário</h2>
+<div class="grid grid-cols-1 md:grid-cols-7 gap-4 bg-white dark:bg-white/[0.02] p-6 rounded-xl border border-slate-200 dark:border-primary/10">
+<!-- Date Picker -->
+<div class="md:col-span-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-primary/10 pb-6 md:pb-0 md:pr-6">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-bold text-slate-900 dark:text-slate-100">Novembro 2024</h4>
+<div class="flex gap-2">
+<button class="p-1.5 rounded-lg hover:bg-white/10 transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="p-1.5 rounded-lg hover:bg-white/10 transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-tighter">
+<div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sab</div>
+</div>
+<div class="grid grid-cols-7 gap-1">
+<div class="py-2.5 text-slate-400 text-sm">1</div>
+<div class="py-2.5 text-slate-400 text-sm">2</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">3</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">4</div>
+<div class="py-2.5 bg-primary text-background-dark font-bold rounded-lg cursor-pointer text-sm shadow-md shadow-primary/20">5</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">6</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">7</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">8</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">9</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">10</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">11</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">12</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">13</div>
+<div class="py-2.5 hover:bg-primary/10 rounded-lg cursor-pointer text-sm">14</div>
+</div>
+</div>
+<!-- Time Picker -->
+<div class="md:col-span-3 md:pl-6">
+<h4 class="font-bold mb-4 text-slate-900 dark:text-slate-100">Horários disponíveis</h4>
+<div class="grid grid-cols-2 gap-2">
+<button class="py-2 text-sm rounded-lg border border-slate-200 dark:border-primary/10 hover:border-primary/40 hover:bg-primary/5 transition-all">09:00</button>
+<button class="py-2 text-sm rounded-lg border border-slate-200 dark:border-primary/10 hover:border-primary/40 hover:bg-primary/5 transition-all">10:00</button>
+<button class="py-2 text-sm rounded-lg bg-primary text-background-dark font-bold shadow-md shadow-primary/20">11:00</button>
+<button class="py-2 text-sm rounded-lg border border-slate-200 dark:border-primary/10 hover:border-primary/40 hover:bg-primary/5 transition-all">13:30</button>
+<button class="py-2 text-sm rounded-lg border border-slate-200 dark:border-primary/10 hover:border-primary/40 hover:bg-primary/5 transition-all">14:00</button>
+<button class="py-2 text-sm rounded-lg border border-slate-200 dark:border-primary/10 hover:border-primary/40 hover:bg-primary/5 transition-all">15:30</button>
+<button class="py-2 text-sm rounded-lg border border-slate-200 dark:border-primary/10 hover:border-primary/40 hover:bg-primary/5 transition-all">16:45</button>
+<button class="py-2 text-sm rounded-lg border border-slate-200 dark:border-primary/10 hover:border-primary/40 hover:bg-primary/5 transition-all">18:00</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer Action Bar -->
+<div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-slate-100 dark:bg-white/[0.04] rounded-xl border border-slate-200 dark:border-primary/10">
+<div class="flex flex-col">
+<span class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Resumo da Seleção</span>
+<p class="text-slate-900 dark:text-slate-100 font-bold text-lg">Corte de Cabelo com Marcus</p>
+<p class="text-primary font-medium text-sm">Terça, 05 de Nov às 11:00 • R$ 65,00</p>
+</div>
+<div class="flex gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-8 py-3 rounded-xl bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-slate-100 font-bold hover:bg-slate-300 dark:hover:bg-white/20 transition-colors">Voltar</button>
+<button class="flex-1 md:flex-none px-10 py-3 rounded-xl bg-primary text-background-dark font-bold hover:shadow-[0_0_25px_rgba(197,159,89,0.3)] transition-all">Próximo Passo</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Site Footer -->
+<footer class="mt-auto px-4 md:px-10 py-10 border-t border-slate-200 dark:border-primary/10 bg-slate-50 dark:bg-background-dark/80">
+<div class="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+<div>
+<h3 class="text-primary font-bold mb-4 uppercase text-xs tracking-widest">Localização</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Av. Central, 1234 - Centro</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">São Paulo - SP</p>
+</div>
+<div>
+<h3 class="text-primary font-bold mb-4 uppercase text-xs tracking-widest">Funcionamento</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Seg - Sex: 09h às 20h</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Sáb: 08h às 18h</p>
+</div>
+<div>
+<h3 class="text-primary font-bold mb-4 uppercase text-xs tracking-widest">Redes Sociais</h3>
+<div class="flex gap-4">
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">brand_awareness</span></a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">chat</span></a>
+</div>
+</div>
+</div>
+<div class="text-center mt-12 text-slate-500 dark:text-slate-500 text-[10px] uppercase tracking-widest opacity-60">
+                © 2024 Barbearia Premium. Todos os direitos reservados.
+            </div>
+</footer>
+</div>
+</div>
+<style>
+    /* Custom Scrollbar for modern touch */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    /* Elegant transition for primary color items */
+    .transition-all {
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 300ms;
+    }
+</style>
+</body></html>
+
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BarberSaaS - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c59f59",
+                        "background-light": "#f8f7f6",
+                        "background-dark": "#171612",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.75rem", "lg": "0.75rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex min-h-screen overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-primary/20 bg-background-light dark:bg-background-dark flex flex-col hidden lg:flex">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary size-10 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-background-dark font-bold">content_cut</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-lg font-bold leading-none">BarberSaaS</h1>
+<p class="text-primary text-xs font-medium tracking-wider">PREMIUM ADMIN</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Equipe</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">content_cut</span>
+<span class="text-sm font-medium">Serviços</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm font-medium">Relatórios</span>
+</a>
+<div class="pt-4 pb-2 px-3">
+<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Configurações</p>
+</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Ajustes</span>
+</a>
+</nav>
+<div class="p-4 border-t border-primary/10">
+<div class="flex items-center gap-3 p-2 rounded-xl bg-primary/5">
+<div class="size-10 rounded-full bg-cover bg-center border border-primary/20" data-alt="User profile avatar of the administrator" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvacpDiyTasbVF2ntxGL0YRPPdrZBURq4Hr57XjBzeEtCA-NFwqlDtLEJG1kJxmauRmsO2GatGQak_CzBaA0cNSD5ArihOSmlDsi0Q5MhwcJVMdIKA-YyueYRvY3o0FFf456vt0MzPo--OjsUCRajD5T2NeL117ktXnkPmxpUByJXDKbXO7LlOHf3qwli5bhMMuYnUlDX-TI73i6tq8uIK_4IctSxf2CPXkai0Fz6IWD_zJJAaAtcaNZVfCMse7rVtg9Gk3qxErO8Q')"></div>
+<div class="flex flex-col overflow-hidden">
+<p class="text-sm font-semibold truncate">Ricardo Silva</p>
+<p class="text-xs text-slate-500 truncate">Proprietário</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+<!-- Header -->
+<header class="h-16 border-b border-primary/10 px-8 flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-10">
+<h2 class="text-xl font-bold">Resumo Geral</h2>
+<div class="flex items-center gap-4">
+<div class="relative max-w-xs hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="w-full bg-slate-100 dark:bg-primary/5 border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary" placeholder="Buscar cliente..." type="text"/>
+</div>
+<button class="relative p-2 rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<div class="h-8 w-[1px] bg-primary/20 mx-2"></div>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-bold text-sm rounded-xl hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                    Novo Agendamento
+                </button>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-8 space-y-8">
+<!-- Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-primary/5 border border-primary/10 p-6 rounded-xl hover:shadow-lg transition-shadow group">
+<div class="flex items-center justify-between mb-4">
+<div class="p-3 bg-primary/10 rounded-xl group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-background-dark">payments</span>
+</div>
+<span class="text-emerald-500/80 text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +12.5%
+                        </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Faturamento Mensal</p>
+<h3 class="text-3xl font-bold mt-1">R$ 12.500,00</h3>
+</div>
+<div class="bg-white dark:bg-primary/5 border border-primary/10 p-6 rounded-xl hover:shadow-lg transition-shadow group">
+<div class="flex items-center justify-between mb-4">
+<div class="p-3 bg-primary/10 rounded-xl group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-background-dark">person_add</span>
+</div>
+<span class="text-emerald-500/80 text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +5.2%
+                        </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Novos Clientes</p>
+<h3 class="text-3xl font-bold mt-1">48</h3>
+</div>
+<div class="bg-white dark:bg-primary/5 border border-primary/10 p-6 rounded-xl hover:shadow-lg transition-shadow group">
+<div class="flex items-center justify-between mb-4">
+<div class="p-3 bg-primary/10 rounded-xl group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-background-dark">calendar_today</span>
+</div>
+<span class="text-primary text-sm font-bold">Hoje</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Agendamentos Hoje</p>
+<h3 class="text-3xl font-bold mt-1">14</h3>
+</div>
+</div>
+<!-- Chart Section -->
+<div class="bg-white dark:bg-primary/5 border border-primary/10 rounded-xl p-8">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h4 class="text-lg font-bold">Desempenho de Receita</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400">Evolução do faturamento nos últimos 6 meses</p>
+</div>
+<select class="bg-slate-100 dark:bg-primary/10 border-none rounded-xl text-sm font-medium px-4 py-2 focus:ring-1 focus:ring-primary">
+<option>Últimos 6 meses</option>
+<option>Este ano</option>
+</select>
+</div>
+<div class="relative h-64 w-full flex flex-col justify-end gap-4 py-4">
+<svg class="h-48 w-full" fill="none" preserveaspectratio="none" viewbox="0 0 500 150" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 130 Q 50 120, 100 110 T 200 80 T 300 100 T 400 40 T 500 20" fill="none" stroke="url(#lineGradient)" stroke-linecap="round" stroke-width="4"></path>
+<path d="M0 130 Q 50 120, 100 110 T 200 80 T 300 100 T 400 40 T 500 20 V 150 H 0 Z" fill="url(#areaGradient)" opacity="0.1"></path>
+<defs>
+<lineargradient id="lineGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#c59f59" stop-opacity="0.5"></stop>
+<stop offset="100%" stop-color="#c59f59"></stop>
+</lineargradient>
+<lineargradient id="areaGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#c59f59"></stop>
+<stop offset="100%" stop-color="#c59f59" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="flex justify-between px-2">
+<span class="text-[10px] font-bold text-slate-400">JAN</span>
+<span class="text-[10px] font-bold text-slate-400">FEV</span>
+<span class="text-[10px] font-bold text-slate-400">MAR</span>
+<span class="text-[10px] font-bold text-slate-400">ABR</span>
+<span class="text-[10px] font-bold text-slate-400">MAI</span>
+<span class="text-[10px] font-bold text-slate-400 text-primary">JUN</span>
+</div>
+</div>
+</div>
+<!-- Appointments Table -->
+<div class="bg-white dark:bg-primary/5 border border-primary/10 rounded-xl overflow-hidden">
+<div class="p-6 border-b border-primary/10 flex items-center justify-between">
+<h4 class="text-lg font-bold">Próximos Atendimentos</h4>
+<a class="text-sm font-bold text-primary hover:underline" href="#">Ver todos</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-primary/10">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cliente</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Barbeiro</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Horário</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/5">
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs">person</span>
+</div>
+<span class="text-sm font-medium">Gustavo Oliveira</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Cadu "The Scissors"</td>
+<td class="px-6 py-4 text-sm font-semibold">14:30</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600/80 border border-amber-600/20 uppercase tracking-wide">Pendente</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs">person</span>
+</div>
+<span class="text-sm font-medium">Marcos Henrique</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Junior Barber</td>
+<td class="px-6 py-4 text-sm font-semibold">15:15</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600/80 border border-emerald-600/20 uppercase tracking-wide">Confirmado</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs">person</span>
+</div>
+<span class="text-sm font-medium">Thiago Santos</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Cadu "The Scissors"</td>
+<td class="px-6 py-4 text-sm font-semibold">16:00</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600/80 border border-blue-600/20 uppercase tracking-wide">Em espera</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs">person</span>
+</div>
+<span class="text-sm font-medium">Rodrigo Faro</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Matheus Sharp</td>
+<td class="px-6 py-4 text-sm font-semibold">16:45</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600/80 border border-emerald-600/20 uppercase tracking-wide">Confirmado</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
+
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#c59f59",
+                "background-light": "#f8f7f6",
+                "background-dark": "#1a1814",
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"]
+              },
+              borderRadius: {
+                "DEFAULT": "0.75rem", 
+                "lg": "0.75rem", 
+                "xl": "1rem", 
+                "full": "9999px"
+              },
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between py-6 border-b border-primary/20 mb-6">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-xl">
+<span class="material-symbols-outlined text-background-dark font-bold">content_cut</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Barber Agenda</h1>
+<p class="text-xs text-slate-500 dark:text-primary/70 font-medium">Professional Dashboard</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-primary/10 hover:bg-primary/20 text-primary transition-colors">
+<span class="material-symbols-outlined">calendar_month</span>
+</button>
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-primary/10 hover:bg-primary/20 text-primary transition-colors">
+<span class="material-symbols-outlined">person</span>
+</button>
+</div>
+</header>
+<!-- Date Tabs -->
+<div class="mb-8">
+<div class="flex border-b border-slate-200 dark:border-primary/10 overflow-x-auto no-scrollbar">
+<button class="flex-1 min-w-[100px] py-4 border-b-2 border-primary text-primary font-bold text-sm">
+                Hoje
+            </button>
+<button class="flex-1 min-w-[100px] py-4 border-b-2 border-transparent text-slate-500 dark:text-slate-400 font-medium text-sm hover:text-primary transition-colors">
+                Amanhã
+            </button>
+<button class="flex-1 min-w-[100px] py-4 border-b-2 border-transparent text-slate-500 dark:text-slate-400 font-medium text-sm hover:text-primary transition-colors">
+                Esta Semana
+            </button>
+</div>
+</div>
+<!-- Action Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div>
+<h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">Agendamentos</h2>
+<p class="text-sm text-slate-500 dark:text-slate-400">Quinta-feira, 24 de Outubro</p>
+</div>
+<button class="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-background-dark font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-xl">block</span>
+<span>Bloquear Horário</span>
+</button>
+</div>
+<!-- Appointment List -->
+<div class="space-y-3">
+<!-- Row 1: Pendente -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10 rounded-xl">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-full border-2 border-primary/30 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-background-dark">
+<img alt="Client portrait of a young man" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCs1a5mYJgtcK8iQSIawtxSkq5JFzcN10-FUwKJFL46_xJNHQMgyxvgpDWVHHTy033MdsgNfTXEKjWTf-HyhA4YplFwxDM8C2DLS0V8hU7KDrVYe96kTi0ky5ZfQ_IviHWSRoKTINZmChxatklw79t7VE43YV8lDF10Dvsx3Hn1Iy7BrHhB6N9kJBIaPgu0pQtWqrRzA-w_L4UpQwyJG2pxb-IsMo1FQLoKP_c3gAeyrgADytZnlE0kkUt5JtNnZ6CeIgdp2QrS9Ota"/>
+</div>
+<div>
+<p class="text-base font-bold text-slate-900 dark:text-slate-100 leading-none mb-1">Lucas Silva</p>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="font-medium text-primary">09:00 AM</span>
+<span>•</span>
+<span>Corte &amp; Barba</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="hidden sm:block text-[10px] font-bold uppercase tracking-wider text-slate-400">Pendente</span>
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-white/10 p-1 has-[:checked]:bg-primary transition-all">
+<input class="sr-only peer" type="checkbox"/>
+<div class="h-5 w-5 rounded-full bg-white shadow-md transition-all peer-checked:translate-x-5"></div>
+</label>
+</div>
+</div>
+<!-- Row 2: Em Atendimento -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-primary/10 border-l-4 border-primary border-y border-r border-slate-200 dark:border-primary/10 rounded-xl">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-full border-2 border-primary flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-background-dark">
+<img alt="Client portrait of a bearded man" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRzXhMY6-UbyyzLi2G_sppKLyqFmyfaFboPIJYe6-8pKi9LZIpJdTQ0SMwlDEsKTNs78DR1ENc0-AYXSSTq8IXeOHFOlHwYNe-AaqS0bBUgkTGCbMvF31JeXwQj3JK_CkjuYbUU4OtIXPPS8DgLtUN_mdzRy4ojjZTPJOw1Hq5GrDSog6qRoo-7enIb6ghBC6oXTx4Skvs38DcWtoJKui1s4U_tYOX-V5BalN3Oxh3RRlx6uu8CmuRgDewtu3aMsI78pa4dg2i_nOf"/>
+</div>
+<div>
+<p class="text-base font-bold text-slate-900 dark:text-slate-100 leading-none mb-1 text-primary">André Santos</p>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="font-medium text-primary">10:15 AM</span>
+<span>•</span>
+<span>Degradê Navalhado</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="hidden sm:block text-[10px] font-bold uppercase tracking-wider text-primary">Em Atendimento</span>
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full border-none bg-primary p-1 transition-all">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="h-5 w-5 rounded-full bg-white shadow-md transition-all translate-x-5"></div>
+</label>
+</div>
+</div>
+<!-- Row 3: Concluído -->
+<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-primary/5 opacity-60 border border-slate-200 dark:border-primary/10 rounded-xl">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-full border-2 border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-background-dark grayscale">
+<img alt="Client portrait of a smiling man" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2xD9m1J_p0lOmzCliW9SxAEEuTgv7AVSG8JjmEyJfdbvmZXkLGjqtku14qx4Wjl3gh4_j-urIqxYTxBrkb2d5lXjliggr0YSuCfCkrD0maAG6D7uq3MXdHB27su5OKZr__lAOz_YB0MCOPpZ9XKhyMpSAvoM78RsUQweisgfaNMp64W8eonphsLBhEcBF_WGKMObsvrPbJQDl_12U0CCrdZltxbBhJacbZKRZDopkORjd1ZLZuzoAbD5OLZN6nXU3_9OsBs34ne_L"/>
+</div>
+<div>
+<p class="text-base font-bold text-slate-900 dark:text-slate-100 leading-none mb-1 line-through">Marcos Oliver</p>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="font-medium">08:00 AM</span>
+<span>•</span>
+<span>Barboterapia</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-green-500 text-xl">check_circle</span>
+<span class="hidden sm:block text-[10px] font-bold uppercase tracking-wider text-slate-400">Concluído</span>
+</div>
+</div>
+<!-- Row 4: Bloqueado -->
+<div class="flex items-center justify-between p-4 bg-slate-200/50 dark:bg-red-900/5 border border-dashed border-slate-300 dark:border-red-900/20 rounded-xl">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-full border-2 border-slate-300 dark:border-red-900/20 flex items-center justify-center bg-slate-100 dark:bg-red-900/10">
+<span class="material-symbols-outlined text-slate-400 dark:text-red-500/70">lock</span>
+</div>
+<div>
+<p class="text-base font-bold text-slate-500 dark:text-red-400/70 leading-none mb-1 italic">Horário Bloqueado</p>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="font-medium">11:30 AM</span>
+<span>•</span>
+<span>Intervalo Almoço</span>
+</div>
+</div>
+</div>
+<button class="text-xs font-bold text-slate-500 dark:text-slate-400 underline decoration-primary/50 underline-offset-4 hover:text-primary transition-colors">Desbloquear</button>
+</div>
+<!-- Row 5: Pendente -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10 rounded-xl">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-full border-2 border-primary/30 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-background-dark">
+<img alt="Client portrait of a young professional" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCA2IiSahZqqO1-CvcGODl6_pMRDuimr6O41h3U_StiUlIzhmckrF-3yDHg0-0iKjbYDNKLC_bZWb6YdSQZUDvGGvbHNScm7Gf482w-R6a6eg7f7dTKK-cFgTcKBpqtkf4QGxCpPyeSJCRcr-IZ01AX-VxRaSwvSFurI8sVVipbOPId5AXgd0r5P2Q4CObh2dzvZtLtqOOfnHaBV3Ex67798kBukB6CP0NCCBh2pn2xp-bs6vHu9pag9BclmoMNlro-LraAVkZ93AnF"/>
+</div>
+<div>
+<p class="text-base font-bold text-slate-900 dark:text-slate-100 leading-none mb-1">Ricardo Lima</p>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="font-medium text-primary">01:00 PM</span>
+<span>•</span>
+<span>Corte Social</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="hidden sm:block text-[10px] font-bold uppercase tracking-wider text-slate-400">Pendente</span>
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-white/10 p-1 has-[:checked]:bg-primary transition-all">
+<input class="sr-only peer" type="checkbox"/>
+<div class="h-5 w-5 rounded-full bg-white shadow-md transition-all peer-checked:translate-x-5"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Floating Add Button for Mobile -->
+<button class="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-primary text-background-dark shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-2xl font-bold">add</span>
+</button>
+<!-- Status Stats -->
+<div class="mt-10 grid grid-cols-3 gap-4">
+<div class="bg-white dark:bg-primary/5 p-4 rounded-xl border border-slate-200 dark:border-primary/10 text-center">
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-tight">Total</p>
+<p class="text-2xl font-bold text-slate-900 dark:text-slate-100">12</p>
+</div>
+<div class="bg-white dark:bg-primary/5 p-4 rounded-xl border border-slate-200 dark:border-primary/10 text-center">
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-tight">Feitos</p>
+<p class="text-2xl font-bold text-green-500">5</p>
+</div>
+<div class="bg-white dark:bg-primary/5 p-4 rounded-xl border border-slate-200 dark:border-primary/10 text-center">
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-tight">Restam</p>
+<p class="text-2xl font-bold text-primary">7</p>
+</div>
+</div>
+</div>
+</body></html>

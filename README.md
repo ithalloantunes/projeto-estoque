@@ -1,132 +1,104 @@
-# Projeto Estoque
-
-Aplicação web para gerenciamento de estoque com autenticação, controle de produtos, movimentações e relatórios. A API agora utiliza PostgreSQL 17 (hospedado no Render ou em outra instância compatível) para armazenar usuários, itens de estoque e movimentações.
-
-## Requisitos
-
-- Node.js 18+
-- PostgreSQL 17 (ou compatível)
-- Conta no [Render](https://render.com) caso deseje hospedar a aplicação e o banco
-
-## Variáveis de ambiente
-
-| Variável            | Descrição                                                                                   |
-|---------------------|---------------------------------------------------------------------------------------------|
-| `PORT`              | Porta utilizada pelo servidor HTTP (padrão: `3000`).                                        |
-| `DATABASE_URL`      | URL de conexão PostgreSQL. Ex.: `postgres://usuario:senha@host:5432/base`. **Obrigatória**. |
-| `DATABASE_URL_EXTERNAL` | (Opcional) URL externa do banco, usada automaticamente ao rodar fora da infraestrutura do Render caso o host interno não seja acessível. |
-| `DATABASE_SSL`      | Defina como `disable` para desativar SSL (apenas ambientes locais).                         |
-| `JWT_SECRET`        | (Opcional) Segredo customizado para assinar os tokens JWT.                                  |
-| `PGPOOL_MAX`        | (Opcional) Número máximo de conexões simultâneas no pool (`10` por padrão).                 |
-| `NODE_ENV`          | Use `production` em produção para habilitar cookies `secure` e SSL no banco.                |
-| `CORS_ALLOWED_ORIGINS` | (Opcional) Lista adicional de origens permitidas, separadas por vírgula.                 |
-| `UPLOAD_MAX_FILE_SIZE_BYTES` | (Opcional) Limite de upload de imagens em bytes (padrão: `5242880`, ou 5 MB).     |
-| `UPLOAD_MAX_FILE_SIZE_MB` | (Opcional) Limite de upload em megabytes. Ignorado se o valor em bytes estiver definido. |
-
-## Configurando o banco no Render
-
-1. Crie um novo **PostgreSQL** em *Render → Databases* escolhendo a versão 17.
-2. No painel do banco, abra a aba **Connections** e copie o valor de **Internal Database URL** (ex.: `postgres://usuario:senha@dpg-xxxxx.internal:5432/nome`)
-   - Use a URL interna para que a comunicação ocorra dentro da rede privada do Render, evitando exposição pública e garantindo TLS automático.
-   - Para executar a aplicação localmente (fora do Render) utilize também a **External Database URL** na variável `DATABASE_URL_EXTERNAL`, pois o host interno não é acessível fora da infraestrutura do Render.
-3. Crie um novo serviço *Web Service* apontando para este repositório (botão **New → Web Service**).
-4. Na tela de criação (ou em **Settings → Environment** após o deploy):
-   - Adicione a variável `DATABASE_URL` com a URL interna copiada.
-   - Adicione `NODE_ENV=production` para habilitar cookies seguros e SSL no banco.
-   - Opcional: ajuste `PGPOOL_MAX` caso queira controlar o número máximo de conexões simultâneas.
-5. Clique em **Advanced → Add a Database** e selecione o banco criado (isto apenas preenche automaticamente `DATABASE_URL`; faça manualmente se preferir).
-6. Faça o deploy. Na primeira execução a aplicação cria automaticamente as tabelas (`users`, `inventory`, `movimentacoes`) e importa os dados iniciais existentes nos arquivos `data/users.json` e `data/estoque.json` caso o banco esteja vazio.
-
-### Variáveis com os dados fornecidos pelo Render
-
-Para o banco criado com as credenciais abaixo, configure as variáveis no Render exatamente assim utilizando a senha atualmente provisionada pelo serviço:
-
-| Campo Render                                   | Valor |
-|------------------------------------------------|-------|
-| Host (Internal)                                | `dpg-d4aec52li9vc73fgkne0-a` |
-| Porta                                          | `5432` |
-| Base de dados                                  | `acai` |
-| Usuário                                        | `acai` |
-| `DATABASE_URL`                                 | `postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a/acai` |
-| `DATABASE_URL_EXTERNAL`                        | `postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com/acai` |
-| Comando para testar via Shell do Render (PSQL) | `PGPASSWORD=ETShntq0lGuqd1z35WNdCBVRQEfEPF9P psql -h dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com -U acai acai` |
-
-
-> **Importante:** mantenha a senha fora do repositório. Defina-a apenas como variável de ambiente (`DATABASE_URL`) ou em comandos temporários como o `psql` acima.
-
-> ⚠️ Fora da infraestrutura do Render, o host interno (`dpg-d4aec52li9vc73fgkne0-a`) não é resolvido e causa o erro `getaddrinfo ENOTFOUND`. Defina também `DATABASE_URL_EXTERNAL` (ou `RENDER_EXTERNAL_DATABASE_URL`) com a URL externa terminada em `.render.com` para que a aplicação consiga se conectar ao banco durante o desenvolvimento local.
-
-> **Dica:** caso precise acessar o banco externamente (por exemplo, a partir do seu computador), utilize a **External Database URL** disponibilizada pelo Render: `postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com/acai`.
-
-> **Importante:** o Render exige conexão segura; não altere `DATABASE_SSL` em produção. Localmente, caso esteja usando um PostgreSQL sem TLS, defina `DATABASE_SSL=disable`.
-
-> A API habilita automaticamente o SSL quando detecta um host do Render (`*.render.com`) em `DATABASE_URL`/`POSTGRES_URL`, evitando erros ao usar a External Database URL fora da infraestrutura deles. Caso precise controlar manualmente o comportamento, use `DATABASE_SSL=require` para forçar TLS ou `DATABASE_SSL=disable` para desativá-lo (não recomendado para hosts do Render).
-
-### Testando a conexão dentro do Render
-
-Para verificar se o web service está conversando com o banco:
-
-1. Abra o serviço no Render e vá em **Shell**.
-2. Execute `printenv DATABASE_URL` para garantir que a variável está definida.
-3. Rode `node --eval "import('./server.js')"` para iniciar a aplicação manualmente; a mensagem `Servidor rodando na porta ...` indica que a conexão foi estabelecida.
-4. Confira os logs em **Logs**: qualquer erro de credencial ou SSL aparecerá ali.
-
-## Executando localmente
-
-```bash
-npm install
-# Use um Postgres local (ex.: banco criado na sua máquina com o nome `acai`)
-DATABASE_URL="postgres://usuario:senha@localhost:5432/acai" npm run dev
-
-# ...ou utilize diretamente o banco provisionado no Render com as credenciais atuais
-DATABASE_URL="postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a/acai" \
-DATABASE_URL_EXTERNAL="postgresql://acai:ETShntq0lGuqd1z35WNdCBVRQEfEPF9P@dpg-d4aec52li9vc73fgkne0-a.oregon-postgres.render.com/acai" \
-npm run dev
-```
-
-O servidor cria as tabelas automaticamente. O arquivo [`db/schema.sql`](db/schema.sql) contém o esquema completo caso queira aplicar manualmente.
-
-> **Uploads de imagens:** por padrão, o backend limita cada imagem a 5 MB e rejeita origens não autorizadas para CORS. Utilize as variáveis `UPLOAD_MAX_FILE_SIZE_BYTES` ou `UPLOAD_MAX_FILE_SIZE_MB` para ajustar o tamanho máximo e `CORS_ALLOWED_ORIGINS` para liberar novos domínios sem alterar o código.
+# Projeto Barbearia (BarberSaaS)
 
 ## Estrutura principal
 
-- `server.js` – API Express, autenticação, integração com PostgreSQL e upload de imagens.
-- `index.html`, `javascript.js`, `estilos.css` – interface web existente.
-- `data/` – dados de exemplo usados para popular o banco na primeira execução.
+- `web/`: aplicacao Next.js + Prisma.
+- `contexto_ia/`: planejamento, diagnostico, checklist e diario de execucao.
 
-## Módulo de fechamento de caixa
+## Setup rapido (desenvolvimento local)
 
-- Registro diário consolidando meios de pagamento (`dinheiro_sistema`, cartões do sistema, on-line e PIX), cartões na maquininha, abertura/reforço, gastos e depósito.
-- Cálculos automáticos:
-  - `total_sistema = dinheiro_sistema + credito_sistema + debito_sistema + pag_online + pix`.
-  - `dinheiro_em_gaveta = abertura + reforco + dinheiro_sistema - gastos - valor_para_deposito`.
-  - `variavel_caixa = dinheiro_em_gaveta - total_caixa_dinheiro` (pode ser negativo).
-- Endpoints protegidos (`admin`) disponíveis tanto em `/api/cashier/closures` quanto em `/api/fechamentos` (alias em PT-BR):
-  - `GET ...?de=AAAA-MM-DD&ate=AAAA-MM-DD` – lista por período.
-  - `GET .../:id` – detalha um fechamento (inclui cálculo da gaveta).
-  - `GET .../:id/logs` – histórico de alterações com responsável, data e diffs.
-  - `POST ...` – cria/fecha o dia calculando campos derivados.
-  - `PUT .../:id` – atualiza mantendo as validações e registrando log.
-- Novo esquema PostgreSQL: tabelas `cashier_closures` (1 registro por data, com índices para data/funcionário) e `cashier_closure_logs` (auditoria das mudanças).
-- Campos numéricos aceitam decimais (`NUMERIC(12,2)`), contagens (`INTEGER`) e observações livres.
+Observacao: o frontend/backend Next.js roda via Node (`npm run dev`); no XAMPP usamos MySQL (e opcionalmente Apache para proxy).
 
-### Suposições
+1. Entre na aplicacao:
+   - `cd web`
+2. Inicie o XAMPP:
+   - abra o XAMPP Control Panel
+   - inicie `Apache` e `MySQL`
+3. Crie o banco local (uma vez):
+   - no `phpMyAdmin` (`http://localhost/phpmyadmin`), crie o banco `barbersaas`
+4. Configure ambiente:
+   - copie `.env.example` para `.env`
+   - use ao menos `DATABASE_URL` e `SESSION_SECRET`
+   - padrao XAMPP: `DATABASE_URL="mysql://root@localhost:3306/barbersaas"`
+5. Instale dependencias:
+   - `npm.cmd install`
+6. Gere o cliente Prisma:
+   - `npm.cmd run prisma:generate`
+7. Aplique schema e seed no banco:
+   - `npm.cmd run db:push`
+   - `npm.cmd run db:seed`
+8. Suba a app:
+   - `npm.cmd run dev`
 
-- Apenas usuários com perfil `admin` têm acesso aos endpoints de fechamento (o sistema atual não possui o papel "gerente").
-- O responsável pelo fechamento armazenado é o usuário autenticado no momento da criação; edições mantêm o vínculo original.
-- Exportação CSV/Excel poderá ser adicionada futuramente conforme necessidade.
+## Inicializacao com 1 clique (apresentacao)
 
-## Scripts
+1. No Windows, de duplo clique em:
+   - `INICIAR-BARBERSAAS.bat`
+2. O script automaticamente:
+   - valida Node/npm
+   - cria/ajusta `.env` se necessario
+   - inicia MySQL do XAMPP
+   - cria o banco `barbersaas` se nao existir
+   - roda `prisma generate`, `db:push` e `db:seed`
+   - sobe o sistema em `http://localhost:3000`
 
-- `npm run dev` – inicia o servidor com `nodemon`.
-- `npm start` – inicia o servidor em modo produção.
-- `npm run sync:admins` – importa e atualiza no PostgreSQL os administradores definidos em `data/users.json`.
-- `npm test` – executa os testes automatizados (usa um banco em memória para validar a importação de administradores).
+Requisitos para esse modo:
+- XAMPP instalado (padrao `C:\xampp`) com MySQL disponivel na porta `3306`
+- Node.js LTS instalado
 
-> **Dica:** ao executar `npm run sync:admins` fora do Render, utilize a *External Database URL* (terminada em `.render.com`) na variável `DATABASE_URL`, pois o host interno não é acessível a partir da sua máquina ou deste ambiente de desenvolvimento.
->
-> Quando a URL aponta para um host do Render, o script ativa SSL automaticamente (`rejectUnauthorized: false`). Caso precise forçar ou desativar o comportamento, defina `DATABASE_SSL=require` ou `DATABASE_SSL=disable` respectivamente.
+## Comandos de validacao
 
-## Licença
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd run test`
+- `npm.cmd run test:coverage`
+- `npm.cmd run build`
+- `npm.cmd run verify` (executa lint + typecheck + test + build)
+- `npm.cmd run smoke:http`
+- `npm.cmd run smoke:sentry` (valida prontidao Sentry no `/api/health` + monitor `health-alert` com `HEALTH_REQUIRE_SENTRY_READY=true`)
+- `npm.cmd run sentry:test` (envia evento de teste para validar alerta on-call)
+- `npm.cmd run smoke:e2e` (requer browser Chromium do Playwright: `npx.cmd playwright install chromium`)
+- `npm.cmd run smoke:e2e:auth` (homolog local com banco+seed; valida login/criar/remarcar/cancelar)
+- `npm.cmd run smoke:a11y` (axe + Playwright para violacoes criticas de acessibilidade)
 
-MIT
+## Comandos de banco
+
+- `npm.cmd run db:push`
+- `npm.cmd run db:migrate`
+- `npm.cmd run db:migrate:deploy`
+- `npm.cmd run db:migrate:status`
+- `npm.cmd run db:seed`
+
+Obs.: comandos de banco exigem `DATABASE_URL` configurada no `.env`.
+Obs. 2: a CLI do Prisma usa `web/prisma.config.ts`.
+Obs. 3: migracao baseline versionada em `web/prisma/migrations/20260325183000_init/migration.sql`.
+
+## Operacao
+
+### Sugestões de cortes com Gemini
+
+- Área do cliente: `/cliente/corte-ideal` (menu **Meu corte**).
+- Preparação, modelos, chave de servidor, migração e retenção: `docs/operacao/recomendacoes_gemini.md`.
+- Catálogo de cortes: `npm.cmd run db:seed:hairstyles` (não redefine contas ou agenda).
+- Limpeza periódica de imagens expiradas: `npm.cmd run ai:cleanup`.
+- O agendamento convencional continua disponível sem Gemini.
+
+- Healthcheck: `GET /api/health`
+- Pipeline CI: `.github/workflows/ci.yml`
+- Pipeline Smoke: `.github/workflows/smoke.yml`
+- Monitor de saude agendado: `.github/workflows/health-monitor.yml`
+- Correlacao de requests: header `x-request-id` propagado no `proxy` e usado em logs estruturados.
+- Telemetria basica: `/api/health` inclui taxa de erro e latencia media por rota (memoria local).
+- Telemetria de notificacoes: `/api/health` inclui metricas de entrega por canal (`email`/`whatsapp`).
+- Observabilidade externa: `/api/health` inclui status de prontidao do Sentry (`required`, `ready`, `missing`) sem expor DSN.
+- Backup/restore e runbook: `docs/operacao/backup_restore.md` e `docs/operacao/runbook_incidente.md`
+- Setup on-call Sentry: `docs/operacao/sentry_alertas_oncall.md`
+- Plano de go-live: `docs/operacao/go_live_plan.md`
+- Comunicacao de go-live: `docs/operacao/comunicacao_go_live.md`
+- Monitoramento 7 dias: `docs/operacao/monitoramento_pos_go_live_7_dias.md`
+- Revisao pos go-live: `docs/operacao/revisao_pos_go_live.md`
+- Aprovacao de rollback: `docs/operacao/rollback_aprovacao.md`
+- Plano de upgrade Prisma 7 com rollback: `docs/operacao/prisma7_upgrade_rollback.md`
+- SEO tecnico: `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`
+- Paginas legais publicas: `/termos-de-uso` e `/politica-privacidade`
+- LGPD: `docs/compliance/lgpd_solicitacoes_titular.md`, `docs/compliance/lgpd_sla_canais.md`, `docs/compliance/lgpd_checklist_execucao.md`, `docs/compliance/lgpd_modelo_resposta.md`, `docs/compliance/lgpd_registro_solicitacoes.md`
