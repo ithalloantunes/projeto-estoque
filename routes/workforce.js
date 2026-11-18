@@ -1,0 +1,32 @@
+import express from 'express';
+import {workforceRepository} from '../lib/workforce-repository.js';
+export function workforceRouter({repo,requireAdmin,notify}){
+ const r=express.Router(),work=workforceRepository(repo);
+ const route=fn=>(req,res,next)=>Promise.resolve(fn(req,res)).catch(e=>{if(['23505','23503','22P02','23514','22003'].includes(e.code))return res.status(e.code==='23505'?409:400).json({error:'Registro duplicado, valor inválido ou vínculo inexistente.'});next(e);});
+ const send=async(req,res,result)=>{try{const employees=[result?.employee_id,result?.requester_id,result?.target_id,req.body.employee_id].filter(Boolean);const ids=(await repo.query('SELECT user_id FROM employees WHERE user_id IS NOT NULL AND id=ANY($1::uuid[])',[employees])).rows.map(e=>e.user_id);await notify({periodId:result?.periodId||null,userIds:ids});}catch(e){console.error(e.message);}res.json(result);};
+ r.get('/overview',route(async(req,res)=>res.json(await work.overview(req.user))));
+ r.get('/availability',route(async(req,res)=>res.json(await work.availabilityList(req.user))));
+ r.post('/availability',route(async(req,res)=>send(req,res,await work.availability(req.user,req.body))));
+ r.post('/availability/:id/cancel',route(async(req,res)=>send(req,res,await work.cancelAvailability(req.user,req.params.id))));
+ r.get('/swaps',route(async(req,res)=>res.json(await work.swaps(req.user))));
+ r.get('/swap-options',route(async(req,res)=>res.json(await work.swapOptions(req.user,req.query.week))));
+ r.post('/swaps',route(async(req,res)=>send(req,res,await work.swap(req.user,req.body))));
+ r.post('/swaps/:id/decision',route(async(req,res)=>send(req,res,await work.decideSwap(req.user,req.params.id,req.body))));
+ r.get('/attendance',route(async(req,res)=>res.json(await work.attendance(req.user,req.query.month,req.query.employee_id))));
+ r.post('/attendance/punch',route(async(req,res)=>send(req,res,await work.punch(req.user,req.body))));
+ r.get('/payroll',route(async(req,res)=>res.json(await work.payroll(req.user,req.query.month,req.query.employee_id))));
+ r.use(requireAdmin);
+ r.post('/units',route(async(req,res)=>send(req,res,await work.unit(req.user,req.body))));
+ r.put('/units/:id',route(async(req,res)=>send(req,res,await work.unit(req.user,req.body,req.params.id))));
+ r.post('/memberships',route(async(req,res)=>send(req,res,await work.memberships(req.user,req.body))));
+ r.post('/rules',route(async(req,res)=>send(req,res,await work.rules(req.user,req.body))));
+ r.get('/warnings',route(async(req,res)=>res.json(await work.warnings(req.query.week))));
+ r.post('/availability/:id/review',route(async(req,res)=>send(req,res,await work.reviewAvailability(req.user,req.params.id,req.body))));
+ r.post('/generate',route(async(req,res)=>send(req,res,await work.generate(req.user,req.body))));
+ r.post('/attendance/:id/adjust',route(async(req,res)=>send(req,res,await work.adjustAttendance(req.user,req.params.id,req.body))));
+ r.post('/attendance/manual',route(async(req,res)=>send(req,res,await work.manualAttendance(req.user,req.body))));
+ r.post('/payroll/profile',route(async(req,res)=>send(req,res,await work.profile(req.user,req.body))));
+ r.post('/payroll/close',route(async(req,res)=>send(req,res,await work.closePayroll(req.user,req.body))));
+ r.post('/payroll/reopen',route(async(req,res)=>send(req,res,await work.reopenPayroll(req.user,req.body))));
+ return r;
+}

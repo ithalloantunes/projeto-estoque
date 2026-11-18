@@ -1,0 +1,11 @@
+node_modules/
+.runtime/
+.env
+data/.jwt-secret
+uploads/
+
+# Private local files
+contexto/
+.env.*
+!.env.example
+*.log

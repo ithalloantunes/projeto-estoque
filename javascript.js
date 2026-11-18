@@ -280,22 +280,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  window.addEventListener('schedules-page-selected', () => closeMobileSidebar(true));
+
   const setModuleButtonState = moduleName => {
-    const isStock = moduleName === 'stock';
-    moduleStockBtn?.classList.toggle('is-active', isStock);
-    moduleCashierBtn?.classList.toggle('is-active', !isStock);
+    for(const [name,button] of Object.entries({stock:moduleStockBtn,cashier:moduleCashierBtn,schedules:document.getElementById('module-schedules-btn')})) button?.classList.toggle('is-active',name===moduleName);
   };
 
   const applyModuleVisibility = moduleName => {
-    const showCashier = moduleName === 'cashier';
-    stockModuleContainer?.classList.toggle('hidden', showCashier);
-    cashierModuleContainer?.classList.toggle('hidden', !showCashier);
-    stockSidebarContent?.classList.toggle('hidden', showCashier);
-    cashierSidebarContent?.classList.toggle('hidden', !showCashier);
-    bodyElement.classList.toggle('theme-stock', !showCashier);
-    bodyElement.classList.toggle('theme-cashier', showCashier);
+    const modules={stock:{container:stockModuleContainer,sidebar:stockSidebarContent},cashier:{container:cashierModuleContainer,sidebar:cashierSidebarContent},schedules:{container:document.getElementById('schedules-module'),sidebar:document.getElementById('schedules-sidebar-content')}};
+    if(!modules[moduleName])return;
+    for(const [name,parts] of Object.entries(modules)){parts.container?.classList.toggle('hidden',name!==moduleName);parts.sidebar?.classList.toggle('hidden',name!==moduleName);}
+    bodyElement.classList.toggle('theme-stock',moduleName!=='cashier');
+    bodyElement.classList.toggle('theme-cashier',moduleName==='cashier');
     activeModule = moduleName;
   };
+
+  document.getElementById('module-schedules-btn')?.addEventListener('click', () => {
+    applyModuleVisibility('schedules');
+    setModuleButtonState('schedules');
+    closeMobileSidebar(true);
+    window.dispatchEvent(new Event('open-schedules'));
+  });
 
   const storeActiveModule = moduleName => {
     activeModule = moduleName;
@@ -2496,6 +2501,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('connect_error', error => {
       console.error('Erro ao conectar ao servidor em tempo real:', error);
     });
+    socket.on('schedulesUpdated', () => window.dispatchEvent(new Event('schedules-updated')));
     socket.on('dataUpdated', async () => {
       if (!currentUser) return;
       try {
@@ -2728,6 +2734,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } finally {
       disconnectSocket();
+      window.dispatchEvent(new Event('session-ended'));
       currentUser = null;
       currentUserId = null;
       userRole = null;

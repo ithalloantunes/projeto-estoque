@@ -13,6 +13,7 @@ import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Pool } from 'pg';
+import { migrateSchedules, schedulesRouter } from './routes/schedules.js';
 
 import { sanitizeText, normalizeUsername, sanitizeCost, BCRYPT_SALT_ROUNDS, parsePositiveInt } from './lib/utils.js';
 import { sanitizeClosurePayload, buildClosureResponse, diffClosures } from './lib/cashier-closures.js';
@@ -192,11 +193,13 @@ const registerConnectionCandidate = (label, value, type) => {
 };
 
 registerConnectionCandidate('DATABASE_URL', process.env.DATABASE_URL, 'primary');
+if (process.env.LOCAL_DATABASE_ONLY !== 'true') {
 registerConnectionCandidate('POSTGRES_URL', process.env.POSTGRES_URL, 'primary');
 registerConnectionCandidate('DEFAULT_DATABASE_URL', DEFAULT_DATABASE_URL, 'primary');
 registerConnectionCandidate('DATABASE_URL_EXTERNAL', process.env.DATABASE_URL_EXTERNAL, 'fallback');
 registerConnectionCandidate('RENDER_EXTERNAL_DATABASE_URL', process.env.RENDER_EXTERNAL_DATABASE_URL, 'fallback');
 registerConnectionCandidate('DEFAULT_DATABASE_URL_EXTERNAL', DEFAULT_DATABASE_URL_EXTERNAL, 'fallback');
+}
 
 let pool = null;
 
@@ -478,6 +481,15 @@ app.get('/index.html', (req, res) => {
   sendFileWithHeaders(res, path.join(__dirname, 'index.html'), HTML_CACHE_CONTROL, 'text/html; charset=utf-8');
 });
 
+app.get('/api/health', asyncHandler(async (req, res) => {
+  await query('SELECT 1');
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ status: 'ok', service: 'acai-stock',
+    ...(process.env.LOCAL_DATABASE_ONLY === 'true'
+      ? { pid: process.pid, instanceId: process.env.LOCAL_INSTANCE_ID } : {}),
+  });
+}));
+
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
@@ -488,7 +500,18 @@ const io = new SocketIOServer(server, {
   }
 });
 
+io.use(async (socket, next) => {
+  try {
+    const cookies = Object.fromEntries((socket.handshake.headers.cookie || '').split(';').filter(s => s.includes('=')).map(s => { const i=s.indexOf('='); return [s.slice(0,i).trim(),s.slice(i+1).trim()]; }));
+    const payload=jwt.verify(cookies[SESSION_COOKIE_NAME] || '',JWT_SECRET);
+    const user=await getUserById(payload.userId);
+    if(!user?.approved) return next(new Error('Não autenticado'));
+    socket.data.userId=user.id;
+    next();
+  } catch { next(new Error('Não autenticado')); }
+});
 io.on('connection', socket => {
+  socket.join(`schedules:user:${socket.data.userId}`);
   socket.on('disconnect', () => {
     // Listener intencionalmente vazio.
   });
@@ -1840,6 +1863,18 @@ const requireAdmin = (req, res, next) => {
   return next();
 };
 
+app.use('/api/schedules', schedulesRouter({ getPool, authMiddleware, requireAdmin, notify: async ({periodId=null,userIds=[]}) => {
+  const {rows}=await query(`SELECT DISTINCT u.id FROM users u WHERE u.approved=TRUE AND
+    (u.role='admin' OR u.id=ANY($2::uuid[]) OR EXISTS (
+      SELECT 1 FROM employees e JOIN schedule_entries a ON a.employee_id=e.id
+      JOIN schedule_periods p ON p.id=a.period_id WHERE e.user_id=u.id AND p.status='published' AND p.id=$1))`,[periodId,userIds]);
+  for(const user of rows) io.to(`schedules:user:${user.id}`).emit('schedulesUpdated');
+} }));
+app.get('/schedules.js', (req, res) => sendFileWithHeaders(res, path.join(__dirname, 'schedules.js'), HTML_CACHE_CONTROL, 'application/javascript; charset=utf-8'));
+app.get('/workforce.js', (req, res) => sendFileWithHeaders(res, path.join(__dirname, 'workforce.js'), HTML_CACHE_CONTROL, 'application/javascript; charset=utf-8'));
+app.get('/schedules-navigation.js', (req, res) => sendFileWithHeaders(res, path.join(__dirname, 'schedules-navigation.js'), HTML_CACHE_CONTROL, 'application/javascript; charset=utf-8'));
+app.get('/schedules.css', (req, res) => sendFileWithHeaders(res, path.join(__dirname, 'schedules.css'), HTML_CACHE_CONTROL, 'text/css; charset=utf-8'));
+
 app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
   const password = typeof req.body?.password === 'string' ?req.body.password : '';
@@ -1881,6 +1916,7 @@ app.post('/api/register', registerRateLimiter, asyncHandler(async (req, res) => 
 
   broadcastUsersUpdated();
   res.json({ message: 'Cadastro enviado para aprovação' });
+}));
 
 app.post('/api/password/forgot', passwordResetRateLimiter, asyncHandler(async (req, res) => {
   const username = sanitizeText(req.body?.username);
@@ -1908,8 +1944,6 @@ app.post('/api/password/forgot', passwordResetRateLimiter, asyncHandler(async (r
   const newPasswordHash = bcrypt.hashSync(newPassword, BCRYPT_SALT_ROUNDS);
   await updateUserPassword(user.id, newPasswordHash);
   res.json({ message: 'Senha redefinida com sucesso. Faça login com a nova senha.' });
-}));
-
 }));
 
 app.post('/api/login', loginRateLimiter, asyncHandler(async (req, res) => {
@@ -1986,6 +2020,10 @@ app.post('/api/users/:id/approve', authMiddleware, requireAdmin, asyncHandler(as
 }));
 
 app.delete('/api/users/:id', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+  const linked=await query('SELECT id FROM employees WHERE user_id=$1',[req.params.id]);
+  if(linked.rowCount) return res.status(409).json({error:'Este usuário está vinculado a um funcionário. Remova o vínculo no módulo de Escalas antes de excluir.'});
+  const historical=await query('SELECT 1 FROM schedule_audit WHERE actor_user_id=$1 UNION ALL SELECT 1 FROM attendance_events WHERE actor_user_id=$1 LIMIT 1',[req.params.id]);
+  if(historical.rowCount) return res.status(409).json({error:'Este usuário possui histórico de escalas que precisa ser preservado.'});
   const deleted = await deleteUserById(req.params.id);
   if (!deleted) return res.status(404).json({ error: 'Usuário não encontrado' });
   if (deleted.photo) removeStoredFile(deleted.photo);
@@ -2501,7 +2539,8 @@ for (const signal of ['SIGTERM', 'SIGINT']) {
 const startServer = async () => {
   await ensureDatabaseConnection();
   await initializeDatabase();
-  server.listen(PORT, () => {
+  await migrateSchedules(getPool());
+  server.listen(PORT, process.env.HOST || undefined, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
   });
 };

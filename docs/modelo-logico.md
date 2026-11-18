@@ -59,3 +59,13 @@ O modelo lógico traduz o DER em um esquema relacional compatível com PostgreSQ
 - Entidades **Users**, **Inventory** e **Movimentacoes** foram mapeadas diretamente para tabelas homônimas.
 - Relacionamentos 1:N foram representados pelas chaves estrangeiras (`movimentacoes.produto_id` e referência lógica a `usuario`).
 - Atributos derivados (`username_lower`) e metadados (`created_at`, `updated_at`) foram incorporados para atender aos requisitos de auditoria e desempenho.
+
+## Módulo de escalas implementado
+
+Employees representa funcionários e possui vínculo opcional único com users. Schedule_templates contém modelos de turno, intervalo e situação. Schedule_periods representa semanas com rascunho/publicação e versão. Schedule_entries associa funcionário e semana e guarda trabalho, folga ou indisponibilidade com datas, intervalo, autores e cancelamento lógico. Schedule_audit registra ações, autor, antes/depois e justificativa.
+
+Relacionamentos: users 0..1 — 0..1 employees; employees 1 — N schedule_entries; schedule_periods 1 — N schedule_entries; schedule_templates 1 — N schedule_entries (opcional); schedule_periods 1 — N schedule_audit. Histórico e vínculos usam restrições de exclusão. Tabelas e migrações exatas em db/schema.sql e db/migrations. Guia funcional em MODULO-ESCALAS.md.
+
+## Gestão completa de pessoas
+
+Unidades e funcionários têm relação N:N por employee_units. Workforce_rules guarda limites globais/por unidade. Workforce_availability e workforce_swaps registram solicitações e decisões. Attendance_sessions representa jornadas; attendance_events preserva marcações e correções. Payroll_profiles mantém os parâmetros de remuneração por funcionário; payroll_runs guarda o demonstrativo mensal fechado e auditado. Referências a usuários e funcionários preservam históricos. A definição executável está na migração 003-workforce.sql.
